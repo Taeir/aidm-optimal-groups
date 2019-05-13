@@ -2,8 +2,14 @@ plugins {
     id 'java'
 }
 
-dependencies {
+repositories {
+    maven {
+        url "https://dl.bintray.com/algs4/maven"
+    }
+}
 
+dependencies {
+    implmentation 'edu.princeton.cs:algs4:1.0.4'
 }
 
 task wrapper(type: Wrapper) {
