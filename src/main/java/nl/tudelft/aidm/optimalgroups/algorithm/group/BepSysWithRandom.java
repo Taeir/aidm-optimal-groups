@@ -1,5 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
-public class MaxFlowGroupAlgorithm
+public class BepSysWithRandom
 {
 }

@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
-import nl.tudelft.aidm.optimalgroups.model.Agents;
+import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
 
 public class TopTradingCycle implements ProjectMatchingAlgorithm
 {
