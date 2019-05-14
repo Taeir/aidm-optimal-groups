@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implmentation 'edu.princeton.cs:algs4:1.0.4'
+    implementation 'edu.princeton.cs:algs4:1.0.4'
 }
 
 task wrapper(type: Wrapper) {
