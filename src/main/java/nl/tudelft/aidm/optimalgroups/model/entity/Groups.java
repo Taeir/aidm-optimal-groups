@@ -11,4 +11,14 @@ public class Groups
 	{
 		return this.groups;
 	}
+
+	public int count()
+	{
+		return groups.size();
+	}
+
+	public Group getByIndex(int idx)
+	{
+		return groups.get(idx);
+	}
 }

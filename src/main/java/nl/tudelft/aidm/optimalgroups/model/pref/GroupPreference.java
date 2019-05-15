@@ -10,6 +10,7 @@ import java.util.List;
 public interface GroupPreference
 {
 	// TODO: determine representation (let algo guide this choice)
+	// for now as int array purely for memory efficiency
 	int[] asArray();
 
 	class fromDb implements GroupPreference
