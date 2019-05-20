@@ -5,11 +5,20 @@ import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
 
 public class Group
 {
+	private final int id;
+	private Agents members;
 	private ProjectPreference projectPreference;
+
+	Group(int id, Agents members, ProjectPreference projectPreference)
+	{
+		this.id = id;
+		this.members = members;
+		this.projectPreference = projectPreference;
+	}
 
 	public Agents members()
 	{
-		throw new ImplementMe();
+		return members;
 	}
 
 	public ProjectPreference projectPreference()

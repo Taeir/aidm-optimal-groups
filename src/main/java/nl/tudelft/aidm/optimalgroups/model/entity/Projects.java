@@ -15,4 +15,19 @@ public class Projects
 	{
 		return projectList.get(idx);
 	}
+
+	private int numTotalSlots;
+	public int numTotalSlots()
+	{
+		// lazy eval
+		if (numTotalSlots < 0)
+		{
+			numTotalSlots = projectList.stream()
+				.map(project -> project.numSlots)
+				.mapToInt(Integer::intValue)
+				.sum();
+		}
+
+		return numTotalSlots;
+	}
 }
