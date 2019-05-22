@@ -55,7 +55,7 @@ public interface Projects
 			if (numTotalSlots < 0)
 			{
 				numTotalSlots = projectList.stream()
-					.map(project -> project.numSlots)
+					.map(project -> project.slots().size())
 					.mapToInt(Integer::intValue)
 					.sum();
 			}
