@@ -18,6 +18,17 @@ public abstract class Agent
 		this.groupPreference = groupPreference;
 	}
 
+	// Overriding equals method
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (this.getClass() != obj.getClass()) return false;
+		Agent that = (Agent) obj;
+		if (this.name != that.name) return false;
+		return true;
+	  }
+	}
+
 	/**
 	 * Represents an Agent whose data is retrieved from a data source
 	 */
