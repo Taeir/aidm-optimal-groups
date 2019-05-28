@@ -4,12 +4,12 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven {
-        url "https://dl.bintray.com/algs4/maven"
-    }
+    maven { url "https://dl.bintray.com/algs4/maven" }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
+    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:b52147b'
     implementation 'edu.princeton.cs:algs4:1.0.4'
     implementation 'org.sql2o:sql2o:1.6.0'
 }
