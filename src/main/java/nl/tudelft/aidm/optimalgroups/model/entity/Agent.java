@@ -23,10 +23,10 @@ public abstract class Agent
 	{
 		if (this == obj) return true;
 		if (obj == null) return false;
-		if (this.getClass() != obj.getClass()) return false;
+		if ((obj instanceof Agent) == false) return false;
+
 		Agent that = (Agent) obj;
-		if (this.name != that.name) return false;
-		return true;
+		return this.name.equals(that.name);
 	}
 
 	/**
