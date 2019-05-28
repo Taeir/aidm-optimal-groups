@@ -13,7 +13,46 @@ public interface Projects
 	int countAllSlots();
 //	Project withIndex();
 
-	class InDb implements Projects
+	List<Project.ProjectSlot> slotsForProject(int projectId);
+
+	abstract class ListBasedProjects implements Projects
+	{
+		public int count()
+		{
+			return projectList().size();
+		}
+
+		abstract protected List<Project> projectList();
+
+		public List<Project.ProjectSlot> slotsForProject(int projectId) {
+			String projectName = String.valueOf(projectId);
+			Project project = this.projectList().stream()
+				.filter(p -> p.name().equals(projectName))
+				.findAny().get();
+
+			return project.slots();
+
+		}
+
+		private int numTotalSlots = -1;
+
+		@Override
+		public int countAllSlots()
+		{
+			// lazy eval
+			if (numTotalSlots < 0)
+			{
+				numTotalSlots = projectList().stream()
+					.map(project -> project.slots().size())
+					.mapToInt(Integer::intValue)
+					.sum();
+			}
+
+			return numTotalSlots;
+		}
+	}
+
+	class InDb extends ListBasedProjects
 	{
 		private DataSource dataSource;
 		private int courseEditionId;
@@ -26,11 +65,7 @@ public interface Projects
 			this.courseEditionId = courseEditionId;
 		}
 
-		public int count()
-		{
-			return projectList().size();
-		}
-
+		@Override
 		protected List<Project> projectList()
 		{
 			if (projectList == null)
@@ -39,28 +74,6 @@ public interface Projects
 			}
 
 			return projectList;
-		}
-
-//		public Project withIndex(int idx)
-//		{
-//			return projectList.get(idx);
-//		}
-
-		private int numTotalSlots = -1;
-
-		@Override
-		public int countAllSlots()
-		{
-			// lazy eval
-			if (numTotalSlots < 0)
-			{
-				numTotalSlots = projectList.stream()
-					.map(project -> project.slots().size())
-					.mapToInt(Integer::intValue)
-					.sum();
-			}
-
-			return numTotalSlots;
 		}
 
 		private List<Project> fetchFromDb()
