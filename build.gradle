@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:b52147b'
+    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c7ff6fe'
     implementation 'edu.princeton.cs:algs4:1.0.4'
     implementation 'org.sql2o:sql2o:1.6.0'
 }

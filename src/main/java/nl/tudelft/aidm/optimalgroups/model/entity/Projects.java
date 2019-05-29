@@ -6,14 +6,16 @@ import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface Projects
 {
 	int count();
 	int countAllSlots();
-//	Project withIndex();
 
 	List<Project.ProjectSlot> slotsForProject(int projectId);
+
+	void forEach(Consumer<Project> fn);
 
 	abstract class ListBasedProjects implements Projects
 	{
@@ -24,6 +26,13 @@ public interface Projects
 
 		abstract protected List<Project> projectList();
 
+		@Override
+		public void forEach(Consumer<Project> fn)
+		{
+			projectList().forEach(fn);
+		}
+
+		@Override
 		public List<Project.ProjectSlot> slotsForProject(int projectId) {
 			String projectName = String.valueOf(projectId);
 			Project project = this.projectList().stream()
