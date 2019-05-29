@@ -11,7 +11,7 @@ public abstract class Agent
 	public final ProjectPreference projectPreference;
 	public final GroupPreference groupPreference;
 
-	private Agent(String name, ProjectPreference projectPreference, GroupPreference groupPreference)
+	protected Agent(String name, ProjectPreference projectPreference, GroupPreference groupPreference)
 	{
 		this.name = name;
 		this.projectPreference = projectPreference;
@@ -19,14 +19,14 @@ public abstract class Agent
 	}
 
 	// Overriding equals method
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj)
+	{
 		if (this == obj) return true;
 		if (obj == null) return false;
-		if (this.getClass() != obj.getClass()) return false;
+		if ((obj instanceof Agent) == false) return false;
+
 		Agent that = (Agent) obj;
-		if (this.name != that.name) return false;
-		return true;
-	  }
+		return this.name.equals(that.name);
 	}
 
 	/**
