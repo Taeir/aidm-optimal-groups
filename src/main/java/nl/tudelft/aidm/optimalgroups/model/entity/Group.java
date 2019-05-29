@@ -9,7 +9,7 @@ public class Group
 	private Agents members;
 	private ProjectPreference projectPreference;
 
-	Group(int id, Agents members, ProjectPreference projectPreference)
+	public Group(int id, Agents members, ProjectPreference projectPreference)
 	{
 		this.id = id;
 		this.members = members;

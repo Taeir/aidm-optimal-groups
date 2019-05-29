@@ -5,5 +5,7 @@ build
 .settings/
 .vscode/
 .project
+.classpath
+bin/
 
 !/gradle

@@ -1,5 +1,18 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import nl.tudelft.aidm.optimalgroups.model.entity.*;
+
 public class BepSysWithRandom
 {
     Map<String, Agent> students;
@@ -13,7 +26,7 @@ public class BepSysWithRandom
     public BepSysWithRandom(List<Agent> availableStudents, int maxGroupSize, int minGroupSize) {
         this.availableStudents = new HashMap<String, Agent>();
         this.unavailableStudents = new HashMap<String, Agent>();
-        this.groups = new ArrayList<Group>;
+        this.groups = new ArrayList<Group>();
         this.maxGroupSize = maxGroupSize;
         this.minGroupSize = minGroupSize;
 
@@ -40,9 +53,14 @@ public class BepSysWithRandom
         end
         db_list
         */
-        this.constructGroupsFromCliques();
-        this.bestMatchUngrouped();
-        this.mergeGroups();
+
+    	try {
+	        this.constructGroupsFromCliques();
+	        this.bestMatchUngrouped();
+	        this.mergeGroups();
+    	} catch (Exception e) {
+    		System.out.println(e);
+    	}
     }
 
     private void constructGroupsFromCliques() {
@@ -82,7 +100,7 @@ public class BepSysWithRandom
                 this.unavailableStudents.put(friendString, friendObj);
                 
             }
-            this.groups.add(new Group(0, Agents.from(friendsList), null)); //TO-DO: add sensible group id here
+            this.groups.add(new Group(0, Agents.from(friendsList.toArray(new Agent[friendsList.size()])), null)); //TO-DO: add sensible group id here
             Agent self = this.availableStudents.remove(pair.getKey());
             this.unavailableStudents.put(self.name, self);
         }
@@ -133,7 +151,7 @@ public class BepSysWithRandom
             if (this.unavailableStudents.containsKey(pair.getKey())) continue; 
             
             List<Agent> friends = this.getAvailableFriends(pair.getValue());
-            int score = this.computeScore(friends, agent);
+            int score = this.computeScore(friends, pair.getValue());
             friends.add(pair.getValue()); // Add self to group
             possibleGroups.add(new PossibleGroup(friends, score));
         }
@@ -155,7 +173,7 @@ public class BepSysWithRandom
 
     private void pickBestGroups(List<PossibleGroup> possibleGroups) {
         Collections.sort(possibleGroups, new Comparator<PossibleGroup>() {
-            int compare(PossibleGroup left, PossibleGroup right)  {
+            public int compare(PossibleGroup left, PossibleGroup right)  {
                 return right.score - left.score;
             }
         });
@@ -163,10 +181,10 @@ public class BepSysWithRandom
         while (possibleGroups.size() > 0) {
             PossibleGroup bestGroup = findBestGroup(possibleGroups);
             if (bestGroup == null) continue;
-            this.groups.add(new Group(0, Agents.from(bestGroup.members), null)); // TO-DO: add sensible group id here
+            this.groups.add(new Group(0, Agents.from(bestGroup.members.toArray(new Agent[bestGroup.members.size()])), null)); // TO-DO: add sensible group id here
             for (Agent a : bestGroup.members) {
                 this.availableStudents.remove(a.name);
-                this.unavailableStudents.add(a.name, a);
+                this.unavailableStudents.put(a.name, a);
             }
         }
     }
@@ -187,11 +205,11 @@ public class BepSysWithRandom
         return bestGroup;
     }
 
-    private void mergeGroups() {
+    private void mergeGroups() throws Exception {
         List<Group> merged = new ArrayList<Group>();
         List<Group> unmerged = new ArrayList<Group>();
         for (Group g : this.groups) {
-            if (g.members.asCollection().size() == this.maxGroupSize) {
+            if (g.members().asCollection().size() == this.maxGroupSize) {
                 merged.add(g);
             } else {
                 unmerged.add(g);
@@ -212,19 +230,19 @@ public class BepSysWithRandom
             remainder = remainder % this.minGroupSize;
         }
 
-        Collections.sort(unmerged, new Comparator<PossibleGroup>() {
-            int compare(Group left, Group right)  {
-                return left.members.asCollection().size() - right.members.asCollection().size();
+        Collections.sort(unmerged, new Comparator<Group>() {
+            public int compare(Group left, Group right)  {
+                return left.members().asCollection().size() - right.members().asCollection().size();
             }
         });
 
         while (unmerged.size() > 0) {
             Group unmergedGroup = unmerged.get(0);
-            int unmergedGroupSize = unmergedGroup.members.asCollection().size();
+            int unmergedGroupSize = unmergedGroup.members().asCollection().size();
             unmerged.remove(0);
-            Map<Integer, Integer> scores = new HashMap<Integer, Integer>();
+            Map<Integer, Group> scores = new HashMap<Integer, Group>();
             for (Group otherUnmergedGroup : unmerged) {
-                int together = unmergedGroupSize + otherUnmergedGroup.members.asCollection().size();
+                int together = unmergedGroupSize + otherUnmergedGroup.members().asCollection().size();
 
                 // Only keep scores if the size is equal to the maximum group size
                 if (together == this.maxGroupSize && count < groupsMax) {
@@ -233,7 +251,7 @@ public class BepSysWithRandom
             }
             if (scores.size() == 0) {
                 for (Group otherUnmergedGroup : unmerged) {
-                    int together = unmergedGroupSize + otherUnmergedGroup.members.asCollection().size();
+                    int together = unmergedGroupSize + otherUnmergedGroup.members().asCollection().size();
 
                     // Keep scores if it does not exceed the maximum group size
                     if (together <= this.maxGroupSize) {
@@ -244,8 +262,8 @@ public class BepSysWithRandom
             if (scores.size() == 0) {
                 if (unmergedGroupSize < this.minGroupSize) {
                     // Divide all people of this group
-                    for (Agent a : unmergedGroup.members.asCollection()) {
-                        Group newGroup = new Group(0, Agents.from(Arrays.asList(a)), null); //TO-DO: add sensible id here
+                    for (Agent a : unmergedGroup.members().asCollection()) {
+                        Group newGroup = new Group(0, Agents.from(new Agent[]{a}), null); //TO-DO: add sensible id here
                         unmerged.add(newGroup);
                     }
                 } else {
@@ -260,12 +278,12 @@ public class BepSysWithRandom
             unmerged.remove(partnerGroup);
 
             // Construct new merged group
-            ArrayList newMembers = new ArrayList<Agent>();
-            newMembers.addAll(unmergedGroup.members.asCollection());
-            newMembers.addAll(partnerGroup.members.asCollection());
-            Group newGroup = new Group(0, Agents.from(newMembers), null); //TO-DO: add sensible id here
+            ArrayList<Agent> newMembers = new ArrayList<Agent>();
+            newMembers.addAll(unmergedGroup.members().asCollection());
+            newMembers.addAll(partnerGroup.members().asCollection());
+            Group newGroup = new Group(0, Agents.from(newMembers.toArray(new Agent[newMembers.size()])), null); //TO-DO: add sensible id here
             
-            int newGroupSize = newGroup.members.asCollection().size();
+            int newGroupSize = newGroup.members().asCollection().size();
             if (newGroupSize < this.maxGroupSize) {
                 unmerged.add(newGroup);
             } else if (newGroupSize == this.maxGroupSize) {
@@ -300,30 +318,18 @@ public class BepSysWithRandom
         score
         */
         int score = 0;
-        Map<Integer, Integer> g1Prefs = computeAveragePrefs(g1)
-            .entrySet()
-            .stream()
-            .sorted(comparingByValue())
-            .collect(
-                toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
-                    LinkedHashMap::new));
+        Map<Integer, Integer> g1Prefs = sortByValue(computeAveragePrefs(g1));
         
-        Map<Integer, Integer> g2Prefs = computeAveragePrefs(g2)
-                    .entrySet()
-                    .stream()
-                    .sorted(comparingByValue())
-                    .collect(
-                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
-                            LinkedHashMap::new));
+        Map<Integer, Integer> g2Prefs = sortByValue(computeAveragePrefs(g2));
 
-        ArrayList<Integer> g1Sorted = g1Prefs.keySet();
-        ArrayList<Integer> g2Sorted = g2Prefs.keySet();
+        Set<Integer> g1Sorted = g1Prefs.keySet();
+        Set<Integer> g2Sorted = g2Prefs.keySet();
 
         int count = 0;
         for (Integer i : g1Sorted) {
-            int count2 = g2sorted.indexOf(i);
+            int count2 = getIndex(g2Sorted, i);
             if (count2 != -1) {
-                score += (count - count2) * (count - count2)
+                score += (count - count2) * (count - count2);
             }
             count += 1;
         }
@@ -335,7 +341,7 @@ public class BepSysWithRandom
         Map<Integer, Integer> prefs = new LinkedHashMap<Integer, Integer>();
         int prefCounter = 0;
         for (Agent a : g.members().asCollection()) {
-            int[] preferences = a.projectPreference.fromDb.asArray();
+            int[] preferences = a.projectPreference.asArray();
             if (preferences.length > 0) {
                 prefCounter += 1;
             }
@@ -349,7 +355,7 @@ public class BepSysWithRandom
                 prefs.put(project, currentPreferences + priority);
             }
         }
-        for (Map.Entry<Integer, Integer> entry : prefs) {
+        for (Map.Entry<Integer, Integer> entry : prefs.entrySet()) {
             int avgPref = 4;
             if (prefCounter > 0) {
                 avgPref = entry.getValue() / prefCounter;
@@ -363,7 +369,7 @@ public class BepSysWithRandom
         List<Agent> friends = new ArrayList<Agent>();
         for (int i : a.groupPreference.asArray()) {
             if (this.availableStudents.containsKey(String.valueOf(i))) {
-                friends.add(this.availableStudents.get(i));
+                friends.add(this.availableStudents.get(String.valueOf(i)));
             }
         }
         return friends;
@@ -377,5 +383,26 @@ public class BepSysWithRandom
             this.members = members;
             this.score = score;
         }
+    }
+    
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
+        list.sort(Map.Entry.comparingByValue());
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
+    }
+    
+    public static int getIndex(Set<? extends Object> set, Object value) {
+    	int result = 0;
+    	for (Object entry:set) {
+    		if (entry.equals(value)) return result;
+    	    result++;
+    	}
+        return -1;
     }
 }
