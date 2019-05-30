@@ -20,7 +20,7 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 	@Override
 	public Matching doMatching(Groups groups, Projects projects)
 	{
-		GroupVertices groupVertices = new GroupVertices();
+		GroupVertices groupVertices = new GroupVertices(); // todo
 		ProjectVertices projectVertices = new ProjectVertices(projects);
 
 		ProjectGroupPreferenceEdges projectGroupPreferenceEdges = new ProjectGroupPreferenceEdges(groupVertices, projectVertices);
@@ -31,12 +31,14 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 		Vertices<GroupProjectMatching> right = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) projectVertices;
 
 		MaxFlowMatching<GroupProjectMatching> matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
+		List<Edge<GroupProjectMatching>> matchingAsListOfEdges = matching.asListOfEdges();
 
+		//todo map to output type
 	}
 
 	private static class GroupVertices extends Vertices<GroupVertexContent>
 	{
-
+		// TODO: group to vertices
 	}
 
 	private static class ProjectVertices extends Vertices<ProjectVertexContent>
