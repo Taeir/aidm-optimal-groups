@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
+import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
 
 import java.util.ArrayList;
@@ -12,15 +13,15 @@ import java.util.stream.Collectors;
 /**
  * ProjectPreference implementation for a whole group. This is an average of the group member preferences (as implemented in BepSYS)
  */
-public class AverageProjectPreferenceOfGroup implements ProjectPreference
+public class AverageProjectPreferenceOfAgents implements ProjectPreference
 {
-	private Group group;
+	private Agents agents;
 
 	private int[] avgPreference;
 
-	public AverageProjectPreferenceOfGroup(Group group)
+	public AverageProjectPreferenceOfAgents(Agents agents)
 	{
-		this.group = group;
+		this.agents = agents;
 	}
 
 	private int[] calculateAverageOfGroup()
@@ -29,7 +30,7 @@ public class AverageProjectPreferenceOfGroup implements ProjectPreference
 		Map<Integer, Integer> prefs = new LinkedHashMap<>();
 
 		int prefCounter = 0;
-		for (Agent agent : group.members().asCollection()) {
+		for (Agent agent : agents.asCollection()) {
 			int[] preferences = agent.projectPreference.asArray();
 			if (preferences.length > 0) {
 				prefCounter += 1;

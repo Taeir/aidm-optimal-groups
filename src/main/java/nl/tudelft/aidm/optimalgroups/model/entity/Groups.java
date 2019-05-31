@@ -16,9 +16,9 @@ public class Groups
 	}
 
 	// make new
-	public Group makeGroup(Agents members, ProjectPreference preference)
+	public Group addAsFormed(Group.TentativeGroup tentativeGroup)
 	{
-		var group = new Group(groups.size(), members, preference);
+		var group = new Group.FormedGroup(tentativeGroup.members, tentativeGroup.projectPreference, groups.size());
 		groups.add(group);
 
 		return group;

@@ -4,13 +4,16 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
 import nl.tudelft.aidm.optimalgroups.model.entity.Groups;
+import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.*;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class BepSysWithRandom
 {
-    Map<String, Agent> students;
+    Agents students;
+
     Map<String, Agent> availableStudents;
     Map<String, Agent> unavailableStudents;
 
@@ -20,13 +23,16 @@ public class BepSysWithRandom
     Groups groups;
 
     // Pass the list of students to make groups from
-    public BepSysWithRandom(List<Agent> availableStudents, int maxGroupSize, int minGroupSize) {
+    public BepSysWithRandom(Agents students, int maxGroupSize, int minGroupSize) {
+        this.students = students;
+
         this.availableStudents = new HashMap<String, Agent>();
         this.unavailableStudents = new HashMap<String, Agent>();
+
         this.maxGroupSize = maxGroupSize;
         this.minGroupSize = minGroupSize;
 
-        for (Agent a : availableStudents) {
+        for (Agent a : students.asCollection()) {
             this.availableStudents.put(a.name, a);
         }
 
@@ -52,9 +58,9 @@ public class BepSysWithRandom
         db_list
         */
 
-	        this.constructGroupsFromCliques();
-	        this.bestMatchUngrouped();
-	        this.mergeGroups();
+        this.constructGroupsFromCliques();
+        this.bestMatchUngrouped();
+        this.mergeGroups();
     }
 
     private void constructGroupsFromCliques() {
@@ -80,68 +86,43 @@ public class BepSysWithRandom
         [grouped, no_group, group_list]
         */    
 
-        for (Map.Entry<String, Agent> pair : this.students.entrySet()) {
-            if (this.unavailableStudents.containsKey(pair.getKey())) continue;
-            
-            if (equalFriendsLists(pair.getValue()) == false) continue;
-
-            int[] friends = pair.getValue().groupPreference.asArray();
-            List<Agent> friendsList = new ArrayList<Agent>();
-            friendsList.add(pair.getValue());
-            for (int friend : friends) {
-                String friendString = String.valueOf(friend);
-                Agent friendObj = this.availableStudents.remove(friendString);
-                this.unavailableStudents.put(friendString, friendObj);
-                
+        for (Map.Entry<String, Agent> pair : this.availableStudents.entrySet())
+        {
+            if (this.unavailableStudents.containsKey(pair.getKey()))
+            {
+                continue;
             }
-            groups.makeGroup(Agents.from(friendsList), null);
-            Agent self = this.availableStudents.remove(pair.getKey());
-            this.unavailableStudents.put(self.name, self);
+
+            Agent student = pair.getValue();
+            if (students.hasEqualFriendLists(student))
+            {
+                int[] friends = student.groupPreference.asArray();
+                List<Agent> clique = Arrays.stream(friends).mapToObj(String::valueOf)
+                    .map(name -> students.findByAgentId(name))
+                    .filter(Optional::isPresent).map(Optional::get)
+                    .collect(Collectors.toList());
+
+                // also add the student
+                clique.add(student);
+
+                Agents agents = Agents.from(clique);
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+
+                for (Agent studentInGroup : tentativeGroup.members().asCollection())
+                {
+                    this.availableStudents.remove(studentInGroup.name);
+                    this.unavailableStudents.put(studentInGroup.name, studentInGroup);
+                }
+            }
+
         }
     }
 
-    private boolean equalFriendsLists(Agent agent) {
-        /* RUBY CODE:
-        # get friends of student
-        friends = StudentPreference.preferences_for(participant, @course_edition)
-                                .map(&:student)
-        friends.delete_if { |x| !@course_edition.approved_participants.include? x }
-
-        base_friends = friends + [participant]
-        equal = true
-        friends.each do |friend|
-            # for each friend, check if their friends lists are equal
-            friends_of_friend =
-                StudentPreference.preferences_for(friend, @course_edition)
-                            .map(&:student) + [friend]
-            equal = false unless friends_of_friend.sort == base_friends.sort
-        end
-        [equal, friends]
-
-        */
-        Set<String> friends = new HashSet<String>();
-        friends.add(agent.name); //Add agent himself to set
-        for (int i : agent.groupPreference.asArray()) {
-            friends.add(String.valueOf(i));
-        }
-        for (String friend : friends) {
-            Set<String> friendsOfFriends = new HashSet<String>();
-            friendsOfFriends.add(friend); // Add friend himself to list
-            for (int i : this.availableStudents.get(friend).groupPreference.asArray()) {
-                friendsOfFriends.add(String.valueOf(i));
-            }
-            if (friends.equals(friendsOfFriends) == false) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private void bestMatchUngrouped() {
+    private void bestMatchUngrouped()
+    {
         List<PossibleGroup> possibleGroups = new ArrayList<PossibleGroup>();
 
-        for (Map.Entry<String, Agent> pair : this.students.entrySet()) {
+        for (Map.Entry<String, Agent> pair : this.availableStudents.entrySet()) {
             if (this.unavailableStudents.containsKey(pair.getKey())) continue; 
             
             List<Agent> friends = this.getAvailableFriends(pair.getValue());
@@ -149,10 +130,12 @@ public class BepSysWithRandom
             friends.add(pair.getValue()); // Add self to group
             possibleGroups.add(new PossibleGroup(friends, score));
         }
+
         this.pickBestGroups(possibleGroups);
     }
 
-    private int computeScore(List<Agent> friends, Agent a) {
+    private int computeScore(List<Agent> friends, Agent a)
+    {
         int score = 0;
         for (Agent friend : friends) {
             List<Agent> friendsOfFriend = getAvailableFriends(friend);
@@ -165,18 +148,18 @@ public class BepSysWithRandom
         return score;
     }
 
-    private void pickBestGroups(List<PossibleGroup> possibleGroups) {
-        Collections.sort(possibleGroups, new Comparator<PossibleGroup>() {
-            public int compare(PossibleGroup left, PossibleGroup right)  {
-                return right.score - left.score;
-            }
-        });
+    private void pickBestGroups(List<PossibleGroup> possibleGroups)
+    {
+        possibleGroups.sort(Comparator.comparing(o -> o.score));
         
         while (possibleGroups.size() > 0) {
             PossibleGroup bestGroup = findBestGroup(possibleGroups);
-            if (bestGroup == null) continue;
-            this.groups.makeGroup(Agents.from(bestGroup.members), null); // TODO: preferences?
-            for (Agent a : bestGroup.members) {
+            if (bestGroup == null) continue; // todo: inf loop?
+
+            Agents agents = Agents.from(bestGroup.members);
+            Group formedGroup = groups.addAsFormed(bestGroup.toGroup());
+
+            for (Agent a : formedGroup.members().asCollection()) {
                 this.availableStudents.remove(a.name);
                 this.unavailableStudents.put(a.name, a);
             }
@@ -200,18 +183,20 @@ public class BepSysWithRandom
     }
 
     private void mergeGroups() {
-        List<Group> merged = new ArrayList<Group>();
-        List<Group> unmerged = new ArrayList<Group>();
+        List<Group> merged = new ArrayList<>();
+        List<Group.TentativeGroup> unmerged = new ArrayList<>();
+
+        // todo: split groups into those that are finalized and those that are not
+        //  s.t. no need to do this kind of case distinction here...
         for (Group g : this.groups.asCollection()) {
             if (g.members().count() == this.maxGroupSize) {
                 merged.add(g);
             } else {
-                unmerged.add(g);
+                unmerged.add(new Group.TentativeGroup(g));
             }
         }
 
-        int count = merged.size();
-        int numberOfStudents = this.students.size();
+        int numberOfStudents = this.students.count();
         int groupsMax = numberOfStudents / this.maxGroupSize;
         int remainder = numberOfStudents % this.maxGroupSize;
         int numberOfGroups = groupsMax + remainder / this.minGroupSize;
@@ -224,126 +209,74 @@ public class BepSysWithRandom
             remainder = remainder % this.minGroupSize;
         }
 
-        Collections.sort(unmerged, new Comparator<Group>() {
-            public int compare(Group left, Group right)  {
-                return left.members().count() - right.members().count();
-            }
-        });
+        unmerged.sort(Comparator.comparingInt((Group group) -> group.members().count()));
 
         while (unmerged.size() > 0) {
-            Group unmergedGroup = unmerged.get(0);
-            int unmergedGroupSize = unmergedGroup.members().count();
+            Group.TentativeGroup unmergedGroup = unmerged.get(0);
             unmerged.remove(0);
-            Map<Integer, Group> scores = new HashMap<Integer, Group>();
-            for (Group otherUnmergedGroup : unmerged) {
+
+            int unmergedGroupSize = unmergedGroup.members().count();
+
+            var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(PossibleGroupMerge::matchScore));
+
+            for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
                 int together = unmergedGroupSize + otherUnmergedGroup.members().count();
 
                 // Only keep scores if the size is equal to the maximum group size
-                if (together == this.maxGroupSize && count < groupsMax) {
-                    scores.put(computePrefScore(unmergedGroup, otherUnmergedGroup), otherUnmergedGroup);
+                // Do we have a valid max-sizegroup and can we still create groups?
+                if (together == this.maxGroupSize &&  merged.size() < groupsMax) {
+                    possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                 }
             }
-            if (scores.size() == 0) {
+
+            // if no candidate group merges
+            if (possibleGroupMerges.size() == 0) {
                 for (Group otherUnmergedGroup : unmerged) {
                     int together = unmergedGroupSize + otherUnmergedGroup.members().count();
 
-                    // Keep scores if it does not exceed the maximum group size
+                    // try again with relaxed constraints on group creation (up to group size)
                     if (together <= this.maxGroupSize) {
-                        scores.put(computePrefScore(unmergedGroup, otherUnmergedGroup), otherUnmergedGroup);
+                        possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                     }
                 }
             }
-            if (scores.size() == 0) {
-                if (unmergedGroupSize < this.minGroupSize) {
+
+            // if still no candidate group merges
+            if (possibleGroupMerges.size() == 0) {
+                if (unmergedGroupSize >= this.minGroupSize) {
+                    // satisfies min size constraint, accept the group
+                    merged.add(unmergedGroup);
+                }
+                // Group does not meet minimal group size: split and hope for best in next iter
+                else {
                     // Divide all people of this group
                     for (Agent a : unmergedGroup.members().asCollection()) {
-                        Group newGroup = new Group(0, Agents.from(new Agent[]{a}), null); //TO-DO: add sensible id here
-                        unmerged.add(newGroup);
+                        Agents singleAgent = Agents.from(a);
+                        unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference));
                     }
-                } else {
-                    merged.add(unmergedGroup);
-                    continue;
                 }
             }
 
-            // Get partner group
-            int maxScore = Collections.max(scores.keySet());
-            Group partnerGroup = scores.get(maxScore);
-            unmerged.remove(partnerGroup);
+            // take best scoring group (it's a priority queue)
+            PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
+            // remove the "other" group from unmerged
+            unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
 
-            // Construct new merged group
-            ArrayList<Agent> newMembers = new ArrayList<Agent>();
-            newMembers.addAll(unmergedGroup.members().asCollection());
-            newMembers.addAll(partnerGroup.members().asCollection());
-            Group newGroup = new Group(0, Agents.from(newMembers.toArray(new Agent[newMembers.size()])), null); //TO-DO: add sensible id here
-            
-            int newGroupSize = newGroup.members().count();
-            if (newGroupSize < this.maxGroupSize) {
-                unmerged.add(newGroup);
-            } else if (newGroupSize == this.maxGroupSize) {
-                count += 1;
-                merged.add(newGroup);
-            } else {
+            Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
+
+            if (tentativeGroup.members().count() < this.maxGroupSize) {
+                unmerged.add(tentativeGroup);
+            }
+            else if (tentativeGroup.members().count() == this.maxGroupSize) {
+                Group theFormedGroup = groups.addAsFormed(tentativeGroup);
+                merged.add(theFormedGroup); // todo: remove and or rename 'groups'
+            }
+            else {
                 throw new RuntimeException("Group size is somehow larger than maximum group size");
             }
         }
-        this.groups = merged;
     }
 
-    private int computePrefScore(Group g1, Group g2) {
-        /*
-        score = 0
-        g1users = g1[:members].each { |m| m } + [g1[:leader]]
-        g2users = g2[:members].each { |m| m } + [g2[:leader]]
-
-        g1prefs = comp_average_pref g1users
-        g2prefs = comp_average_pref g2users
-
-        g1sorted = g1prefs.sort_by { |_k, v| v }.map { |v| v[0] }
-        g2sorted = g2prefs.sort_by { |_k, v| v }.map { |v| v[0] }
-
-        cnt = 0
-        g1sorted.each do |p|
-        cnt2 = g2sorted.index(p)
-        score += (cnt - cnt2) * (cnt - cnt2) unless cnt2.nil?
-        cnt += 1
-        end
-
-        score
-        */
-        int score = 0;
-//        Map<Integer, Integer> g1Prefs = sortByValue(computeAveragePrefs(g1));
-//
-//        Map<Integer, Integer> g2Prefs = sortByValue(computeAveragePrefs(g2));
-//
-//        Set<Integer> g1Sorted = g1Prefs.keySet();
-//        Set<Integer> g2Sorted = g2Prefs.keySet();
-
-        int count = 0;
-
-        int[] g1Prefs = g1.projectPreference().asArray();
-        int[] g2Prefs = g2.projectPreference().asArray();
-
-        // optimization & readability: finding rank of preference in g2's preferences
-        HashMap<Integer, Integer> g2PrefMap = new HashMap<>(g2Prefs.length);
-        for (int i = 0; i < g2Prefs.length; i++)
-        {
-            g2PrefMap.put(g2Prefs[i], i);
-        }
-        Function<Integer, Integer> findPreferenceRankInGroup2 = (pref) -> g2PrefMap.getOrDefault(pref, -1);
-
-        for (int g1Pref : g1Prefs) {
-            int count2 = findPreferenceRankInGroup2.apply(g1Pref);
-
-            if (count2 >= 0) {
-                score += (count - count2) * (count - count2);
-            }
-
-            count += 1;
-        }
-
-        return score;
-    }
 
     private List<Agent> getAvailableFriends(Agent a) {
         List<Agent> friends = new ArrayList<Agent>();
@@ -362,6 +295,94 @@ public class BepSysWithRandom
         public PossibleGroup(List<Agent> members, int score) {
             this.members = members;
             this.score = score;
+        }
+
+        public Group.TentativeGroup toGroup()
+        {
+            Agents agents = Agents.from(members);
+            return new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+        }
+    }
+
+    private static class PossibleGroupMerge
+    {
+        Group g1;
+        Group g2;
+
+        public PossibleGroupMerge(Group g1, Group g2)
+        {
+            this.g1 = g1;
+            this.g2 = g2;
+        }
+
+        private int score = -1;
+        int matchScore()
+        {
+            if (score == -1) {
+                score = computeMatchScore();
+            }
+
+            return score;
+        }
+
+        public Group.TentativeGroup toGroup()
+        {
+            Agents agents = g1.members().with(g2.members());
+            ProjectPreference preferences = new AverageProjectPreferenceOfAgents(agents);
+
+            return new Group.TentativeGroup(agents, preferences);
+        }
+
+        private int computeMatchScore() {
+            /* RUBY CODE:
+                score = 0
+                g1users = g1[:members].each { |m| m } + [g1[:leader]]
+                g2users = g2[:members].each { |m| m } + [g2[:leader]]
+
+                g1prefs = comp_average_pref g1users
+                g2prefs = comp_average_pref g2users
+
+                g1sorted = g1prefs.sort_by { |_k, v| v }.map { |v| v[0] }
+                g2sorted = g2prefs.sort_by { |_k, v| v }.map { |v| v[0] }
+
+                cnt = 0
+                g1sorted.each do |p|
+                    cnt2 = g2sorted.index(p)
+                    score += (cnt - cnt2) * (cnt - cnt2) unless cnt2.nil?
+                    cnt += 1
+                end
+
+                score
+            */
+
+            int[] g1Prefs = g1.projectPreference().asArray();
+
+            int score = 0;
+            for (int prefRankG1 = 0; prefRankG1 < g1Prefs.length; prefRankG1++) {
+                int prefRankG2OfG1sPref = findPreferenceRankInGroup2(g1Prefs[prefRankG1]);
+
+                if (prefRankG2OfG1sPref >= 0) {
+                    score += Math.pow(prefRankG1 - prefRankG2OfG1sPref, 2);
+                }
+            }
+
+            return score;
+        }
+
+        private HashMap<Integer, Integer> g2PrefMap;
+        private int findPreferenceRankInGroup2(int pref)
+        {
+            if (g2PrefMap == null) {
+                // mapping not created yet, do so now
+                var g2Prefs = g2.projectPreference().asArray();
+                g2PrefMap = new HashMap<>(g2Prefs.length);
+                for (int i = 0; i < g2Prefs.length; i++)
+                {
+                    g2PrefMap.put(g2Prefs[i], i);
+                }
+            }
+
+            return g2PrefMap.getOrDefault(pref, -1);
         }
     }
 }

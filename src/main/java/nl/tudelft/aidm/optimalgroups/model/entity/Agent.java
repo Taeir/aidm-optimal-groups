@@ -18,7 +18,7 @@ public abstract class Agent
 		this.groupPreference = groupPreference;
 	}
 
-	// Overriding equals method
+	@Override
 	public boolean equals(Object obj)
 	{
 		if (this == obj) return true;
