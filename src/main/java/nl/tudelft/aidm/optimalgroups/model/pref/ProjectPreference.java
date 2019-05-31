@@ -12,6 +12,24 @@ public interface ProjectPreference
 	// TODO: determine representation (let algo guide this choice)
 	int[] asArray();
 
+	default void forEach(ProjectPreferenceConsumer iter)
+	{
+		int[] prefArray = asArray();
+		for (int i = 0; i < prefArray.length; i++)
+		{
+			iter.apply(prefArray[i], i+1);
+		}
+	}
+
+	public interface ProjectPreferenceConsumer
+	{
+		/**
+		 * @param projectId the id of the project that has the given rank
+		 * @param rank Rank of the preference, 1 being highest
+		 */
+		void apply(int projectId, int rank);
+	}
+
 	class fromDb implements ProjectPreference
 	{
 		private final DataSource dataSource;

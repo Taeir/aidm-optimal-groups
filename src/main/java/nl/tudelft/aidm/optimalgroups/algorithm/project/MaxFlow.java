@@ -1,19 +1,149 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
-import edu.princeton.cs.algs4.BipartiteMatching;
+import louchtch.graphmatch.matching.MaxFlowMatching;
+import louchtch.graphmatch.model.*;
+import nl.tudelft.aidm.optimalgroups.model.entity.Group;
 import nl.tudelft.aidm.optimalgroups.model.entity.Groups;
-import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
+import nl.tudelft.aidm.optimalgroups.model.entity.Project;
+import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MaxFlow implements ProjectMatchingAlgorithm
 {
-	@Override
-	public Matching doMatching(Groups groups)
+	private final Groups groups;
+	private final Projects projects;
+
+	public MaxFlow(Groups groups, Projects projects)
 	{
-		throw new ImplementMe();
+		this.groups = groups;
+		this.projects = projects;
+	}
 
+	@Override
+	public Matching result()
+	{
+		GroupVertices groupVertices = new GroupVertices(groups);
+		ProjectVertices projectVertices = new ProjectVertices(projects);
 
-		BipartiteMatching bipartiteMatching = new BipartiteMatching();
+		ProjectGroupPreferenceEdges projectGroupPreferenceEdges = new ProjectGroupPreferenceEdges(groupVertices, projectVertices);
 
+		// Sick cast https://stackoverflow.com/questions/3246137/java-generics-cannot-cast-listsubclass-to-listsuperclass
+		// warning: not very safe, but not catastrophic if lists are not modified
+		var left = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) groupVertices;
+		var right = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) projectVertices;
+
+		var matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
+		var matchingAsListOfEdges = matching.asListOfEdges();
+
+		//todo map to output type
+
+		var resultingMatching = new Matching.ListBasedMatching<Group, Project>();
+		for (Edge<GroupProjectMatching> matchEdge : matchingAsListOfEdges)
+		{
+			Group group = ((GroupVertexContent) matchEdge.from.content()).group;
+			Project project = ((ProjectVertexContent) matchEdge.to.content()).slot.belongingTo();
+
+			var match = new Matching.GroupToProjectMatch(group, project);
+			resultingMatching.add(match);
+		}
+
+		return resultingMatching;
+	}
+
+	private static class GroupVertices extends Vertices<GroupVertexContent>
+	{
+		public GroupVertices(Groups groups)
+		{
+			groups.forEach(group -> {
+				this.listOfVertices.add(new Vertex<>(new GroupVertexContent(group)));
+			});
+		}
+	}
+
+	private static class ProjectVertices extends Vertices<ProjectVertexContent>
+	{
+		// map to speed up lookups
+		private final Map<Integer, List<Vertex<ProjectVertexContent>>> projectIdToVerticesMap = new HashMap<>();
+
+		public ProjectVertices(Projects projects)
+		{
+			projects.forEach(project -> {
+				List<Vertex<ProjectVertexContent>> slotVerticesForProject = new ArrayList<>();
+
+				// fixme: ProjectName is ProjectId but as a string. This wasn't such a good idea in retrospect, should have stuck with objects
+				projectIdToVerticesMap.put(Integer.decode(project.name()), slotVerticesForProject);
+
+				project.slots().stream()
+					.map(projectSlot -> new Vertex<>(new ProjectVertexContent(projectSlot)))
+					.forEach(slotVertex -> {
+						this.listOfVertices.add(slotVertex);
+						slotVerticesForProject.add(slotVertex);
+					});
+			});
+		}
+
+		public List<Vertex<ProjectVertexContent>> slotVerticesForProject(int projectId)
+		{
+			return projectIdToVerticesMap.get(projectId);
+		}
+	}
+
+	private static class ProjectGroupPreferenceEdges extends DirectedWeightedEdges<GroupProjectMatching>
+	{
+		public ProjectGroupPreferenceEdges(GroupVertices groups, ProjectVertices projects)
+		{
+			groups.forEach(group -> {
+
+				ProjectPreference projectPreference = group.content().projectPreference();
+				projectPreference.forEach((projectId, rank) -> {
+					List<Vertex<ProjectVertexContent>> projectSlotVertices = projects.slotVerticesForProject(projectId);
+
+					projectSlotVertices.forEach(projectSlotVertex -> {
+						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, rank)); // todo proper weight
+					});
+				});
+
+			});
+		}
+	}
+
+	private enum VertexType { GROUP, PROJECT }
+
+	private static class GroupProjectMatching
+	{
+		VertexType type;
+	}
+
+	private static class GroupVertexContent extends GroupProjectMatching
+	{
+		private final Group group;
+
+		public GroupVertexContent(Group group)
+		{
+			this.group = group;
+			this.type = VertexType.GROUP;
+		}
+
+		public ProjectPreference projectPreference()
+		{
+			return group.projectPreference();
+		}
+	}
+
+	private static class ProjectVertexContent extends GroupProjectMatching
+	{
+		private final Project.ProjectSlot slot;
+
+		public ProjectVertexContent(Project.ProjectSlot slot)
+		{
+			this.slot = slot;
+			this.type = VertexType.PROJECT;
+		}
 	}
 
 	/**

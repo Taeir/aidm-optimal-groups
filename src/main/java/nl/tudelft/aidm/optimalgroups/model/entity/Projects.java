@@ -6,14 +6,62 @@ import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface Projects
 {
 	int count();
 	int countAllSlots();
-//	Project withIndex();
 
-	class InDb implements Projects
+	List<Project.ProjectSlot> slotsForProject(int projectId);
+
+	void forEach(Consumer<Project> fn);
+
+	abstract class ListBasedProjects implements Projects
+	{
+		public int count()
+		{
+			return projectList().size();
+		}
+
+		abstract protected List<Project> projectList();
+
+		@Override
+		public void forEach(Consumer<Project> fn)
+		{
+			projectList().forEach(fn);
+		}
+
+		@Override
+		public List<Project.ProjectSlot> slotsForProject(int projectId) {
+			String projectName = String.valueOf(projectId);
+			Project project = this.projectList().stream()
+				.filter(p -> p.name().equals(projectName))
+				.findAny().get();
+
+			return project.slots();
+
+		}
+
+		private int numTotalSlots = -1;
+
+		@Override
+		public int countAllSlots()
+		{
+			// lazy eval
+			if (numTotalSlots < 0)
+			{
+				numTotalSlots = projectList().stream()
+					.map(project -> project.slots().size())
+					.mapToInt(Integer::intValue)
+					.sum();
+			}
+
+			return numTotalSlots;
+		}
+	}
+
+	class InDb extends ListBasedProjects
 	{
 		private DataSource dataSource;
 		private int courseEditionId;
@@ -26,11 +74,7 @@ public interface Projects
 			this.courseEditionId = courseEditionId;
 		}
 
-		public int count()
-		{
-			return projectList().size();
-		}
-
+		@Override
 		protected List<Project> projectList()
 		{
 			if (projectList == null)
@@ -39,28 +83,6 @@ public interface Projects
 			}
 
 			return projectList;
-		}
-
-//		public Project withIndex(int idx)
-//		{
-//			return projectList.get(idx);
-//		}
-
-		private int numTotalSlots = -1;
-
-		@Override
-		public int countAllSlots()
-		{
-			// lazy eval
-			if (numTotalSlots < 0)
-			{
-				numTotalSlots = projectList.stream()
-					.map(project -> project.slots().size())
-					.mapToInt(Integer::intValue)
-					.sum();
-			}
-
-			return numTotalSlots;
 		}
 
 		private List<Project> fetchFromDb()

@@ -1,8 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
-import nl.tudelft.aidm.optimalgroups.model.entity.Groups;
+import nl.tudelft.aidm.optimalgroups.model.entity.Group;
+import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 
 public interface ProjectMatchingAlgorithm
 {
-	Matching doMatching(Groups groups);
+	Matching<Group, Project> result();
 }
