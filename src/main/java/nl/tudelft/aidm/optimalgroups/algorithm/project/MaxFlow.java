@@ -1,6 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
-import edu.princeton.cs.algs4.BipartiteMatching;
 import louchtch.graphmatch.matching.MaxFlowMatching;
 import louchtch.graphmatch.model.*;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
@@ -8,7 +7,6 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Groups;
 import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
-import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,28 +15,54 @@ import java.util.Map;
 
 public class MaxFlow implements ProjectMatchingAlgorithm
 {
-	@Override
-	public Matching doMatching(Groups groups, Projects projects)
+	private final Groups groups;
+	private final Projects projects;
+
+	public MaxFlow(Groups groups, Projects projects)
 	{
-		GroupVertices groupVertices = new GroupVertices(); // todo
+		this.groups = groups;
+		this.projects = projects;
+	}
+
+	@Override
+	public Matching result()
+	{
+		GroupVertices groupVertices = new GroupVertices(groups);
 		ProjectVertices projectVertices = new ProjectVertices(projects);
 
 		ProjectGroupPreferenceEdges projectGroupPreferenceEdges = new ProjectGroupPreferenceEdges(groupVertices, projectVertices);
 
 		// Sick cast https://stackoverflow.com/questions/3246137/java-generics-cannot-cast-listsubclass-to-listsuperclass
 		// warning: not very safe, but not catastrophic if lists are not modified
-		Vertices<GroupProjectMatching> left = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) groupVertices;
-		Vertices<GroupProjectMatching> right = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) projectVertices;
+		var left = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) groupVertices;
+		var right = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) projectVertices;
 
-		MaxFlowMatching<GroupProjectMatching> matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
-		List<Edge<GroupProjectMatching>> matchingAsListOfEdges = matching.asListOfEdges();
+		var matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
+		var matchingAsListOfEdges = matching.asListOfEdges();
 
 		//todo map to output type
+
+		var resultingMatching = new Matching.ListBasedMatching<Group, Project>();
+		for (Edge<GroupProjectMatching> matchEdge : matchingAsListOfEdges)
+		{
+			Group group = ((GroupVertexContent) matchEdge.from.content()).group;
+			Project project = ((ProjectVertexContent) matchEdge.to.content()).slot.belongingTo();
+
+			var match = new Matching.GroupToProjectMatch(group, project);
+			resultingMatching.add(match);
+		}
+
+		return resultingMatching;
 	}
 
 	private static class GroupVertices extends Vertices<GroupVertexContent>
 	{
-		// TODO: group to vertices
+		public GroupVertices(Groups groups)
+		{
+			groups.forEach(group -> {
+				this.listOfVertices.add(new Vertex<>(new GroupVertexContent(group)));
+			});
+		}
 	}
 
 	private static class ProjectVertices extends Vertices<ProjectVertexContent>
@@ -88,8 +112,8 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 		}
 	}
 
-
 	private enum VertexType { GROUP, PROJECT }
+
 	private static class GroupProjectMatching
 	{
 		VertexType type;
