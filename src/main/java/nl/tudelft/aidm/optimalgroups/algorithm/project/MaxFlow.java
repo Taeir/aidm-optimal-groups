@@ -40,8 +40,6 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 		var matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
 		var matchingAsListOfEdges = matching.asListOfEdges();
 
-		//todo map to output type
-
 		var resultingMatching = new Matching.ListBasedMatching<Group, Project>();
 		for (Edge<GroupProjectMatching> matchEdge : matchingAsListOfEdges)
 		{

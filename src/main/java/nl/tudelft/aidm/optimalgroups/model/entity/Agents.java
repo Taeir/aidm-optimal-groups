@@ -26,6 +26,11 @@ public class Agents
 		this.agents = agents;
 	}
 
+	public int count()
+	{
+		return agents.size();
+	}
+
 	public Collection<Agent> asCollection()
 	{
 		return agents;
@@ -34,6 +39,11 @@ public class Agents
 	public static Agents from(Agent... agents)
 	{
 		return new Agents(List.of(agents));
+	}
+
+	public static Agents from(List<Agent> agents)
+	{
+		return new Agents(agents);
 	}
 
 	/**
