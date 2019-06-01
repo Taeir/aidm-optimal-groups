@@ -2,13 +2,14 @@ package nl.tudelft.aidm.optimalgroups.model.entity;
 
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class FormedGroups implements Groups
 {
-	private List<Group> groups;
+	private List<Group> groups = new ArrayList<>();
 
 	public Collection<Group> asCollection()
 	{
