@@ -209,19 +209,32 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     }
 
     private PossibleGroup findBestGroup(List<PossibleGroup> possibleGroups) {
-        PossibleGroup bestGroup = possibleGroups.get(0);
+        PossibleGroup possiblyBestGroup = null;
         boolean available = false;
-        while (possibleGroups != null && !available) {
-            available = true;  
-            for (Agent a : bestGroup.members) {
-                if (this.unavailableStudents.containsKey(a.name)) {
+
+        Iterator<PossibleGroup> bestGroupsIter = possibleGroups.iterator();
+        while (bestGroupsIter.hasNext())
+        {
+            possiblyBestGroup = bestGroupsIter.next();
+            available = true;
+
+            // check if any of the members are already grouped
+            for (Agent member : possiblyBestGroup.members)
+            {
+                if (unavailableStudents.containsKey(member.name)) {
                     available = false;
-                    possibleGroups.remove(0);
-                    bestGroup = possibleGroups.get(0);
-                } 
+                    bestGroupsIter.remove();
+                    break;
+                }
             }
         }
-        return bestGroup;
+
+        // none of the groups had a member that was available, hence no group found
+        if (!available) {
+            return null;
+        }
+
+        return possiblyBestGroup;
     }
 
     private void mergeGroups() {
