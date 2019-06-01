@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class BepSysWithRandom implements GroupFormingAlgorithm
+public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 {
     private Agents students;
 
@@ -24,7 +24,7 @@ public class BepSysWithRandom implements GroupFormingAlgorithm
     private boolean done = false;
 
     // Pass the list of students to make groups from
-    public BepSysWithRandom(Agents students, int maxGroupSize, int minGroupSize) {
+    public BepSysWithRandomGroups(Agents students, int maxGroupSize, int minGroupSize) {
         this.students = students;
 
         this.availableStudents = new HashMap<>();
@@ -36,9 +36,12 @@ public class BepSysWithRandom implements GroupFormingAlgorithm
         for (Agent a : students.asCollection()) {
             this.availableStudents.put(a.name, a);
         }
+
+        tentivelyFormedGroups = new FormedGroups();
+        finalFormedGroups = new FormedGroups();
     }
 
-    public void constructGroups() {
+    private void constructGroups() {
         /*
         _, nogroup, group_list = clique_friends
         best_match = best_match_ungrouped nogroup
@@ -112,37 +115,48 @@ public class BepSysWithRandom implements GroupFormingAlgorithm
           end
         end
         [grouped, no_group, group_list]
-        */    
+        */
 
-        for (Map.Entry<String, Agent> pair : this.availableStudents.entrySet())
+        for (int i = availableStudents.size(); i --> 0;)
         {
-            if (this.unavailableStudents.containsKey(pair.getKey()))
+            Group.TentativeGroup tentativeGroup = null;
+            for (Map.Entry<String, Agent> pair : this.availableStudents.entrySet())
             {
-                continue;
-            }
-
-            Agent student = pair.getValue();
-            if (students.hasEqualFriendLists(student))
-            {
-                int[] friends = student.groupPreference.asArray();
-                List<Agent> clique = Arrays.stream(friends).mapToObj(String::valueOf)
-                    .map(name -> students.findByAgentId(name))
-                    .filter(Optional::isPresent).map(Optional::get)
-                    .collect(Collectors.toList());
-
-                // also add the student
-                clique.add(student);
-
-                Agents agents = Agents.from(clique);
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
-
-                for (Agent studentInGroup : tentativeGroup.members().asCollection())
+                if (this.unavailableStudents.containsKey(pair.getKey()))
                 {
-                    this.availableStudents.remove(studentInGroup.name);
-                    this.unavailableStudents.put(studentInGroup.name, studentInGroup);
+                    continue;
+                }
+
+                Agent student = pair.getValue();
+                if (students.hasEqualFriendLists(student))
+                {
+                    int[] friends = student.groupPreference.asArray();
+                    List<Agent> clique = Arrays.stream(friends).mapToObj(String::valueOf)
+                        .map(name -> students.findByAgentId(name))
+                        .filter(Optional::isPresent).map(Optional::get)
+                        .collect(Collectors.toList());
+
+                    // also add the student
+                    clique.add(student);
+
+                    Agents agents = Agents.from(clique);
+                    tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+                    System.out.println("Clique formed");
                 }
             }
 
+            // no group has been formed
+            if (tentativeGroup == null) continue;
+
+            // Need to remove all members that have been formed into a group, from the 'availableStudents' map
+            // however, doing so in a for(entry: map.entrySet() { ... } loop results in a concurrent modification exception
+            // and because we have more than 1 student we need to remove from the map, we also cannot use iterators with iterator.remove()
+            for (Agent studentInGroup : tentativeGroup.members().asCollection())
+            {
+                i--;
+                this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
+                this.unavailableStudents.put(studentInGroup.name, studentInGroup);
+            }
         }
     }
 
