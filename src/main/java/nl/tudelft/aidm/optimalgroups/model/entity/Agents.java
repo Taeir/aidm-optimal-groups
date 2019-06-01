@@ -113,7 +113,7 @@ public class Agents
 				"FROM users\n" +
 				"JOIN project_preferences ON users.id = project_preferences.user_id\n" +
 				"where course_edition_id = :courseEditionId")
-				.addParameter(":courseEditionId", courseEditionId);
+				.addParameter("courseEditionId", courseEditionId);
 
 			List<String> userIds = query.executeAndFetch((ResultSetHandler<String>) resultSet -> String.valueOf(resultSet.getInt("user_id")));
 			List<Agent> agents = userIds.stream().map(id -> new Agent.fromDb(dataSource, id, String.valueOf(courseEditionId))).collect(Collectors.toList());
