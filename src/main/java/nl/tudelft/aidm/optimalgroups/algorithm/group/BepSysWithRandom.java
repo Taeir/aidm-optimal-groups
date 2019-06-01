@@ -1,33 +1,34 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
-import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Groups;
+import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class BepSysWithRandom
+public class BepSysWithRandom implements GroupFormingAlgorithm
 {
-    Agents students;
+    private Agents students;
 
-    Map<String, Agent> availableStudents;
-    Map<String, Agent> unavailableStudents;
+    private Map<String, Agent> availableStudents;
+    private Map<String, Agent> unavailableStudents;
 
-    int maxGroupSize;
-    int minGroupSize;
+    private int maxGroupSize;
+    private int minGroupSize;
 
-    Groups groups;
+    private FormedGroups tentivelyFormedGroups;
+    private FormedGroups finalFormedGroups;
+
+    private boolean done = false;
 
     // Pass the list of students to make groups from
     public BepSysWithRandom(Agents students, int maxGroupSize, int minGroupSize) {
         this.students = students;
 
-        this.availableStudents = new HashMap<String, Agent>();
-        this.unavailableStudents = new HashMap<String, Agent>();
+        this.availableStudents = new HashMap<>();
+        this.unavailableStudents = new HashMap<>();
 
         this.maxGroupSize = maxGroupSize;
         this.minGroupSize = minGroupSize;
@@ -35,8 +36,6 @@ public class BepSysWithRandom
         for (Agent a : students.asCollection()) {
             this.availableStudents.put(a.name, a);
         }
-
-        this.groups = new Groups();
     }
 
     public void constructGroups() {
@@ -58,9 +57,38 @@ public class BepSysWithRandom
         db_list
         */
 
-        this.constructGroupsFromCliques();
-        this.bestMatchUngrouped();
-        this.mergeGroups();
+        constructGroupsFromCliques();
+        bestMatchUngrouped();
+        mergeGroups();
+
+        this.done = true;
+    }
+
+    private Groups finalFormedGroups()
+    {
+        if (!done) {
+            constructGroups();
+        }
+
+        return this.finalFormedGroups;
+    }
+
+    @Override
+    public Collection<Group> asCollection()
+    {
+        return finalFormedGroups().asCollection();
+    }
+
+    @Override
+    public void forEach(Consumer<Group> fn)
+    {
+        finalFormedGroups().forEach(fn);
+    }
+
+    @Override
+    public int count()
+    {
+        return finalFormedGroups().count();
     }
 
     private void constructGroupsFromCliques() {
@@ -157,7 +185,7 @@ public class BepSysWithRandom
             if (bestGroup == null) continue; // todo: inf loop?
 
             Agents agents = Agents.from(bestGroup.members);
-            Group formedGroup = groups.addAsFormed(bestGroup.toGroup());
+            Group formedGroup = tentivelyFormedGroups.addAsFormed(bestGroup.toGroup());
 
             for (Agent a : formedGroup.members().asCollection()) {
                 this.availableStudents.remove(a.name);
@@ -183,18 +211,20 @@ public class BepSysWithRandom
     }
 
     private void mergeGroups() {
-        List<Group> merged = new ArrayList<>();
         List<Group.TentativeGroup> unmerged = new ArrayList<>();
 
         // todo: split groups into those that are finalized and those that are not
         //  s.t. no need to do this kind of case distinction here...
-        for (Group g : this.groups.asCollection()) {
-            if (g.members().count() == this.maxGroupSize) {
-                merged.add(g);
-            } else {
-                unmerged.add(new Group.TentativeGroup(g));
+        tentivelyFormedGroups.forEach(group -> {
+            boolean groupIsOfMaximumSize = group.members().count() == this.maxGroupSize;
+
+            if (groupIsOfMaximumSize) {
+                finalFormedGroups.addAsFormed(group);
             }
-        }
+            else {
+                unmerged.add(new Group.TentativeGroup(group));
+            }
+        });
 
         int numberOfStudents = this.students.count();
         int groupsMax = numberOfStudents / this.maxGroupSize;
@@ -224,7 +254,7 @@ public class BepSysWithRandom
 
                 // Only keep scores if the size is equal to the maximum group size
                 // Do we have a valid max-sizegroup and can we still create groups?
-                if (together == this.maxGroupSize &&  merged.size() < groupsMax) {
+                if (together == this.maxGroupSize &&  finalFormedGroups.count() < groupsMax) {
                     possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                 }
             }
@@ -245,7 +275,7 @@ public class BepSysWithRandom
             if (possibleGroupMerges.size() == 0) {
                 if (unmergedGroupSize >= this.minGroupSize) {
                     // satisfies min size constraint, accept the group
-                    merged.add(unmergedGroup);
+                    finalFormedGroups.addAsFormed(unmergedGroup);
                 }
                 // Group does not meet minimal group size: split and hope for best in next iter
                 else {
@@ -268,8 +298,8 @@ public class BepSysWithRandom
                 unmerged.add(tentativeGroup);
             }
             else if (tentativeGroup.members().count() == this.maxGroupSize) {
-                Group theFormedGroup = groups.addAsFormed(tentativeGroup);
-                merged.add(theFormedGroup); // todo: remove and or rename 'groups'
+                Group theFormedGroup = finalFormedGroups.addAsFormed(tentativeGroup);
+                finalFormedGroups.addAsFormed(theFormedGroup);
             }
             else {
                 throw new RuntimeException("Group size is somehow larger than maximum group size");

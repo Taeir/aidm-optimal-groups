@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 import louchtch.graphmatch.matching.MaxFlowMatching;
 import louchtch.graphmatch.model.*;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Groups;
+import nl.tudelft.aidm.optimalgroups.model.entity.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
@@ -15,10 +15,10 @@ import java.util.Map;
 
 public class MaxFlow implements ProjectMatchingAlgorithm
 {
-	private final Groups groups;
+	private final FormedGroups groups;
 	private final Projects projects;
 
-	public MaxFlow(Groups groups, Projects projects)
+	public MaxFlow(FormedGroups groups, Projects projects)
 	{
 		this.groups = groups;
 		this.projects = projects;
@@ -55,7 +55,7 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 
 	private static class GroupVertices extends Vertices<GroupVertexContent>
 	{
-		public GroupVertices(Groups groups)
+		public GroupVertices(FormedGroups groups)
 		{
 			groups.forEach(group -> {
 				this.listOfVertices.add(new Vertex<>(new GroupVertexContent(group)));
