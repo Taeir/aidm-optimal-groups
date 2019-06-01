@@ -314,22 +314,25 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
                 }
             }
 
-            // take best scoring group (it's a priority queue)
-            PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
-            // remove the "other" group from unmerged
-            unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
+            if (possibleGroupMerges.size() > 0)
+            {
+                // take best scoring group (it's a priority queue)
+                PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
+                // remove the "other" group from unmerged
+                unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
 
-            Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
+                Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
 
-            if (tentativeGroup.members().count() < this.maxGroupSize) {
-                unmerged.add(tentativeGroup);
-            }
-            else if (tentativeGroup.members().count() == this.maxGroupSize) {
-                Group theFormedGroup = finalFormedGroups.addAsFormed(tentativeGroup);
-                finalFormedGroups.addAsFormed(theFormedGroup);
-            }
-            else {
-                throw new RuntimeException("Group size is somehow larger than maximum group size");
+                if (tentativeGroup.members().count() < this.maxGroupSize) {
+                    unmerged.add(tentativeGroup);
+                }
+                else if (tentativeGroup.members().count() == this.maxGroupSize) {
+                    Group theFormedGroup = finalFormedGroups.addAsFormed(tentativeGroup);
+                    finalFormedGroups.addAsFormed(theFormedGroup);
+                }
+                else {
+                    throw new RuntimeException("Group size is somehow larger than maximum group size");
+                }
             }
         }
     }
@@ -338,8 +341,9 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     private List<Agent> getAvailableFriends(Agent a) {
         List<Agent> friends = new ArrayList<Agent>();
         for (int i : a.groupPreference.asArray()) {
-            if (this.availableStudents.containsKey(String.valueOf(i))) {
-                friends.add(this.availableStudents.get(String.valueOf(i)));
+            var friendName = String.valueOf(i);
+            if (availableStudents.containsKey(friendName)) {
+                friends.add(availableStudents.get(friendName));
             }
         }
         return friends;
