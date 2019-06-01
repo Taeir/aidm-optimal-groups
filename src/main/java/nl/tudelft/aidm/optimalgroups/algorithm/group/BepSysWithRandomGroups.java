@@ -1,8 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
-import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.*;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -33,6 +32,8 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         this.maxGroupSize = maxGroupSize;
         this.minGroupSize = minGroupSize;
 
+        System.out.println("Student amount: " + students.count());
+
         for (Agent a : students.asCollection()) {
             this.availableStudents.put(a.name, a);
         }
@@ -60,9 +61,13 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         db_list
         */
 
+        System.out.println(System.currentTimeMillis() + ": Start constructing cliques (state 1/3)");
         constructGroupsFromCliques();
+        System.out.println(System.currentTimeMillis() + ": Start matching ungrouped students (state 2/3)");
         bestMatchUngrouped();
+        System.out.println(System.currentTimeMillis() + ": Start merging groups (state 3/3)");
         mergeGroups();
+        System.out.println(System.currentTimeMillis() + ": Done!");
 
         this.done = true;
     }
@@ -117,6 +122,9 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         [grouped, no_group, group_list]
         */
 
+        // For debugging purposes: keep amount of students in a clique
+        int studentsInClique = 0;
+
         for (int i = availableStudents.size(); i --> 0;)
         {
             Group.TentativeGroup tentativeGroup = null;
@@ -141,7 +149,8 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                     Agents agents = Agents.from(clique);
                     tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
-                    System.out.println("Clique formed");
+                    System.out.println(System.currentTimeMillis() + ": Clique formed of size " + clique.size());
+                    studentsInClique += clique.size();
                 }
             }
 
@@ -154,10 +163,19 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
             for (Agent studentInGroup : tentativeGroup.members().asCollection())
             {
                 i--;
-                this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
+                Agent removedAgent = this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
+                if (removedAgent == null) {
+                    System.out.println(System.currentTimeMillis() + ": No agent was removed! tried to remove identifier " + studentInGroup.name);
+                } else {
+                    System.out.println(System.currentTimeMillis() + ": removed student " + removedAgent.name + " from available group");
+                }
+
+
                 this.unavailableStudents.put(studentInGroup.name, studentInGroup);
             }
         }
+
+        System.out.println(System.currentTimeMillis() + ": Total students in cliques: " + studentsInClique + " of a total of " + this.students.count() + " students");
     }
 
     private void bestMatchUngrouped()
