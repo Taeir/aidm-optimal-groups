@@ -72,6 +72,11 @@ public class Agents
 			friends.add(String.valueOf(i));
 		}
 
+		// If friends only contain himself, prevent forming a clique
+		if (friends.size() == 1) {
+			return false;
+		}
+
 		for (String friend : friends) {
 			Set<String> friendsOfFriend = new HashSet<>();
 			friendsOfFriend.add(friend); // Add friend himself to list

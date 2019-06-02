@@ -172,18 +172,22 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
     private void bestMatchUngrouped()
     {
+        System.out.println(System.currentTimeMillis() + ": bestMatchUngrouped: " + this.availableStudents.size() + " students left to group");
         List<PossibleGroup> possibleGroups = new ArrayList<PossibleGroup>();
 
-        for (Map.Entry<String, Agent> pair : this.availableStudents.entrySet()) {
-            if (this.unavailableStudents.containsKey(pair.getKey())) continue; 
+        // Iterate over students instead of available students to prevent ConcurrentModificationException
+        // when removing from availableStudents
+        for (Agent student : this.students.asCollection()) {
+            if (this.unavailableStudents.containsKey(student.name)) continue;
             
-            List<Agent> friends = this.getAvailableFriends(pair.getValue());
-            int score = this.computeScore(friends, pair.getValue());
-            friends.add(pair.getValue()); // Add self to group
+            List<Agent> friends = this.getAvailableFriends(student);
+            int score = this.computeScore(friends, student);
+            friends.add(student); // Add self to group
             possibleGroups.add(new PossibleGroup(friends, score));
         }
 
         this.pickBestGroups(possibleGroups);
+        System.out.println(System.currentTimeMillis() + ": bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
     }
 
     private int computeScore(List<Agent> friends, Agent a)
