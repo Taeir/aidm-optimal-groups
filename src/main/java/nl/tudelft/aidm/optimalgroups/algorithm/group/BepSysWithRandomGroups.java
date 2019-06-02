@@ -124,54 +124,46 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
         // For debugging purposes: keep amount of students in a clique
         int studentsInClique = 0;
-
-        for (int i = availableStudents.size(); i --> 0;)
+        for (Agent student : this.students.asCollection())
         {
-            Group.TentativeGroup tentativeGroup = null;
-            for (Map.Entry<String, Agent> pair : this.availableStudents.entrySet())
+            if (this.unavailableStudents.containsKey(student.name))
             {
-                if (this.unavailableStudents.containsKey(pair.getKey()))
-                {
-                    continue;
-                }
-
-                Agent student = pair.getValue();
-                if (students.hasEqualFriendLists(student))
-                {
-                    int[] friends = student.groupPreference.asArray();
-                    List<Agent> clique = Arrays.stream(friends).mapToObj(String::valueOf)
-                        .map(name -> students.findByAgentId(name))
-                        .filter(Optional::isPresent).map(Optional::get)
-                        .collect(Collectors.toList());
-
-                    // also add the student
-                    clique.add(student);
-
-                    Agents agents = Agents.from(clique);
-                    tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
-                    System.out.println(System.currentTimeMillis() + ": Clique formed of size " + clique.size());
-                    studentsInClique += clique.size();
-                }
+                continue;
             }
 
-            // no group has been formed
-            if (tentativeGroup == null) continue;
-
-            // Need to remove all members that have been formed into a group, from the 'availableStudents' map
-            // however, doing so in a for(entry: map.entrySet() { ... } loop results in a concurrent modification exception
-            // and because we have more than 1 student we need to remove from the map, we also cannot use iterators with iterator.remove()
-            for (Agent studentInGroup : tentativeGroup.members().asCollection())
+            if (students.hasEqualFriendLists(student))
             {
-                i--;
-                Agent removedAgent = this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
-                if (removedAgent == null) {
-                    System.out.println(System.currentTimeMillis() + ": No agent was removed! tried to remove identifier " + studentInGroup.name);
-                } else {
-                    System.out.println(System.currentTimeMillis() + ": removed student " + removedAgent.name + " from available group");
+                int[] friends = student.groupPreference.asArray();
+                List<Agent> clique = Arrays.stream(friends).mapToObj(String::valueOf)
+                    .map(name -> students.findByAgentId(name))
+                    .filter(Optional::isPresent).map(Optional::get)
+                    .collect(Collectors.toList());
+
+                // also add the student
+                clique.add(student);
+
+                Agents agents = Agents.from(clique);
+
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+                System.out.println(System.currentTimeMillis() + ": Clique formed of size " + clique.size());
+                studentsInClique += clique.size();
+
+
+                // Need to remove all members that have been formed into a group, from the 'availableStudents' map
+                // however, doing so in a for(entry: map.entrySet() { ... } loop results in a concurrent modification exception
+                // and because we have more than 1 student we need to remove from the map, we also cannot use iterators with iterator.remove()
+                for (Agent studentInGroup : tentativeGroup.members().asCollection())
+                {
+                    Agent removedAgent = this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
+                    if (removedAgent == null) {
+                        System.out.println(System.currentTimeMillis() + ": No agent was removed! tried to remove identifier " + studentInGroup.name);
+                    } else {
+                        System.out.println(System.currentTimeMillis() + ": removed student " + removedAgent.name + " from available group");
+                    }
+
+
+                    this.unavailableStudents.put(studentInGroup.name, studentInGroup);
                 }
-
-
-                this.unavailableStudents.put(studentInGroup.name, studentInGroup);
             }
         }
 
