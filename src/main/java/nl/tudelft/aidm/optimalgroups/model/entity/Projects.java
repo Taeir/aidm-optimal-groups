@@ -87,7 +87,7 @@ public interface Projects
 
 		private List<Project> fetchFromDb()
 		{
-			var sql = "SELECT id FROM test.projects where course_edition_id = :courseEditionId";
+			var sql = "SELECT id FROM projects where course_edition_id = :courseEditionId";
 			try (var connection = new Sql2o(dataSource).open())
 			{
 				Query query = connection.createQuery(sql);

@@ -74,7 +74,7 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 				List<Vertex<ProjectVertexContent>> slotVerticesForProject = new ArrayList<>();
 
 				// fixme: ProjectName is ProjectId but as a string. This wasn't such a good idea in retrospect, should have stuck with objects
-				projectIdToVerticesMap.put(Integer.decode(project.name()), slotVerticesForProject);
+				projectIdToVerticesMap.put(project.id(), slotVerticesForProject);
 
 				project.slots().stream()
 					.map(projectSlot -> new Vertex<>(new ProjectVertexContent(projectSlot)))

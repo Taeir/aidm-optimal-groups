@@ -6,6 +6,7 @@ import java.util.List;
 public interface Project
 {
 	String name();
+	int id();
 	List<ProjectSlot> slots();
 
 	interface ProjectSlot
@@ -63,6 +64,11 @@ public interface Project
 		public String name()
 		{
 			return "proj_" + String.valueOf(id);
+		}
+
+		@Override
+		public int id() {
+			return id;
 		}
 
 		@Override
