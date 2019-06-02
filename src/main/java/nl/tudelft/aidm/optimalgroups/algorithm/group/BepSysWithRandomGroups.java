@@ -65,24 +65,51 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         constructGroupsFromCliques();
         System.out.println(System.currentTimeMillis() + ": Start matching ungrouped students (state 2/3)");
         bestMatchUngrouped();
+
+        // Check if all students are in groups and that there are no students with multiple groups (sanity check)
+        Map<String, Integer> agentsInTentativelyFormedGroups = new HashMap<>();
+        this.tentativelyFormedGroups.forEach(group -> {
+            for (Agent a : group.members().asCollection()) {
+                if (agentsInTentativelyFormedGroups.containsKey(a.name)) {
+                    agentsInTentativelyFormedGroups.put(a.name, agentsInTentativelyFormedGroups.get(a.name) + 1);
+                } else {
+                    agentsInTentativelyFormedGroups.put(a.name, 1);
+                }
+            }
+        });
+
+        int cumulativeTentativeGroupSize = 0;
+        for (Map.Entry<String, Integer> entry : agentsInTentativelyFormedGroups.entrySet()) {
+            cumulativeTentativeGroupSize += entry.getValue();
+        }
+
+        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple tentatively formed groups (should be zero!): " + (cumulativeTentativeGroupSize - agentsInTentativelyFormedGroups.size()));
+
         System.out.println(System.currentTimeMillis() + ": Start merging groups (state 3/3)");
         mergeGroups();
         System.out.println(System.currentTimeMillis() + ": Done!");
 
         // Check if all students are in groups and that there are no students with multiple groups (sanity check)
-        Map<String, Agent> agentsInFinalGroups = new HashMap<>();
+        Map<String, Integer> agentsInFinalGroups = new HashMap<>();
         this.finalFormedGroups.forEach(group -> {
             for (Agent a : group.members().asCollection()) {
                 if (agentsInFinalGroups.containsKey(a.name)) {
-                    System.out.println(System.currentTimeMillis() + ": Something is wrong! Student " + a.name + " is in multiple groups");
+                    agentsInFinalGroups.put(a.name, agentsInFinalGroups.get(a.name) + 1);
                 } else {
-                    agentsInFinalGroups.put(a.name, a);
+                    agentsInFinalGroups.put(a.name, 1);
                 }
             }
         });
 
+
+        int cumulativeGroupSize = 0;
+        for (Map.Entry<String, Integer> entry : agentsInFinalGroups.entrySet()) {
+            cumulativeGroupSize += entry.getValue();
+        }
+
         System.out.println(System.currentTimeMillis() + ": Amount of final groups: " + this.finalFormedGroups.count());
-        System.out.println(System.currentTimeMillis() + ": Amount of students in final groups: " + agentsInFinalGroups.size());
+        System.out.println(System.currentTimeMillis() + ": Amount of students that are grouped: " + agentsInFinalGroups.size());
+        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple groups (should be zero!): " + (cumulativeGroupSize - agentsInFinalGroups.size()));
 
         this.done = true;
     }
@@ -171,13 +198,6 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
                 for (Agent studentInGroup : tentativeGroup.members().asCollection())
                 {
                     Agent removedAgent = this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
-                    if (removedAgent == null) {
-                        System.out.println(System.currentTimeMillis() + ": No agent was removed! tried to remove identifier " + studentInGroup.name);
-                    } else {
-                        System.out.println(System.currentTimeMillis() + ": removed student " + removedAgent.name + " from available group");
-                    }
-
-
                     this.unavailableStudents.put(studentInGroup.name, studentInGroup);
                 }
             }
@@ -317,7 +337,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                 // Only keep scores if the size is equal to the maximum group size
                 // Do we have a valid max-sizegroup and can we still create groups?
-                if (together == this.maxGroupSize &&  finalFormedGroups.count() < groupsMax) {
+                if (together == this.maxGroupSize &&  this.finalFormedGroups.count() < groupsMax) {
                     possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                 }
             }
@@ -355,7 +375,10 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
                 // take best scoring group (it's a priority queue)
                 PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
                 // remove the "other" group from unmerged
-                unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
+                boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
+                if (!removedSomething) {
+                    System.out.println(System.currentTimeMillis() + ": Nothing was removed from unmerged!!!");
+                }
 
                 Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
 
@@ -363,8 +386,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
                     unmerged.add(tentativeGroup);
                 }
                 else if (tentativeGroup.members().count() == this.maxGroupSize) {
-                    Group theFormedGroup = finalFormedGroups.addAsFormed(tentativeGroup);
-                    finalFormedGroups.addAsFormed(theFormedGroup);
+                    finalFormedGroups.addAsFormed(tentativeGroup);
                 }
                 else {
                     throw new RuntimeException("Group size is somehow larger than maximum group size");
