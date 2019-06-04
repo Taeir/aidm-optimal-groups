@@ -12,7 +12,12 @@ public class Application
 {
 	public static void main(String[] args)
 	{
-		DataSource dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys", "root", "root");
+		DataSource dataSource;
+
+		if (true)
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
+		else
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys", "root", "root");
 
 		Agents agents = Agents.from(dataSource, 10);
 		Projects projects = Projects.fromDb(dataSource, 10);

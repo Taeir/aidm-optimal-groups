@@ -1,12 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
+import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
 import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The result of a matching algorithm
@@ -52,10 +50,21 @@ public interface Matching<FROM, TO>
 	class FormedGroupToProjectMatchings extends ListBasedMatching<Group.FormedGroup, Project.ProjectSlot>
 	{
 		private Set<Project.ProjectSlot> assignedSlots;
+		private Set<Agent> assignedStudents;
+
+		public FormedGroupToProjectMatchings()
+		{
+			super();
+			assignedSlots = new HashSet<>();
+			assignedStudents = new HashSet<>();
+		}
 
 		@Override
 		public void add(Match<Group.FormedGroup, Project.ProjectSlot> match)
 		{
+			/* Sanity checks */
+
+			// Project slot already assigned before?
 			if (assignedSlots.contains(match.to())) {
 				String msg = String.format("Invalid matching, project slot already assigned (group: %s, to slot: %s", match.from(), match.to());
 				throw new RuntimeException(msg);
@@ -63,6 +72,17 @@ public interface Matching<FROM, TO>
 
 			assignedSlots.add(match.to());
 
+			// Any of the studens already assigned before?
+			match.from().members().forEach(student -> {
+				if (assignedStudents.contains(student)) {
+					String msg = String.format("Invalid matching, student has been already matched (in other group?) (student: %s, group: %s, to slot: %s", student, match.from(), match.to());
+					throw new RuntimeException(msg);
+				}
+
+				assignedStudents.add(student);
+			});
+
+			// all ok!
 			super.add(match);
 		}
 	}

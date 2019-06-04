@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.entity;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.sql2o.Query;
@@ -53,6 +54,11 @@ public class Agents
 		copyAgents.addAll(other.agents);
 
 		return new Agents(copyAgents);
+	}
+
+	public void forEach(Consumer<Agent> fn)
+	{
+		agents.forEach(fn);
 	}
 
 	// todo: move into Agent, nice but need reference to Agents so would require some refactoring
