@@ -7,11 +7,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class FormedGroups implements Groups
+public class FormedGroups implements Groups<Group.FormedGroup>
 {
-	private List<Group> groups = new ArrayList<>();
+	private List<Group.FormedGroup> groups = new ArrayList<>();
 
-	public Collection<Group> asCollection()
+	public Collection<Group.FormedGroup> asCollection()
 	{
 		return this.groups;
 	}
@@ -35,7 +35,7 @@ public class FormedGroups implements Groups
 //		return groups.get(idx);
 //	}
 
-	public void forEach(Consumer<Group> fn)
+	public void forEach(Consumer<Group.FormedGroup> fn)
 	{
 		this.groups.forEach(fn);
 	}

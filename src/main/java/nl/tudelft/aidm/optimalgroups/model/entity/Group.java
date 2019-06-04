@@ -41,6 +41,11 @@ public interface Group
 			super(members, projectPreference);
 			this.id = id;
 		}
+
+		public int groupId()
+		{
+			return id;
+		}
 	}
 
 	class TentativeGroup extends AbstractGroup

@@ -25,7 +25,7 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 	}
 
 	@Override
-	public Matching result()
+	public Matching.FormedGroupToProjectMatchings result()
 	{
 		GroupVertices groupVertices = new GroupVertices(groups);
 		ProjectVertices projectVertices = new ProjectVertices(projects);
@@ -40,13 +40,13 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 		var matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
 		var matchingAsListOfEdges = matching.asListOfEdges();
 
-		var resultingMatching = new Matching.ListBasedMatching<Group, Project>();
+		var resultingMatching = new Matching.FormedGroupToProjectMatchings();
 		for (Edge<GroupProjectMatching> matchEdge : matchingAsListOfEdges)
 		{
-			Group group = ((GroupVertexContent) matchEdge.from.content()).group;
-			Project project = ((ProjectVertexContent) matchEdge.to.content()).slot.belongingTo();
+			Group.FormedGroup group = ((GroupVertexContent) matchEdge.from.content()).group;
+			Project.ProjectSlot project = ((ProjectVertexContent) matchEdge.to.content()).slot;
 
-			var match = new Matching.GroupToProjectMatch(group, project);
+			var match = new Matching.FormedGroupToProjectSlotMatch(group, project);
 			resultingMatching.add(match);
 		}
 
@@ -119,9 +119,9 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 
 	private static class GroupVertexContent extends GroupProjectMatching
 	{
-		private final Group group;
+		private final Group.FormedGroup group;
 
-		public GroupVertexContent(Group group)
+		public GroupVertexContent(Group.FormedGroup group)
 		{
 			this.group = group;
 			this.type = VertexType.GROUP;

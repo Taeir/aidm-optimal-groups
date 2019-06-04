@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 public class SerialDictatorship implements ProjectMatchingAlgorithm
 {
 	@Override
-	public Matching<Group, Project> result()
+	public Matching.FormedGroupToProjectMatchings result()
 	{
 		return null;
 	}

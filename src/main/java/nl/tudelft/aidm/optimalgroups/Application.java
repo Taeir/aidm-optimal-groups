@@ -20,14 +20,14 @@ public class Application
 
 		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, 4, 6);
 		MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
-		Matching matching = maxflow.result();
+
+		Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
 
 		// this could have been easier I feel like, but I couldn't figure it out
-		int groupIndex = 1;
-		for (var genericMatch : matching.asList()) {
-			Matching.GroupToProjectMatch match = (Matching.GroupToProjectMatch) genericMatch;
-			int projectId = match.project().id();
-			int[] preferences = match.group().projectPreference().asArray();
+		for (var match : matching.asList()) {
+			int projectId = match.to().belongingTo().id();
+			int[] preferences = match.from().projectPreference().asArray();
+
 			int rankNumber = -1;
 			for (int i = 0; i < preferences.length; i++) {
 				if (preferences[i] == projectId) {
@@ -36,10 +36,9 @@ public class Application
 				}
 			}
 
-			System.out.println("Group " + groupIndex + " got project " + projectId + " (ranked as number " + rankNumber + ")");
-			groupIndex++;
+			System.out.println("Group " + match.from().groupId() + " got project " + projectId + " (ranked as number " + rankNumber + ")");
 		}
 
-		Collection<Group> groups = formedGroups.asCollection();
+//		Collection<Group> groups = formedGroups.asCollection();
 	}
 }

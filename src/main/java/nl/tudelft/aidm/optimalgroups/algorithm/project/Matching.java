@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The result of a matching algorithm
@@ -23,8 +24,8 @@ public interface Matching<FROM, TO>
 	 */
 	interface Match<FROM, TO>
 	{
-		FROM group();
-		TO project();
+		FROM from();
+		TO to();
 	}
 
 	class ListBasedMatching<F, T> implements Matching<F, T>
@@ -48,25 +49,53 @@ public interface Matching<FROM, TO>
 		}
 	}
 
-	class GroupToProjectMatch implements Match<Group, Project>
+	class FormedGroupToProjectMatchings extends ListBasedMatching<Group.FormedGroup, Project.ProjectSlot>
 	{
-		Group group;
-		Project project;
+		private Set<Project.ProjectSlot> assignedSlots;
 
-		public GroupToProjectMatch(Group group, Project project)
+		@Override
+		public void add(Match<Group.FormedGroup, Project.ProjectSlot> match)
+		{
+			if (assignedSlots.contains(match.to())) {
+				String msg = String.format("Invalid matching, project slot already assigned (group: %s, to slot: %s", match.from(), match.to());
+				throw new RuntimeException(msg);
+			}
+
+			assignedSlots.add(match.to());
+
+			super.add(match);
+		}
+	}
+
+	class FormedGroupToProjectSlotMatch implements Match<Group.FormedGroup, Project.ProjectSlot>
+	{
+		Group.FormedGroup group;
+		Project.ProjectSlot project;
+
+		public FormedGroupToProjectSlotMatch(Group.FormedGroup group, Project.ProjectSlot slot)
 		{
 			this.group = group;
-			this.project = project;
+			this.project = slot;
 		}
 
 		@Override
-		public Group group()
+		public Group.FormedGroup from()
 		{
 			return group;
 		}
 
 		@Override
-		public Project project()
+		public Project.ProjectSlot to()
+		{
+			return project;
+		}
+
+		public Group group()
+		{
+			return group;
+		}
+
+		public Project.ProjectSlot projectSlot()
 		{
 			return project;
 		}

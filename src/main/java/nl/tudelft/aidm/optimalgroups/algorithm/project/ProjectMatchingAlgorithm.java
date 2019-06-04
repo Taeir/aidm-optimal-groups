@@ -5,5 +5,5 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 
 public interface ProjectMatchingAlgorithm
 {
-	Matching<Group, Project> result();
+	Matching<Group.FormedGroup, Project.ProjectSlot> result();
 }

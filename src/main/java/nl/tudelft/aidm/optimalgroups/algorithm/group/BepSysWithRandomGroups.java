@@ -124,13 +124,13 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     }
 
     @Override
-    public Collection<Group> asCollection()
+    public Collection<Group.FormedGroup> asCollection()
     {
         return finalFormedGroups().asCollection();
     }
 
     @Override
-    public void forEach(Consumer<Group> fn)
+    public void forEach(Consumer<Group.FormedGroup> fn)
     {
         finalFormedGroups().forEach(fn);
     }
