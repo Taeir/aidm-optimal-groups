@@ -12,7 +12,7 @@ public interface Project
 	interface ProjectSlot
 	{
 		String id();
-		Project belongingTo();
+		Project belongingToProject();
 
 		class Simple implements ProjectSlot {
 
@@ -30,7 +30,7 @@ public interface Project
 				return id;
 			}
 
-			public Project belongingTo()
+			public Project belongingToProject()
 			{
 				return projectBelongsTo;
 			}

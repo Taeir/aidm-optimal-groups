@@ -2,11 +2,12 @@ package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
+import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRank;
+import nl.tudelft.aidm.optimalgroups.metric.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
 
 import javax.sql.DataSource;
-import java.util.Collection;
 
 public class Application
 {
@@ -30,18 +31,17 @@ public class Application
 
 		// this could have been easier I feel like, but I couldn't figure it out
 		for (var match : matching.asList()) {
-			int projectId = match.to().belongingTo().id();
-			int[] preferences = match.from().projectPreference().asArray();
+			AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
 
-			int rankNumber = -1;
-			for (int i = 0; i < preferences.length; i++) {
-				if (preferences[i] == projectId) {
-					rankNumber = i + 1;
-					break;
-				}
-			}
+			int rankNumber = assignedProjectRank.groupRank();
+			System.out.println("Group " + match.from().groupId() + " got project " + match.to().belongingToProject().id() + " (ranked as number " + rankNumber + ")");
 
-			System.out.println("Group " + match.from().groupId() + " got project " + projectId + " (ranked as number " + rankNumber + ")");
+			assignedProjectRank.studentRanks().forEach(metric -> {
+				System.out.printf("\t\t-Student %s", metric.student().name);
+				System.out.printf(", rank: %s", metric.studentsRank());
+
+				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, metric.student()).asFraction());
+			});
 		}
 
 //		Collection<Group> groups = formedGroups.asCollection();
