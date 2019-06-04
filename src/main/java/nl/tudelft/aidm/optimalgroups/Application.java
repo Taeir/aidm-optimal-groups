@@ -2,12 +2,12 @@ package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
-import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRank;
-import nl.tudelft.aidm.optimalgroups.metric.GroupPreferenceSatisfaction;
+import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
 
 import javax.sql.DataSource;
+import java.util.Map;
 
 public class Application
 {
@@ -15,7 +15,7 @@ public class Application
 	{
 		DataSource dataSource;
 
-		if (true)
+		if (false)
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
 		else
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys", "root", "root");
@@ -25,25 +25,22 @@ public class Application
 		System.out.println("Amount of projects: " + projects.count());
 
 		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, 4, 6);
-		MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
+		//MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
+		RandomizedSerialDictatorship rsd = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
 
-		Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
+		//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
+		Matching<Group.FormedGroup, Project.ProjectSlot> matching = rsd.result();
 
-		// this could have been easier I feel like, but I couldn't figure it out
-		for (var match : matching.asList()) {
-			AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
+		Profile studentProfile = new Profile.StudentProjectProfile(matching);
+		studentProfile.printResult();
 
-			int rankNumber = assignedProjectRank.groupRank();
-			System.out.println("Group " + match.from().groupId() + " got project " + match.to().belongingToProject().id() + " (ranked as number " + rankNumber + ")");
+		Profile groupProfile = new Profile.GroupProjectProfile(matching);
+		groupProfile.printResult();
 
-			assignedProjectRank.studentRanks().forEach(metric -> {
-				System.out.printf("\t\t-Student %s", metric.student().name);
-				System.out.printf(", rank: %s", metric.studentsRank());
+		AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, projects, agents);
+		studentAUPCR.printResult();
 
-				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, metric.student()).asFraction());
-			});
-		}
-
-//		Collection<Group> groups = formedGroups.asCollection();
+		AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
+		groupAUPCR.printResult();
 	}
 }

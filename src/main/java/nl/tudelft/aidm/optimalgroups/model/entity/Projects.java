@@ -5,6 +5,7 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -16,6 +17,8 @@ public interface Projects
 	List<Project.ProjectSlot> slotsForProject(int projectId);
 
 	void forEach(Consumer<Project> fn);
+
+	Collection<Project> asCollection();
 
 	abstract class ListBasedProjects implements Projects
 	{
@@ -34,7 +37,7 @@ public interface Projects
 
 		@Override
 		public List<Project.ProjectSlot> slotsForProject(int projectId) {
-			String projectName = String.valueOf(projectId);
+			String projectName = "proj_" + String.valueOf(projectId);
 			Project project = this.projectList().stream()
 				.filter(p -> p.name().equals(projectName))
 				.findAny().get();
@@ -59,6 +62,10 @@ public interface Projects
 
 			return numTotalSlots;
 		}
+
+		@Override
+		public Collection<Project> asCollection() { return projectList(); }
+
 	}
 
 	class InDb extends ListBasedProjects
