@@ -34,5 +34,11 @@ public class Application
 
 		Profile groupProfile = new Profile.GroupProjectProfile(matching);
 		groupProfile.printResult();
+
+		AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, projects, agents);
+		studentAUPCR.printResult();
+
+		AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
+		groupAUPCR.printResult();
 	}
 }
