@@ -114,7 +114,7 @@ public abstract class Profile {
             for (Map.Entry<Integer, Integer> entry : this.asMap().entrySet()) {
                 System.out.printf("\t- Rank %d: %d group(s)\n", entry.getKey(), entry.getValue());
             }
-            System.out.printf("\t- Cumulative rank of students: %d\n\n", this.cumulativeRanks());
+            System.out.printf("\t- Cumulative rank of groups: %d\n\n", this.cumulativeRanks());
         }
     }
 }

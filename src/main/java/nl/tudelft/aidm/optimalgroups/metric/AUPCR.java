@@ -27,7 +27,6 @@ public abstract class AUPCR {
 
     public float result() {
         if (this.aupcr == -1) {
-            System.out.printf("result: %d / %d\n", this.aupc(), this.totalArea());
             this.aupcr = ((float) this.aupc()) / this.totalArea(); //TODO: not sure if this works with integer division
         }
 
@@ -57,7 +56,6 @@ public abstract class AUPCR {
                 totalProjectCapacity += p.slots().size();
             }
 
-            System.out.printf("totalArea: %d * Math.min(%d, %d)\n", this.projects.count(), this.students.count(), totalProjectCapacity);
             int result = projects.count() * Math.min(this.students.count(), totalProjectCapacity);
 
             // prevent division by zero
@@ -67,7 +65,6 @@ public abstract class AUPCR {
         @Override
         protected int aupc() {
             int result = 0;
-            System.out.printf("aupc: %d projects\n", this.projects.count());
             for (int r = 1; r <= this.projects.count(); r++) {
                 for (Matching.Match<Group.FormedGroup, Project.ProjectSlot> match : this.matching.asList()) {
                     AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
@@ -79,7 +76,6 @@ public abstract class AUPCR {
                 }
             }
 
-            System.out.printf("aupc: result: %d\n", result);
             return result;
         }
     }

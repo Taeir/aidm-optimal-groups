@@ -25,9 +25,11 @@ public class Application
 		System.out.println("Amount of projects: " + projects.count());
 
 		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, 4, 6);
-		MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
+		//MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
+		RandomizedSerialDictatorship rsd = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
 
-		Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
+		//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
+		Matching<Group.FormedGroup, Project.ProjectSlot> matching = rsd.result();
 
 		Profile studentProfile = new Profile.StudentProjectProfile(matching);
 		studentProfile.printResult();

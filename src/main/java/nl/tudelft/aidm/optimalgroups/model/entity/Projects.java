@@ -37,7 +37,7 @@ public interface Projects
 
 		@Override
 		public List<Project.ProjectSlot> slotsForProject(int projectId) {
-			String projectName = String.valueOf(projectId);
+			String projectName = "proj_" + String.valueOf(projectId);
 			Project project = this.projectList().stream()
 				.filter(p -> p.name().equals(projectName))
 				.findAny().get();
