@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,6 +123,18 @@ public class Distribution {
 
         @Override
         public void printResult() {
+            float[] averagePartitions = this.getResult();
+
+            System.out.printf("Average result of %s: \n", this.distributions[0].distributionName());
+            for (int i = 0; i < this.partitionAmount; i++) {
+                System.out.printf("\t\t- Partition: start: %f, end: %f, values in partition: %f\n",
+                        this.distributions[0].asList().get(i).getStart(),
+                        this.distributions[0].asList().get(i).getEnd(),
+                        averagePartitions[i]);
+            }
+        }
+
+        public float[] getResult() {
             float[] averagePartitions = new float[this.partitionAmount];
 
             int partitionIndex;
@@ -136,12 +150,20 @@ public class Distribution {
                 averagePartitions[i] = averagePartitions[i] / this.distributions.length;
             }
 
-            System.out.printf("Average result of %s: \n", this.distributions[0].distributionName());
-            for (int i = 0; i < this.partitionAmount; i++) {
-                System.out.printf("\t\t- Partition: start: %f, end: %f, values in partition: %f\n",
-                        this.distributions[0].asList().get(i).getStart(),
-                        this.distributions[0].asList().get(i).getEnd(),
-                        averagePartitions[i]);
+            return averagePartitions;
+        }
+
+        public void printToTxtFile(String fileName) {
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false));
+                writer.write(String.format("%f %f %d\r\n", this.startValue, this.endValue, this.partitionAmount));
+                for (float f : this.getResult()) {
+                    writer.write(String.valueOf(f));
+                    writer.write("\r\n");
+                }
+                writer.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
     }

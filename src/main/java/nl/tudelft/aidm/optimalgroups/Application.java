@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Application
 {
-	public static final int iterations = 10;
+	public static final int iterations = 200;
 
 	public static void main(String[] args) {
 		DataSource dataSource;
@@ -19,7 +19,7 @@ public class Application
 		if (false)
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
 		else
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "root");
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -85,12 +85,15 @@ public class Application
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
 		groupPreferenceSatisfactionDistribution.printResult();
+		groupPreferenceSatisfactionDistribution.printToTxtFile("outputtxt/groupPreferenceSatisfaction.txt");
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
 		groupProjectRankDistribution.printResult();
+		groupPreferenceSatisfactionDistribution.printToTxtFile("outputtxt/groupProjectRank.txt");
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
 		studentProjectRankDistribution.printResult();
+		groupPreferenceSatisfactionDistribution.printToTxtFile("outputtxt/studentProjectRank.txt");
 
 		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
