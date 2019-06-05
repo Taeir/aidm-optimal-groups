@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.metric;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Distribution {
+public class Distribution {
 
     protected float startValue;
     protected float endValue;
@@ -71,21 +71,29 @@ public abstract class Distribution {
         }
     }
 
-    protected abstract void calculate();
+    public float getStartValue() { return this.startValue; }
+    public float getEndValue() { return this.endValue; }
 
-    protected abstract String distributionName();
+    protected void calculate() {}
+
+    public String distributionName() {
+        return "distribution";
+    }
 
     public static class Partition {
         private float startInclusive;
         private float endExclusive;
-
-        List<Float> values;
+        private List<Float> values;
 
         public Partition(float startInclusive, float endExclusive) {
             this.startInclusive = startInclusive;
             this.endExclusive = endExclusive;
             this.values = new ArrayList<>();
         }
+
+        public List<Float> getValues() { return this.values; }
+        public float getStart() { return this.startInclusive; }
+        public float getEnd() { return this.endExclusive; }
 
         public void addValue(float value) {
             this.values.add(value);
@@ -97,6 +105,44 @@ public abstract class Distribution {
 
         public String toString() {
             return String.format("Partition: start: %f, end: %f, values in partition: %d", this.startInclusive, this.endExclusive, this.values.size());
+        }
+    }
+
+    public static class AverageDistribution extends Distribution {
+
+        Distribution[] distributions;
+        private int partitionAmount;
+
+        public AverageDistribution(Distribution[] distributions) {
+            super(distributions[0].getStartValue(), distributions[0].getEndValue(), distributions[0].asList().size());
+            this.distributions = distributions;
+            this.partitionAmount = distributions[0].asList().size();
+        }
+
+        @Override
+        public void printResult() {
+            float[] averagePartitions = new float[this.partitionAmount];
+
+            int partitionIndex;
+            for (Distribution distribution : this.distributions) {
+                partitionIndex = 0;
+                for (Partition partition : distribution.asList()) {
+                    averagePartitions[partitionIndex] += partition.getValues().size();
+                    partitionIndex++;
+                }
+            }
+
+            for (int i = 0; i < this.partitionAmount; i++) {
+                averagePartitions[i] = averagePartitions[i] / this.distributions.length;
+            }
+
+            System.out.printf("Average result of %s: \n", this.distributions[0].distributionName());
+            for (int i = 0; i < this.partitionAmount; i++) {
+                System.out.printf("\t\t- Partition: start: %f, end: %f, values in partition: %f\n",
+                        this.distributions[0].asList().get(i).getStart(),
+                        this.distributions[0].asList().get(i).getEnd(),
+                        averagePartitions[i]);
+            }
         }
     }
 }

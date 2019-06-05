@@ -26,7 +26,7 @@ public class GroupPreferenceSatisfactionDistribution extends Distribution {
     }
 
     @Override
-    protected String distributionName() {
+    public String distributionName() {
         return "Group preference satisfaction distribution";
     }
 }

@@ -29,7 +29,7 @@ public class AssignedProjectRankStudentDistribution extends Distribution{
     }
 
     @Override
-    protected String distributionName() {
+    public String distributionName() {
         return "Student project rank distribution";
     }
 }

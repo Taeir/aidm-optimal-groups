@@ -27,7 +27,7 @@ public class AssignedProjectRankDistribution extends Distribution {
     }
 
     @Override
-    protected String distributionName() {
+    public String distributionName() {
         return "Group project rank distribution";
     }
 }
