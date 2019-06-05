@@ -65,6 +65,11 @@ public abstract class Profile {
                 assignedProjectRank.studentRanks().forEach(metric -> {
                     int studentsRank = metric.studentsRank();
 
+                    // Student rank -1 indicates no project preference, hence we exclude
+                    // in order to not inflate our performance
+                    if (studentsRank == -1)
+                        return;
+
                     this.maximumRank = Math.max(this.maximumRank, studentsRank);
 
                     if (this.profile.containsKey(studentsRank))

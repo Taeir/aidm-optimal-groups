@@ -14,8 +14,8 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     private Map<String, Agent> availableStudents;
     private Map<String, Agent> unavailableStudents;
 
-    private int maxGroupSize;
-    private int minGroupSize;
+    private final int maxGroupSize;
+    private final int minGroupSize;
 
     private FormedGroups tentativelyFormedGroups;
     private FormedGroups finalFormedGroups;
@@ -306,17 +306,42 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + finalFormedGroups.asCollection().size() + " max size (final) groups");
         System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + tentativelyFormedGroups.asCollection().size() + " groups to be merged");
 
-        int numberOfStudents = this.students.count();
-        int groupsMax = numberOfStudents / this.maxGroupSize;
-        int remainder = numberOfStudents % this.maxGroupSize;
-        int numberOfGroups = groupsMax + remainder / this.minGroupSize;
-        remainder = remainder % this.minGroupSize;
+        int henk = minGroupSize;
 
-        while (remainder > 0) {
-            groupsMax -= 1;
-            remainder += this.maxGroupSize;
-            numberOfGroups += remainder / this.minGroupSize;
+        int numberOfStudents;
+        int groupsMax;
+        int remainder;
+        int numberOfGroups;
+
+        // hacky: outer while loop with a groupsMax == 0 check
+        // the problem is that the original algorithm does not
+        // consider the values between minGroupSize and maxGroupSize
+        // and hence might end up in a inf loop / fail. Our band-aid fix
+        // is to detect this (groupMax == 0) and increment the minGroupSize
+        // and retry the mathematical algorithm. We do this in a temp var called
+        // 'henk' to emphasize the hacky nature of the fix
+        while (true) {
+            numberOfStudents = this.students.count();
+            groupsMax = numberOfStudents / this.maxGroupSize;
+            remainder = numberOfStudents % this.maxGroupSize;
+            numberOfGroups = groupsMax + remainder / this.minGroupSize;
             remainder = remainder % this.minGroupSize;
+
+            while (remainder > 0) {
+                groupsMax -= 1;
+                remainder += this.maxGroupSize;
+                numberOfGroups += remainder / henk;
+                remainder = remainder % henk;
+
+                if (groupsMax == 0) {
+                    // todo
+                    henk++;
+                    break;
+                }
+            }
+
+            if (remainder == 0)
+                break;
         }
 
         System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + groupsMax + " groups of maximum size");

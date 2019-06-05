@@ -18,7 +18,7 @@ public class Application
 		if (false)
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
 		else
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys", "root", "root");
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
 
 		Agents agents = Agents.from(dataSource, 10);
 		Projects projects = Projects.fromDb(dataSource, 10);
@@ -42,5 +42,8 @@ public class Application
 
 		AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
 		groupAUPCR.printResult();
+
+		Distribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
+		groupPreferenceDistribution.printResult();
 	}
 }

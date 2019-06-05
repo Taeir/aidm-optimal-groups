@@ -120,10 +120,9 @@ public class Agents
 	{
 		var sql2o = new Sql2o(dataSource);
 		try (var connection = sql2o.open()) {
-			var query = connection.createQuery("SELECT distinct users.id as user_id\n" +
-				"FROM users\n" +
-				"JOIN project_preferences ON users.id = project_preferences.user_id\n" +
-				"where course_edition_id = :courseEditionId")
+			var query = connection.createQuery("SELECT distinct cp.user_id as user_id\n" +
+				"FROM course_participations cp \n" +
+				"WHERE cp.course_edition_id = :courseEditionId")
 				.addParameter("courseEditionId", courseEditionId);
 
 			List<String> userIds = query.executeAndFetch((ResultSetHandler<String>) resultSet -> String.valueOf(resultSet.getInt("user_id")));

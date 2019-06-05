@@ -1,10 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
-import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
+import nl.tudelft.aidm.optimalgroups.model.entity.*;
 
 public abstract class AUPCR {
 
@@ -27,15 +24,14 @@ public abstract class AUPCR {
 
     public float result() {
         if (this.aupcr == -1) {
-            this.aupcr = ((float) this.aupc()) / this.totalArea(); //TODO: not sure if this works with integer division
+            this.aupcr = ((float) this.aupc()) / this.totalArea();
         }
-
         return this.aupcr;
     }
 
     public abstract void printResult();
 
-    protected abstract int totalArea();
+    protected abstract float totalArea();
 
     protected abstract int aupc();
 
@@ -50,13 +46,14 @@ public abstract class AUPCR {
         }
 
         @Override
-        protected int totalArea() {
-            int totalProjectCapacity = 0;
-            for (Project p : this.projects.asCollection()) {
-                totalProjectCapacity += p.slots().size();
+        protected float totalArea() {
+            float studentsWithPreference = 0;
+            for (Agent student : this.students.asCollection()) {
+                if (student.projectPreference.asArray().length > 0)
+                    studentsWithPreference += 1;
             }
 
-            int result = projects.count() * Math.min(this.students.count(), totalProjectCapacity);
+            float result = projects.count() * studentsWithPreference;
 
             // prevent division by zero
             return (result == 0) ? -1 : result;
@@ -69,7 +66,9 @@ public abstract class AUPCR {
                 for (Matching.Match<Group.FormedGroup, Project.ProjectSlot> match : this.matching.asList()) {
                     AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
                     for (AssignedProjectRankStudent metric : assignedProjectRank.studentRanks()) {
-                        if (metric.studentsRank() <= r) {
+
+                        // Student rank -1 indicates no preference, do not include this student
+                        if (metric.studentsRank() <= r && metric.studentsRank() != -1) {
                             result += 1;
                         }
                     }
@@ -91,13 +90,13 @@ public abstract class AUPCR {
         }
 
         @Override
-        protected int totalArea() {
+        protected float totalArea() {
             int totalProjectCapacity = 0;
             for (Project p : this.projects.asCollection()) {
                 totalProjectCapacity += p.slots().size();
             }
 
-            int result = (projects.count() * Math.min(this.matching.asList().size(), totalProjectCapacity));
+            float result = (projects.count() * Math.min(this.matching.asList().size(), totalProjectCapacity));
 
             // prevent division by zero
             return (result == 0) ? -1 : result;

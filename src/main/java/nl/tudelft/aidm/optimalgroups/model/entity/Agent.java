@@ -29,6 +29,12 @@ public abstract class Agent
 		return this.name.equals(that.name);
 	}
 
+	@Override
+	public String toString()
+	{
+		return "Agent (" + name + ")";
+	}
+
 	/**
 	 * Represents an Agent whose data is retrieved from a data source
 	 */

@@ -1,5 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class NumMatchingArrayElements
 {
 	private final int[] array;
