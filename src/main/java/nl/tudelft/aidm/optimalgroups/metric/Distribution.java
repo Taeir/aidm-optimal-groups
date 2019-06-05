@@ -65,13 +65,15 @@ public abstract class Distribution {
     }
 
     public void printResult() {
-        System.out.println("Result of distribution: ");
+        System.out.printf("Result of %s: \n", this.distributionName());
         for (Partition partition : this.asList()) {
             System.out.printf("\t\t- %s\n", partition.toString());
         }
     }
 
     protected abstract void calculate();
+
+    protected abstract String distributionName();
 
     public static class Partition {
         private float startInclusive;

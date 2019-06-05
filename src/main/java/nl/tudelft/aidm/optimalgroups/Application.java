@@ -18,10 +18,10 @@ public class Application
 		if (false)
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
 		else
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "root");
 
-		Agents agents = Agents.from(dataSource, 10);
-		Projects projects = Projects.fromDb(dataSource, 10);
+		Agents agents = Agents.from(dataSource, 4);
+		Projects projects = Projects.fromDb(dataSource, 4);
 		System.out.println("Amount of projects: " + projects.count());
 
 		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, 4, 6);
@@ -45,5 +45,11 @@ public class Application
 
 		Distribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 		groupPreferenceDistribution.printResult();
+
+		Distribution groupProjectRankDistribution = new AssignedProjectRankDistribution(matching, projects.count());
+		groupProjectRankDistribution.printResult();
+
+		Distribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());
+		studentProjectRankDistribution.printResult();
 	}
 }
