@@ -22,7 +22,7 @@ public class Agents
 
 	private String courseEditionId;
 
-	private Agents(List<Agent> agents)
+	public Agents(List<Agent> agents)
 	{
 		this.agents = agents;
 

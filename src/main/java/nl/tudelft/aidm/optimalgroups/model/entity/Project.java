@@ -34,6 +34,12 @@ public interface Project
 			{
 				return projectBelongsTo;
 			}
+
+			@Override
+			public String toString()
+			{
+				return "Slot: " + id();
+			}
 		}
 	}
 
@@ -75,6 +81,12 @@ public interface Project
 		public List<ProjectSlot> slots()
 		{
 			return slots;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "Project: " + id();
 		}
 	}
 }
