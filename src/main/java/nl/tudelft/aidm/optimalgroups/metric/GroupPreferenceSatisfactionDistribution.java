@@ -24,4 +24,9 @@ public class GroupPreferenceSatisfactionDistribution extends Distribution {
             });
         }
     }
+
+    @Override
+    public String distributionName() {
+        return "Group preference satisfaction distribution";
+    }
 }
