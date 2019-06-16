@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 
@@ -14,8 +15,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     private Map<String, Agent> availableStudents;
     private Map<String, Agent> unavailableStudents;
 
-    private final int maxGroupSize;
-    private final int minGroupSize;
+    private final GroupSizeConstraint groupSizeConstraint;
 
     private FormedGroups tentativelyFormedGroups;
     private FormedGroups finalFormedGroups;
@@ -23,14 +23,13 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     private boolean done = false;
 
     // Pass the list of students to make groups from
-    public BepSysWithRandomGroups(Agents students, int minGroupSize, int maxGroupSize) {
+    public BepSysWithRandomGroups(Agents students, GroupSizeConstraint groupSizeConstraint) {
         this.students = students;
 
         this.availableStudents = new HashMap<>();
         this.unavailableStudents = new HashMap<>();
 
-        this.minGroupSize = minGroupSize;
-        this.maxGroupSize = maxGroupSize;
+        this.groupSizeConstraint = groupSizeConstraint;
 
         System.out.println("Student amount: " + students.count());
 
@@ -293,7 +292,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         // todo: split groups into those that are finalized and those that are not
         //  s.t. no need to do this kind of case distinction here...
         tentativelyFormedGroups.forEach(group -> {
-            boolean groupIsOfMaximumSize = group.members().count() == this.maxGroupSize;
+            boolean groupIsOfMaximumSize = group.members().count() == this.groupSizeConstraint.maxSize();
 
             if (groupIsOfMaximumSize) {
                 finalFormedGroups.addAsFormed(group);
@@ -306,7 +305,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + finalFormedGroups.asCollection().size() + " max size (final) groups");
         System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + tentativelyFormedGroups.asCollection().size() + " groups to be merged");
 
-        int henk = minGroupSize;
+        int henk = groupSizeConstraint.minSize();
 
         int numberOfStudents;
         int groupsMax;
@@ -322,14 +321,14 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         // 'henk' to emphasize the hacky nature of the fix
         while (true) {
             numberOfStudents = this.students.count();
-            groupsMax = numberOfStudents / this.maxGroupSize;
-            remainder = numberOfStudents % this.maxGroupSize;
-            numberOfGroups = groupsMax + remainder / this.minGroupSize;
-            remainder = remainder % this.minGroupSize;
+            groupsMax = numberOfStudents / groupSizeConstraint.maxSize();
+            remainder = numberOfStudents % groupSizeConstraint.maxSize();
+            numberOfGroups = groupsMax + remainder / groupSizeConstraint.minSize();
+            remainder = remainder % groupSizeConstraint.minSize();
 
             while (remainder > 0) {
                 groupsMax -= 1;
-                remainder += this.maxGroupSize;
+                remainder += groupSizeConstraint.maxSize();
                 numberOfGroups += remainder / henk;
                 remainder = remainder % henk;
 
@@ -362,7 +361,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                 // Only keep scores if the size is equal to the maximum group size
                 // Do we have a valid max-sizegroup and can we still create groups?
-                if (together == this.maxGroupSize &&  this.finalFormedGroups.count() < groupsMax) {
+                if (together == groupSizeConstraint.maxSize() &&  this.finalFormedGroups.count() < groupsMax) {
                     possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                 }
             }
@@ -373,7 +372,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
                     int together = unmergedGroupSize + otherUnmergedGroup.members().count();
 
                     // try again with relaxed constraints on group creation (up to group size)
-                    if (together <= this.maxGroupSize) {
+                    if (together <= groupSizeConstraint.maxSize()) {
                         possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                     }
                 }
@@ -381,7 +380,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
             // if still no candidate group merges
             if (possibleGroupMerges.size() == 0) {
-                if (unmergedGroupSize >= this.minGroupSize) {
+                if (unmergedGroupSize >= groupSizeConstraint.minSize()) {
                     // satisfies min size constraint, accept the group
                     finalFormedGroups.addAsFormed(unmergedGroup);
                 }
@@ -407,10 +406,10 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                 Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
 
-                if (tentativeGroup.members().count() < this.maxGroupSize) {
+                if (tentativeGroup.members().count() < groupSizeConstraint.maxSize()) {
                     unmerged.add(tentativeGroup);
                 }
-                else if (tentativeGroup.members().count() == this.maxGroupSize) {
+                else if (tentativeGroup.members().count() == groupSizeConstraint.maxSize()) {
                     finalFormedGroups.addAsFormed(tentativeGroup);
                 }
                 else {
