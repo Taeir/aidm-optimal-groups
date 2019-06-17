@@ -4,10 +4,7 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -18,6 +15,7 @@ public class AverageProjectPreferenceOfAgents implements ProjectPreference
 	private Agents agents;
 
 	private int[] avgPreference;
+	private Map<Integer, Integer> avgPreferenceMap;
 
 	public AverageProjectPreferenceOfAgents(Agents agents)
 	{
@@ -31,7 +29,7 @@ public class AverageProjectPreferenceOfAgents implements ProjectPreference
 
 		int prefCounter = 0;
 		for (Agent agent : agents.asCollection()) {
-			int[] preferences = agent.projectPreference.asArray();
+			int[] preferences = agent.getProjectPreference().asArray();
 			if (preferences.length > 0) {
 				prefCounter += 1;
 			}
@@ -69,6 +67,20 @@ public class AverageProjectPreferenceOfAgents implements ProjectPreference
 		}
 
 		return avgPreference;
+	}
+
+	@Override
+	public Map<Integer, Integer> asMap() {
+		if (this.avgPreferenceMap == null) {
+			this.avgPreferenceMap = new HashMap<>();
+
+			int[] preferences = asArray();
+			for (int rank = 1; rank <= preferences.length; rank++) {
+				this.avgPreferenceMap.put(preferences[rank - 1], rank);
+			}
+		}
+
+		return this.avgPreferenceMap;
 	}
 
 	@Override

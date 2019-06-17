@@ -114,6 +114,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         this.done = true;
     }
 
+    @Override
     public FormedGroups finalFormedGroups()
     {
         if (!done) {

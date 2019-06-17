@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
+import edu.princeton.cs.algs4.StdOut;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
@@ -31,6 +32,24 @@ public interface ProjectPreference
 		{
 			iter.apply(prefArray[i], i+1);
 		}
+	}
+
+	default int differenceTo(ProjectPreference otherPreference) {
+		Map<Integer, Integer> own = asMap();
+		Map<Integer, Integer> other = otherPreference.asMap();
+
+		// If the other does not have any preferences, return maximum difference to
+		// avoid picking this matching over people that do have preferences
+		if (other.size() == 0 || own.size() == 0) {
+			return Integer.MAX_VALUE;
+		}
+
+		int difference = 0;
+		for (Map.Entry<Integer, Integer> entry : own.entrySet()) {
+			difference += Math.abs(entry.getValue() - other.get(entry.getKey()));
+		}
+
+		return difference;
 	}
 
 	interface ProjectPreferenceConsumer

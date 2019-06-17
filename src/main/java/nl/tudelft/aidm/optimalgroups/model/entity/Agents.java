@@ -48,6 +48,12 @@ public class Agents
 		return agents;
 	}
 
+	public void combinePreferences() {
+		for (Agent a : this.asCollection()) {
+			a.replaceProjectPreferenceWithCombined(this);
+		}
+	}
+
 	public Agents with(Agents other)
 	{
 		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);

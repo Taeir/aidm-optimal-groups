@@ -13,6 +13,7 @@ public class Application
 {
 	public static final int iterations = 200;
 	public static final int courseEdition = 4;
+	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
 	public static final String projectAssignmentAlgorithm = "RSD";
 
 	public static void main(String[] args) {
@@ -38,16 +39,20 @@ public class Application
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
 
-			BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, 4, 6);
-
-			ProjectMatchingAlgorithm projectMatchingAlgorithm = null;
-			if (projectAssignmentAlgorithm == "RSD") {
-				projectMatchingAlgorithm = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
+			GroupFormingAlgorithm groupForming;
+			if (groupMatchingAlgorithm == "CombinedPreferencesGreedy") {
+				groupForming = new CombinedPreferencesGreedy(agents, 4, 6);
 			} else {
-				projectMatchingAlgorithm = new MaxFlow(formedGroups.finalFormedGroups(), projects);
+				groupForming = new BepSysWithRandomGroups(agents, 4, 6);
 			}
 
-			//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
+			ProjectMatchingAlgorithm projectMatchingAlgorithm;
+			if (projectAssignmentAlgorithm == "RSD") {
+				projectMatchingAlgorithm = new RandomizedSerialDictatorship(groupForming.finalFormedGroups(), projects);
+			} else {
+				projectMatchingAlgorithm = new MaxFlow(groupForming.finalFormedGroups(), projects);
+			}
+
 			Matching<Group.FormedGroup, Project.ProjectSlot> matching = projectMatchingAlgorithm.result();
 
 			Profile studentProfile = new Profile.StudentProjectProfile(matching);

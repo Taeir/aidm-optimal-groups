@@ -50,19 +50,6 @@ public class CombinedPreference implements ProjectPreference {
         return this.combinedPreferenceMap;
     }
 
-    public int differenceTo(ProjectPreference otherPreference) {
-
-        Map<Integer, Integer> own = this.projectPreference.asMap();
-        Map<Integer, Integer> other = otherPreference.asMap();
-
-        int difference = 0;
-        for (Map.Entry<Integer, Integer> entry : own.entrySet()) {
-            difference += Math.abs(entry.getValue() - other.get(entry.getKey()));
-        }
-
-        return difference;
-    }
-
     private int[] computeCombinedPreference() {
         // If no group preference is given, there is nothing to combine so just return the raw project preferences
         if (this.groupPreference == null ||  this.groupPreference.asArray().length == 0)
