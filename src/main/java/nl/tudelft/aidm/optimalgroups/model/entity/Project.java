@@ -97,12 +97,12 @@ public interface Project
 			{
 				return true;
 			}
-			if (!(o instanceof withDefaultSlots))
+			if (!(o instanceof Project))
 			{
 				return false;
 			}
-			withDefaultSlots that = (withDefaultSlots) o;
-			return id == that.id;
+			Project that = (Project) o;
+			return id == that.id();
 		}
 
 		@Override
