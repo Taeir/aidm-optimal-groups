@@ -12,38 +12,44 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 	Agents students;
 	Projects projects;
 
-	public StudentProjectMaxFlow(Agents students, Projects projects)
+	private Map<Project.ProjectSlot, List<Agent>> groupedBySlot = null;
+	private Map<Project, List<Agent>> groupedByProject = null;
+
+	private static Map<Projects, StudentProjectMaxFlow> existingResultsCache = new WeakHashMap<>();
+
+	public static StudentProjectMaxFlow of(Agents students, Projects projects)
+	{
+		existingResultsCache.computeIfAbsent(projects, __ -> new StudentProjectMaxFlow(students, projects));
+
+		if (existingResultsCache.containsKey(projects) == false) {
+			StudentProjectMaxFlow maxflow = new StudentProjectMaxFlow(students, projects);
+			existingResultsCache.put(projects, maxflow);
+
+			return maxflow;
+		}
+
+		StudentProjectMaxFlow existing = existingResultsCache.get(projects);
+		if (existing.students != students) {
+			throw new RuntimeException("Requested a cached StudentsProjectsMaxFlow for previously computed projects, but different student set." +
+				"Cache implementation only works on projects and assumes identical studens. Decide how to handle this case first (support proj + studs or simply compute this case without caching).");
+		}
+
+		return existing;
+	}
+
+	private StudentProjectMaxFlow(Agents students, Projects projects)
 	{
 		this.students = students;
 		this.projects = projects;
 	}
 
+	private Matching.FormedGroupToProjectMatchings theMatching = null;
 	public Matching.FormedGroupToProjectMatchings result()
 	{
-		StudentVertices studentVertices = new StudentVertices(students);
-		ProjectSlotVertices projectSlotVertices = new ProjectSlotVertices(projects);
-		var edges = new StudentToProjectSlotsEdges(studentVertices, projectSlotVertices);
+		init();
 
-
-		// Sick cast https://stackoverflow.com/questions/3246137/java-generics-cannot-cast-listsubclass-to-listsuperclass
-		// warning: not very safe, but not catastrophic if lists are not modified
-		var left = (Vertices<StudentProjectMatchingVertexContent>) (Vertices<? extends StudentProjectMatchingVertexContent>) studentVertices;
-		var right = (Vertices<StudentProjectMatchingVertexContent>) (Vertices<? extends StudentProjectMatchingVertexContent>) projectSlotVertices;
-
-		var graph = new MaxFlowGraph<StudentProjectMatchingVertexContent>(left, right, edges);
-
-		var matching = new MaxFlowMatching<>(graph, SearchType.MinCost);
-
-		var groupedBySlot = new HashMap<Project.ProjectSlot, List<Agent>>(projects.countAllSlots());
-		var groupedByProject = new HashMap<Project, List<Agent>>(projects.count());
-
-		matching.asListOfEdges().forEach(edge -> {
-			Project.ProjectSlot projectSlot = ((ProjectSlotStudentSlotContent) edge.to.content()).theProjectSlot;
-			Agent student = ((StudentVertexContent) edge.from.content()).theStudent;
-
-			groupedBySlot.computeIfAbsent(projectSlot, __ -> new ArrayList<>()).add(student);
-			groupedByProject.computeIfAbsent(projectSlot.belongingToProject(), __ -> new ArrayList<>()).add(student);
-		});
+		if (theMatching != null)
+			return theMatching;
 
 		FormedGroups formedGroups = new FormedGroups();
 
@@ -59,7 +65,48 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 			resultingMatching.add(match);
 		}
 
-		return resultingMatching;
+		theMatching = resultingMatching;
+
+		return theMatching;
+	}
+
+	public Map<Project, List<Agent>> groupedByProject()
+	{
+		init();
+
+		return groupedByProject;
+	}
+
+	// quick and dirty: want access to groupedByProject but also keep the result() method functioning AND without unnecessary recomputing values each time
+	public void init()
+	{
+		if (groupedByProject != null && groupedBySlot != null)
+			return;
+
+
+		groupedBySlot = new HashMap<Project.ProjectSlot, List<Agent>>(projects.countAllSlots());
+		groupedByProject = new HashMap<Project, List<Agent>>(projects.count());
+
+		StudentVertices studentVertices = new StudentVertices(students);
+		ProjectSlotVertices projectSlotVertices = new ProjectSlotVertices(projects);
+		var edges = new StudentToProjectSlotsEdges(studentVertices, projectSlotVertices);
+
+		// Sick cast https://stackoverflow.com/questions/3246137/java-generics-cannot-cast-listsubclass-to-listsuperclass
+		// warning: not very safe, but not catastrophic if lists are not modified
+		var left = (Vertices<StudentProjectMatchingVertexContent>) (Vertices<? extends StudentProjectMatchingVertexContent>) studentVertices;
+		var right = (Vertices<StudentProjectMatchingVertexContent>) (Vertices<? extends StudentProjectMatchingVertexContent>) projectSlotVertices;
+
+		var graph = new MaxFlowGraph<StudentProjectMatchingVertexContent>(left, right, edges);
+
+		var matching = new MaxFlowMatching<>(graph, SearchType.MinCost);
+
+		matching.asListOfEdges().forEach(edge -> {
+			Project.ProjectSlot projectSlot = ((ProjectSlotStudentSlotContent) edge.to.content()).theProjectSlot;
+			Agent student = ((StudentVertexContent) edge.from.content()).theStudent;
+
+			groupedBySlot.computeIfAbsent(projectSlot, __ -> new ArrayList<>()).add(student);
+			groupedByProject.computeIfAbsent(projectSlot.belongingToProject(), __ -> new ArrayList<>()).add(student);
+		});
 	}
 
 //
