@@ -64,28 +64,31 @@ public class LeastPopularProject implements Project
 		var results = new ConcurrentHashMap<Project, AUPCR>(projects.count());
 
 		projects.asCollection().parallelStream().forEach(project -> {
-			var projectsWithoutThisOne = projects.without(project);
+			var projectsWithoutOne = projects.without(project);
 
 			// TODO: include this maxflow result?
-			StudentProjectMaxFlow maxflowResultWithoutCurrentProject = StudentProjectMaxFlow.of(students, projectsWithoutThisOne);
+			StudentProjectMaxFlow maxflowResultWithoutCurrentProject = StudentProjectMaxFlow.of(students, projectsWithoutOne);
 
 			// calc effect
-			var metric = new AUPCR.StudentAUPCR(maxflowResultWithoutCurrentProject.result(), projectsWithoutThisOne, students);
+			var metric = new AUPCR.StudentAUPCR(maxflowResultWithoutCurrentProject.result(), projectsWithoutOne, students);
 
 			results.put(project, metric);
 		});
 
+		// The "Least Popular" project is the one whose removal results in highest metric (AUPCR) relative to any other
+		// now we just need to determine which project that is, to do so we need to sort the tuples computed above by the value (AUPCR result)
+		// by sorting descending, the least popular project (key) is the top most (0th) element
 		ArrayList<Map.Entry<Project, AUPCR>> entries = new ArrayList<>(results.entrySet());
-		// sort from Highest to lowest AUPCR, we want to remove project whose removal gives highest AUPCR (that is: projects whose removal has least impact in AUPCR)
 		entries.sort(Comparator.comparing((Map.Entry<Project, AUPCR> entry) -> entry.getValue().result()).reversed());
+
+		// some dbg / progess report
 		for (Map.Entry<Project, AUPCR> entry : entries)
 		{
-			// some dbg / progess report
-			System.out.printf("Excluding project '%s' with %s students has effect: %s\n", entry.getKey(), grouping.get(entry.getKey()).size(), entry.getValue().result());
+			System.out.printf("\tExcluding project '%s' with %s students has effect: %s\n", entry.getKey(), grouping.get(entry.getKey()).size(), entry.getValue().result());
 		}
 
 		var leastPopular = entries.get(0);
-		System.out.printf("Project '%s' has least AUPCR (%s)\n", leastPopular.getKey(), leastPopular.getValue().result());
+		System.out.printf("Removing project '%s' has least effect on AUPCR (resulting in: %s)\n", leastPopular.getKey(), leastPopular.getValue().result());
 
 		return leastPopular.getKey();
 	}

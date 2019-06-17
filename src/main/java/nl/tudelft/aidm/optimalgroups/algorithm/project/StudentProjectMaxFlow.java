@@ -7,6 +7,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents
 
 import java.util.*;
 
+@SuppressWarnings("Duplicates")
 public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 {
 	Agents students;
@@ -19,8 +20,6 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 
 	public static StudentProjectMaxFlow of(Agents students, Projects projects)
 	{
-		existingResultsCache.computeIfAbsent(projects, __ -> new StudentProjectMaxFlow(students, projects));
-
 		if (existingResultsCache.containsKey(projects) == false) {
 			StudentProjectMaxFlow maxflow = new StudentProjectMaxFlow(students, projects);
 			existingResultsCache.put(projects, maxflow);
@@ -88,7 +87,7 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 		groupedByProject = new HashMap<Project, List<Agent>>(projects.count());
 
 		StudentVertices studentVertices = new StudentVertices(students);
-		ProjectSlotVertices projectSlotVertices = new ProjectSlotVertices(projects);
+		ProjectStudentSlotVertices projectSlotVertices = new ProjectStudentSlotVertices(projects);
 		var edges = new StudentToProjectSlotsEdges(studentVertices, projectSlotVertices);
 
 		// Sick cast https://stackoverflow.com/questions/3246137/java-generics-cannot-cast-listsubclass-to-listsuperclass
@@ -109,35 +108,12 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 		});
 	}
 
-//
-//
-//	private static class ProjectSlotMatching implements Matching.Match<Group.FormedGroup, Project.ProjectSlot>
-//	{
-//		private Agents from;
-//		private Project.ProjectSlot to;
-//
-//		public ProjectSlotMatching(Agents from, Project.ProjectSlot to)
-//		{
-//			this.from = from;
-//			this.to = to;
-//		}
-//
-//		@Override
-//		public  from()
-//		{
-//			return from;
-//		}
-//
-//		@Override
-//		public Project.ProjectSlot to()
-//		{
-//			return to;
-//		}
-//	}
-
+	///////////
+	/* EDGES */
+	///////////
 	private static class StudentToProjectSlotsEdges extends DirectedWeightedEdges // no generic, we'll cast
 	{
-		public StudentToProjectSlotsEdges(StudentVertices studentVertices, ProjectSlotVertices projectSlotVertices)
+		public StudentToProjectSlotsEdges(StudentVertices studentVertices, ProjectStudentSlotVertices projectSlotVertices)
 		{
 			// for each student
 			studentVertices.forEach(studentVertex -> {
@@ -158,18 +134,21 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 		}
 	}
 
-	private static class ProjectSlotVertices extends Vertices<ProjectSlotStudentSlotContent>
+	//////////////
+	/* VERTICES */
+	//////////////
+	private static class ProjectStudentSlotVertices extends Vertices<ProjectSlotStudentSlotContent>
 	{
 		private Map<Integer, List<Vertex<ProjectSlotStudentSlotContent>>> projectToSlots;
 
-		public ProjectSlotVertices(Projects projects)
+		public ProjectStudentSlotVertices(Projects projects)
 		{
 			projectToSlots = new HashMap<>();
 
 			projects.asCollection().forEach(project -> {
 				project.slots().forEach(projectSlot -> {
 
-					for (int i = 0; i < 5; i++)
+					for (int i = 0; i < 6; i++)
 					{
 						var vert = new Vertex<>(new ProjectSlotStudentSlotContent(projectSlot));
 						this.listOfVertices.add(vert);
@@ -184,15 +163,6 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 
 		public Collection<Vertex<ProjectSlotStudentSlotContent>> findAllForProject(int projectIdToFind)
 		{
-			if (projectToSlots == null) {
-				// compute if mapping not created yet
-
-				this.listOfVertices.forEach(vert -> {
-					Project proj = vert.content().theProjectSlot.belongingToProject();
-
-				});
-			}
-
 			return projectToSlots.getOrDefault(projectIdToFind, Collections.emptyList());
 		}
 	}
@@ -208,6 +178,9 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 		}
 	}
 
+	/////////////////////
+	/* VERTEX CONTENTS */
+	/////////////////////
 	private interface StudentProjectMatchingVertexContent {}
 
 	private static class ProjectSlotStudentSlotContent implements StudentProjectMatchingVertexContent
