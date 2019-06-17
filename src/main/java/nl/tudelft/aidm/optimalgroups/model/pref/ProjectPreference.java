@@ -5,12 +5,24 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface ProjectPreference
 {
 	// TODO: determine representation (let algo guide this choice)
 	int[] asArray();
+
+	/**
+	 * Return the preferences as a map, where the keys represent the project
+	 * and the value represents the rank of the project.
+	 *
+	 * The highest rank is 1 and represents the most preferable project.
+	 *
+	 * @return Map
+	 */
+	Map<Integer, Integer> asMap();
 
 	default void forEach(ProjectPreferenceConsumer iter)
 	{
@@ -21,7 +33,7 @@ public interface ProjectPreference
 		}
 	}
 
-	public interface ProjectPreferenceConsumer
+	interface ProjectPreferenceConsumer
 	{
 		/**
 		 * @param projectId the id of the project that has the given rank
@@ -37,6 +49,7 @@ public interface ProjectPreference
 		private final String courseEditionId;
 
 		private int[] preferences = null;
+		private Map<Integer, Integer> preferencesMap = null;
 
 		public fromDb(DataSource dataSource, String userId, String courseEditionId)
 		{
@@ -56,6 +69,23 @@ public interface ProjectPreference
 			}
 
 			return preferences;
+		}
+
+		@Override
+		public Map<Integer, Integer> asMap() {
+			if (this.preferencesMap == null) {
+
+
+				int[] preferences = this.asArray();
+				this.preferencesMap = new HashMap<>(preferences.length);
+
+				for (int rank = 1; rank <= preferences.length; rank++) {
+					int project = preferences[rank - 1];
+					this.preferencesMap.put(project, rank);
+				}
+			}
+
+			return this.preferencesMap;
 		}
 
 		private List<Integer> fetchFromDb()

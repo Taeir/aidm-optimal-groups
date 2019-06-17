@@ -14,7 +14,8 @@ public class CombinedPreference implements ProjectPreference {
     private final ProjectPreference projectPreference;
     private final Agents agents;
 
-    private int[] combinedPreference;
+    private int[] combinedPreference = null;
+    private Map<Integer, Integer> combinedPreferenceMap = null;
 
     // The combined preference is a ranking of projects, based on both
     // the project preferences from the and the group preferences from the database
@@ -32,6 +33,34 @@ public class CombinedPreference implements ProjectPreference {
         }
 
         return this.combinedPreference;
+    }
+
+    @Override
+    public Map<Integer, Integer> asMap() {
+        if (this.combinedPreferenceMap == null) {
+            int[] preferences = this.asArray();
+            this.combinedPreferenceMap = new HashMap<>(preferences.length);
+
+            for (int rank = 1; rank <= preferences.length; rank++) {
+                int project = preferences[rank - 1];
+                this.combinedPreferenceMap.put(project, rank);
+            }
+        }
+
+        return this.combinedPreferenceMap;
+    }
+
+    public int differenceTo(ProjectPreference otherPreference) {
+
+        Map<Integer, Integer> own = this.projectPreference.asMap();
+        Map<Integer, Integer> other = otherPreference.asMap();
+
+        int difference = 0;
+        for (Map.Entry<Integer, Integer> entry : own.entrySet()) {
+            difference += Math.abs(entry.getValue() - other.get(entry.getKey()));
+        }
+
+        return difference;
     }
 
     private int[] computeCombinedPreference() {
