@@ -55,6 +55,8 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
         List<Agent> sortedList = new ArrayList<>(this.students.asCollection());
         sortedList.sort(Comparator.comparing(Agent::groupPreferenceLength).reversed());
 
+        SetOfConstrainedGroupSizes groupSizes = new SetOfConstrainedGroupSizes(this.students.count(), this.minGroupSize, this.maxGroupSize, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+
         // Start iterating and forming groups greedily
         for (Agent student : sortedList) {
             if (this.unavailableStudents.containsKey(student.name)) {
@@ -78,12 +80,20 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
             List<Agent> agents = new ArrayList<>(this.maxGroupSize);
 
+            // Put the student in the group
             this.availableStudents.remove(student.name);
             this.unavailableStudents.put(student.name, student);
             agents.add(student);
 
+            // Determine the group size
+            int groupSize = this.maxGroupSize;
+            while (groupSizes.mayFormGroupOfSize(groupSize) == false && groupSize >= this.minGroupSize) {
+                groupSize--;
+            }
+
+            // Start inserting the remaining group members (students of which the combined preference has the least difference)
             for (Map.Entry<String, Integer> entry : sortedDifferences) {
-                if (agents.size() >= this.maxGroupSize) {
+                if (agents.size() >= groupSize) {
                     break;
                 }
 
@@ -93,22 +103,17 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
                 agents.add(removed);
             }
 
+            // Transform the new agents into a formed group
             Agents newGroupAgents = Agents.from(agents);
             ProjectPreference aggregatedPreference = new AverageProjectPreferenceOfAgents(newGroupAgents);
             Group.TentativeGroup newTentativeGroup = new Group.TentativeGroup(newGroupAgents, aggregatedPreference);
             this.formedGroups.addAsFormed(newTentativeGroup);
+
+            // Inform the group sizes object that a group of this size has been formed
+            groupSizes.recordGroupFormedOfSize(groupSize);
         }
 
         this.students.useDatabasePreferences();
-    }
-
-    @Override
-    public Collection<Group.FormedGroup> asCollection() {
-        if (this.done == false) {
-            this.constructGroups();
-        }
-
-        return this.formedGroups.asCollection();
     }
 
     @Override
@@ -118,6 +123,11 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
         }
 
         return this.formedGroups;
+    }
+
+    @Override
+    public Collection<Group.FormedGroup> asCollection() {
+        return this.finalFormedGroups().asCollection();
     }
 
     @Override

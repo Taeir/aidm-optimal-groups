@@ -44,6 +44,7 @@ public class Application
 		Agents agents = Agents.from(dataSource, courseEdition);
 		Projects projects = Projects.fromDb(dataSource, courseEdition);
 		System.out.println("Amount of projects: " + projects.count());
+		System.out.println("Amount of students: " + agents.count());
 
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
