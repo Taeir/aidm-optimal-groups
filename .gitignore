@@ -1,5 +1,7 @@
 .idea
 .gradle
+gradlew
+gradlew.bat
 out
 build
 .settings/
@@ -7,5 +9,6 @@ build
 .project
 .classpath
 bin/
+outputtxt/*
 
 !/gradle

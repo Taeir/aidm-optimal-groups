@@ -97,15 +97,15 @@ public class Application
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
 		groupPreferenceSatisfactionDistribution.printResult();
-		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Group%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
 		groupProjectRankDistribution.printResult();
-		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Group%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
 		studentProjectRankDistribution.printResult();
-		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Group%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, projectAssignmentAlgorithm));
 
 		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
