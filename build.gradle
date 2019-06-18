@@ -24,6 +24,8 @@ applicationDefaultJvmArgs = ["-Djava.library.path=optimization/lib"]
 
 dependencies {
 
+    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c06314770ed'
+
     compile 'com.google.protobuf:protobuf-java:3.0.0'
     compile files('lib/jniortools.dll')
     compile files('lib/ortools.lib')
