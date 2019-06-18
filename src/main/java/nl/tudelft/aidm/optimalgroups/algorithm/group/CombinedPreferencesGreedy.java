@@ -10,7 +10,6 @@ import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static java.util.stream.Collectors.*;
 import static java.util.Map.Entry.*;
 
 public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {

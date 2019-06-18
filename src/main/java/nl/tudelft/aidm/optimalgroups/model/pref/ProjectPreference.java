@@ -112,7 +112,7 @@ public interface ProjectPreference
 			Sql2o sql2o = new Sql2o(dataSource);
 			try (var conn = sql2o.open())
 			{
-				final var sql = "SELECT project_id " +
+				final var sql = "SELECT distinct(project_id) " +
 					"FROM project_preferences " +
 					"WHERE user_id = :userId AND course_edition_id = :courseEditionId " +
 					"ORDER BY priority";
