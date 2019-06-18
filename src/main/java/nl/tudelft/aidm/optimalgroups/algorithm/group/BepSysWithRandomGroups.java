@@ -20,10 +20,12 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     private FormedGroups tentativelyFormedGroups;
     private FormedGroups finalFormedGroups;
 
+    private boolean fixedAlgorithm;
+
     private boolean done = false;
 
     // Pass the list of students to make groups from
-    public BepSysWithRandomGroups(Agents students, int minGroupSize, int maxGroupSize) {
+    public BepSysWithRandomGroups(Agents students, int minGroupSize, int maxGroupSize, boolean fixedAlgorithm) {
         this.students = students;
 
         this.availableStudents = new HashMap<>();
@@ -40,6 +42,8 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
         tentativelyFormedGroups = new FormedGroups();
         finalFormedGroups = new FormedGroups();
+
+        this.fixedAlgorithm = fixedAlgorithm;
     }
 
     private void constructGroups() {
@@ -306,115 +310,188 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + finalFormedGroups.asCollection().size() + " max size (final) groups");
         System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + tentativelyFormedGroups.asCollection().size() + " groups to be merged");
 
-        int henk = minGroupSize;
-
-        int numberOfStudents;
-        int groupsMax;
-        int remainder;
-        int numberOfGroups;
-
-        // hacky: outer while loop with a groupsMax == 0 check
-        // the problem is that the original algorithm does not
-        // consider the values between minGroupSize and maxGroupSize
-        // and hence might end up in a inf loop / fail. Our band-aid fix
-        // is to detect this (groupMax == 0) and increment the minGroupSize
-        // and retry the mathematical algorithm. We do this in a temp var called
-        // 'henk' to emphasize the hacky nature of the fix
-        while (true) {
-            numberOfStudents = this.students.count();
-            groupsMax = numberOfStudents / this.maxGroupSize;
-            remainder = numberOfStudents % this.maxGroupSize;
-            numberOfGroups = groupsMax + remainder / this.minGroupSize;
-            remainder = remainder % this.minGroupSize;
-
-            while (remainder > 0) {
-                groupsMax -= 1;
-                remainder += this.maxGroupSize;
-                numberOfGroups += remainder / henk;
-                remainder = remainder % henk;
-
-                if (groupsMax == 0) {
-                    // todo
-                    henk++;
-                    break;
-                }
-            }
-
-            if (remainder == 0)
-                break;
-        }
-
-        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + groupsMax + " groups of maximum size");
-        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + numberOfGroups + " groups in total");
-
         unmerged.sort(Comparator.comparingInt((Group group) -> group.members().count()));
 
-        while (unmerged.size() > 0) {
-            Group.TentativeGroup unmergedGroup = unmerged.get(0);
-            unmerged.remove(0);
+        SetOfConstrainedGroupSizes groupConstraints = null;
+        int groupsMax = 0;
 
-            int unmergedGroupSize = unmergedGroup.members().count();
+        if(fixedAlgorithm)
+        {
+            int amountOfStudentsToGroup = tentativelyFormedGroups.countTotalStudents() - finalFormedGroups.countTotalStudents();
+            groupConstraints = new SetOfConstrainedGroupSizes(amountOfStudentsToGroup, minGroupSize, maxGroupSize, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+        }
+        else
+        {
+            int henk = minGroupSize;
 
-            var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(PossibleGroupMerge::matchScore));
+            int numberOfStudents;
+            int remainder;
+            int numberOfGroups;
 
-            for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
-                int together = unmergedGroupSize + otherUnmergedGroup.members().count();
+            // hacky: outer while loop with a groupsMax == 0 check
+            // the problem is that the original algorithm does not
+            // consider the values between minGroupSize and maxGroupSize
+            // and hence might end up in a inf loop / fail. Our band-aid fix
+            // is to detect this (groupMax == 0) and increment the minGroupSize
+            // and retry the mathematical algorithm. We do this in a temp var called
+            // 'henk' to emphasize the hacky nature of the fix
+            while (true) {
+                numberOfStudents = this.students.count();
+                groupsMax = numberOfStudents / this.maxGroupSize;
+                remainder = numberOfStudents % this.maxGroupSize;
+                numberOfGroups = groupsMax + remainder / this.minGroupSize;
+                remainder = remainder % this.minGroupSize;
 
-                // Only keep scores if the size is equal to the maximum group size
-                // Do we have a valid max-sizegroup and can we still create groups?
-                if (together == this.maxGroupSize &&  this.finalFormedGroups.count() < groupsMax) {
-                    possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
-                }
-            }
+                while (remainder > 0) {
+                    groupsMax -= 1;
+                    remainder += this.maxGroupSize;
+                    numberOfGroups += remainder / henk;
+                    remainder = remainder % henk;
 
-            // if no candidate group merges
-            if (possibleGroupMerges.size() == 0) {
-                for (Group otherUnmergedGroup : unmerged) {
-                    int together = unmergedGroupSize + otherUnmergedGroup.members().count();
-
-                    // try again with relaxed constraints on group creation (up to group size)
-                    if (together <= this.maxGroupSize) {
-                        possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+                    if (groupsMax == 0) {
+                        henk++;
+                        break;
                     }
                 }
-            }
 
-            // if still no candidate group merges
-            if (possibleGroupMerges.size() == 0) {
-                if (unmergedGroupSize >= this.minGroupSize) {
-                    // satisfies min size constraint, accept the group
-                    finalFormedGroups.addAsFormed(unmergedGroup);
+                if (remainder == 0)
+                    break;
+            }
+            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + groupsMax + " groups of maximum size");
+            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + numberOfGroups + " groups in total");
+        }
+
+        while (unmerged.size() > 0) {
+            if(fixedAlgorithm)
+            {
+                Group.TentativeGroup unmergedGroup = unmerged.get(0);
+                unmerged.remove(0);
+
+                int unmergedGroupSize = unmergedGroup.members().count();
+
+                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysWithRandomGroups.PossibleGroupMerge::matchScore));
+
+                for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
+                    int together = unmergedGroupSize + otherUnmergedGroup.members().count();
+
+                    // Only add group if it is a final form
+                    if(groupConstraints.mayFormGroupOfSize(together)){
+                        possibleGroupMerges.add(new BepSysWithRandomGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+                    }
                 }
-                // Group does not meet minimal group size: split and hope for best in next iter
-                else {
-                    // Divide all people of this group
+
+                // if no candidate group merges
+                if (possibleGroupMerges.size() == 0) {
+                    for (Group otherUnmergedGroup : unmerged) {
+                        int together = unmergedGroupSize + otherUnmergedGroup.members().count();
+
+                        // try again with relaxed constraints on group creation (up to group size)
+                        if (together <= this.maxGroupSize) {
+                            possibleGroupMerges.add(new BepSysWithRandomGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+                        }
+                    }
+                }
+
+                // if still no candidate group merges
+                if (possibleGroupMerges.size() == 0) {
                     for (Agent a : unmergedGroup.members().asCollection()) {
                         Agents singleAgent = Agents.from(a);
                         unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference));
                     }
                 }
+
+                if (possibleGroupMerges.size() > 0)
+                {
+                    // take best scoring group (it's a priority queue)
+                    BepSysWithRandomGroups.PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
+                    // remove the "other" group from unmerged
+                    boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
+                    if (!removedSomething) {
+                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
+                    }
+
+                    Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
+                    int together = tentativeGroup.members().count();
+
+                    if(groupConstraints.mayFormGroupOfSize(together)) //Does the merged group fit in group size constraints?
+                    {
+                        groupConstraints.recordGroupFormedOfSize(together);
+                        finalFormedGroups.addAsFormed(tentativeGroup);
+                    }
+                    else
+                    {
+                        unmerged.add(tentativeGroup); // If merge can't be in final set, at least keep it
+                    }
+                }
             }
-
-            if (possibleGroupMerges.size() > 0)
+            else
             {
-                // take best scoring group (it's a priority queue)
-                PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
-                // remove the "other" group from unmerged
-                boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
-                if (!removedSomething) {
-                    System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
+                Group.TentativeGroup unmergedGroup = unmerged.get(0);
+                unmerged.remove(0);
+
+                int unmergedGroupSize = unmergedGroup.members().count();
+
+                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(PossibleGroupMerge::matchScore));
+
+                for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
+                    int together = unmergedGroupSize + otherUnmergedGroup.members().count();
+
+                    // Only keep scores if the size is equal to the maximum group size
+                    // Do we have a valid max-sizegroup and can we still create groups?
+                    if (together == this.maxGroupSize &&  this.finalFormedGroups.count() < groupsMax) {
+                        possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+                    }
                 }
 
-                Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
+                // if no candidate group merges
+                if (possibleGroupMerges.size() == 0) {
+                    for (Group otherUnmergedGroup : unmerged) {
+                        int together = unmergedGroupSize + otherUnmergedGroup.members().count();
 
-                if (tentativeGroup.members().count() < this.maxGroupSize) {
-                    unmerged.add(tentativeGroup);
+                        // try again with relaxed constraints on group creation (up to group size)
+                        if (together <= this.maxGroupSize) {
+                            possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+                        }
+                    }
                 }
-                else if (tentativeGroup.members().count() == this.maxGroupSize) {
-                    finalFormedGroups.addAsFormed(tentativeGroup);
+
+                // if still no candidate group merges
+                if (possibleGroupMerges.size() == 0) {
+                    if (unmergedGroupSize >= this.minGroupSize) {
+                        // satisfies min size constraint, accept the group
+                        finalFormedGroups.addAsFormed(unmergedGroup);
+                    }
+                    // Group does not meet minimal group size: split and hope for best in next iter
+                    else {
+                        // Divide all people of this group
+                        for (Agent a : unmergedGroup.members().asCollection()) {
+                            Agents singleAgent = Agents.from(a);
+                            unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference));
+                        }
+                    }
                 }
-                else {
-                    throw new RuntimeException("mergeGroups: Group size is somehow larger than maximum group size");
+
+                if (possibleGroupMerges.size() > 0)
+                {
+                    // take best scoring group (it's a priority queue)
+                    PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
+                    // remove the "other" group from unmerged
+                    boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
+                    if (!removedSomething) {
+                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
+                    }
+
+                    Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
+
+                    if (tentativeGroup.members().count() < this.maxGroupSize) {
+                        unmerged.add(tentativeGroup);
+                    }
+                    else if (tentativeGroup.members().count() == this.maxGroupSize) {
+                        finalFormedGroups.addAsFormed(tentativeGroup);
+                    }
+                    else {
+                        throw new RuntimeException("mergeGroups: Group size is somehow larger than maximum group size");
+                    }
                 }
             }
         }
