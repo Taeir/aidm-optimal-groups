@@ -24,8 +24,8 @@ final public class SetOfConstrainedGroupSizes
     /**
      * Given an amount of students and group size constraints, create a set of possible group sizes
      * This set can be used for assignment/allocation algorithms by keeping track how many of which group size can still be formed
-     * To keep track of intermediate group sets, tryToFormGroup will decrement the amount of groups formable for that size, if possible
-     * To check if a group with a certain size can be made, use groupSizePossible
+     * To keep track of intermediate group sets, recordGroupFormedOfSize will decrement the amount of groups formable for that size, if possible
+     * To check if a group with a certain size can be made, use mayFormGroupOfSize
      */
     public SetOfConstrainedGroupSizes(int nrStudents, int minGroupSize, int maxGroupSize, SetCreationAlgorithm algorithm){
         this.nrStudents = nrStudents;
@@ -41,29 +41,26 @@ final public class SetOfConstrainedGroupSizes
      * @param groupSize The size of the group
      * @return True if the group can be formed, false if not
      */
-    public boolean groupSizePossible(int groupSize){
-        return (setOfGroups.containsKey(groupSize));
+    public boolean mayFormGroupOfSize(int groupSize){
+        return (setOfGroups.containsKey(groupSize) && setOfGroups.get(groupSize) > 0);
     }
 
     /**
      * Try to form a group, decrementing the amount of that size if it succeeds
      * @param groupSize The size of a group
-     * @return True if the group could be formed, false if not
      */
-    public boolean tryToFormGroup(int groupSize){
-        if(!groupSizePossible(groupSize)){
-            return false;
+    public void recordGroupFormedOfSize(int groupSize){
+        if(!mayFormGroupOfSize(groupSize)){
+            if(!setOfGroups.containsKey(groupSize)){
+                throw new RuntimeException("Unable to create group with size " + groupSize + ", group size is not possible");
+
+            }
+            else{
+                throw new RuntimeException("Unable to create group with size " + groupSize + ", maximum groups of that size reached");
+            }
         }
-        int possibleGroups = setOfGroups.get(groupSize);
-        if(possibleGroups == 1)
-        {
-            setOfGroups.remove(groupSize);
-        }
-        else
-        {
-            setOfGroups.put(groupSize, setOfGroups.get(groupSize) - 1);
-        }
-        return true;
+
+        setOfGroups.put(groupSize, setOfGroups.get(groupSize) - 1);
     }
 
     /**
@@ -75,7 +72,7 @@ final public class SetOfConstrainedGroupSizes
         if(algorithm == SetCreationAlgorithm.MAX_FOCUS)
         {
 
-            setOfGroups = new HashMap<Integer, Integer>(); //Key = size of group, Value = amount of groups with that size
+            setOfGroups = new HashMap<>(); //Key = size of group, Value = amount of groups with that size
             boolean matchingDone = false;
             while(!matchingDone)
             {
