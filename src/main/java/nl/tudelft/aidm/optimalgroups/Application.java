@@ -5,9 +5,12 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
+import org.sql2o.Query;
+import org.sql2o.ResultSetHandler;
+import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
-import java.util.Map;
+import java.util.List;
 
 public class Application
 {
@@ -23,6 +26,12 @@ public class Application
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
 		else
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
+
+		int[] groupSizes = getGroupSizes(dataSource);
+		int minGroupSize = groupSizes[0];
+		int maxGroupSize = groupSizes[1];
+
+
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -42,8 +51,10 @@ public class Application
 			GroupFormingAlgorithm groupForming;
 			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
 				groupForming = new CombinedPreferencesGreedy(agents, 4, 6);
+			} else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
+				groupForming = new BepSysWithRandomGroups(agents, 4, 6, true);
 			} else {
-				groupForming = new BepSysWithRandomGroups(agents, 4, 6);
+				groupForming = new BepSysWithRandomGroups(agents, 4, 6, false);
 			}
 
 			ProjectMatchingAlgorithm projectMatchingAlgorithm;
@@ -109,5 +120,29 @@ public class Application
 
 		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
+	}
+
+
+	public static int[] getGroupSizes(DataSource dataSource)
+	{
+		int[] groupSizes = new int[2];
+		var sql = "SELECT min_group_size FROM course_configurations where course_edition_id = " + courseEdition;
+		var sql2 = "SELECT max_group_size FROM course_configurations where course_edition_id = " + courseEdition;
+		try (var connection = new Sql2o(dataSource).open())
+		{
+			Query query = connection.createQuery(sql);
+			List<Integer> minGroupSizes = query.executeAndFetch(
+					(ResultSetHandler<Integer>) rs ->
+							(rs.getInt("min_group_size"))
+			);
+			Query query2 = connection.createQuery(sql2);
+			List<Integer> maxGroupSizes = query2.executeAndFetch(
+					(ResultSetHandler<Integer>) rs ->
+							(rs.getInt("max_group_size"))
+			);
+			groupSizes[0] = minGroupSizes.get(0);
+			groupSizes[1] = maxGroupSizes.get(0);
+		}
+		return groupSizes;
 	}
 }
