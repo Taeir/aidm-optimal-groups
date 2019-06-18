@@ -15,8 +15,8 @@ import java.util.List;
 public class Application
 {
 	public static final int iterations = 200;
-	public static final int courseEdition = 4;
-	public static final String projectAssignmentAlgorithm = "RSD";
+	public static final int courseEdition = 10;
+	public static final String projectAssignmentAlgorithm = "RSD"; // RSD, MaxFlow
 
 	public static void main(String[] args) {
 		DataSource dataSource;
@@ -52,7 +52,7 @@ public class Application
 			ProjectMatchingAlgorithm projectMatchingAlgorithm = null;
 			if (projectAssignmentAlgorithm == "RSD") {
 				projectMatchingAlgorithm = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
-			} else {
+			} else if (projectAssignmentAlgorithm == "MaxFlow") {
 				projectMatchingAlgorithm = new MaxFlow(formedGroups.finalFormedGroups(), projects);
 			}
 
