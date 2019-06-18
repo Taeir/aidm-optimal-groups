@@ -40,14 +40,14 @@ public class Application
 		for (int iteration = 0; iteration < iterations; iteration++) {
 
 			GroupFormingAlgorithm groupForming;
-			if (groupMatchingAlgorithm == "CombinedPreferencesGreedy") {
+			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
 				groupForming = new CombinedPreferencesGreedy(agents, 4, 6);
 			} else {
 				groupForming = new BepSysWithRandomGroups(agents, 4, 6);
 			}
 
 			ProjectMatchingAlgorithm projectMatchingAlgorithm;
-			if (projectAssignmentAlgorithm == "RSD") {
+			if (projectAssignmentAlgorithm.equals("RSD")) {
 				projectMatchingAlgorithm = new RandomizedSerialDictatorship(groupForming.finalFormedGroups(), projects);
 			} else {
 				projectMatchingAlgorithm = new MaxFlow(groupForming.finalFormedGroups(), projects);
