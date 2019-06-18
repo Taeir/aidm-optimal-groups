@@ -17,6 +17,7 @@ public class Application
 	public static final int iterations = 200;
 	public static final int courseEdition = 10;
 	public static final String projectAssignmentAlgorithm = "RSD"; // RSD, MaxFlow
+	public static final boolean fixedGrouping = false; //If true, run bepsys with SetOfConstrainedGroupSizes, if not, run original bepsys
 
 	public static void main(String[] args) {
 		DataSource dataSource;
@@ -47,7 +48,7 @@ public class Application
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
 
-			BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, minGroupSize, maxGroupSize);
+			BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, minGroupSize, maxGroupSize, fixedGrouping);
 
 			ProjectMatchingAlgorithm projectMatchingAlgorithm = null;
 			if (projectAssignmentAlgorithm == "RSD") {
