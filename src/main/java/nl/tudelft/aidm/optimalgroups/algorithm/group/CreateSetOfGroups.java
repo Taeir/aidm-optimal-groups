@@ -5,15 +5,13 @@ import java.util.Map;
 
 final public class CreateSetOfGroups
 {
-    private CreateSetOfGroups()
-    {}
 
     /**
      * Given an amount of students and group size constraints, calculate a possible set of group sizes
      * The algorithm works from max size downwards, preferring to create groups with as many students as possible
      * @Return A HashMap where the key is the size of a group and the value the amount of groups with that size
      */
-    static public Map<Integer, Integer> CreateSetOfGroups(int nrStudents, int minGroupSize, int maxGroupSize)
+    public static Map<Integer, Integer> createSetOfGroups(int nrStudents, int minGroupSize, int maxGroupSize)
     {
         Map<Integer, Integer> groupSizes = new HashMap<Integer, Integer>(); //Key = size of group, Value = amount of groups with that size
         boolean matchingDone = false;
