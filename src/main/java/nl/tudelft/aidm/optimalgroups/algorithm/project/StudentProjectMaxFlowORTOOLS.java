@@ -102,24 +102,54 @@ public class StudentProjectMaxFlowORTOOLS //implements ProjectMatchingAlgorithm
 
 		MinCostFlow minCostFlow = new MinCostFlow();
 
-		final List<Integer> henk = new ArrayList<>();
-		henk.add(0);
+//		int source = Integer.MAX_VALUE - 1;
+//		int sink = Integer.MAX_VALUE;
 
+		int source = studentVertices.count() * projectSlotVertices.count();
+		int sink = source + 1;
+
+		minCostFlow.setNodeSupply(source, studentVertices.count());
+		minCostFlow.setNodeSupply(sink, -studentVertices.count());
+
+		left.forEach(studentVertex -> {
+			int result = minCostFlow.addArcWithCapacityAndUnitCost(source, studentVertex.id, 1, 1);
+
+			if (result < 0) {
+				System.out.println("Adding edge from source " + source + " -> " + studentVertex.id);
+				throw new RuntimeException("Boe 1");
+			}
+//			System.out.println("Adding edge from source " + source + " -> " + studentVertex.id);
+//			minCostFlow.setNodeSupply(studentVertex.id, 0);
+		});
+
+		right.forEach(slotVertex -> {
+			int result = minCostFlow.addArcWithCapacityAndUnitCost(slotVertex.id, sink, 1, 1);
+
+			if (result < 0) {
+				System.out.println("Adding edge from slot " + slotVertex.id + " -> sink " + sink);
+				throw new RuntimeException("Boe 2");
+			}
+//			minCostFlow.setNodeSupply(slotVertex.id, 0);
+		});
+
+		List<Integer> arcs = new ArrayList<>();
 		edges.forEach(edge -> {
-			minCostFlow.addArcWithCapacityAndUnitCost(edge.from.id, edge.to.id, edge.weight, 1);
+			int arc = minCostFlow.addArcWithCapacityAndUnitCost(edge.from.id, edge.to.id, 1, edge.weight);
+			arcs.add(arc);
 
-			minCostFlow.setNodeSupply(edge.from.id, 1);
-			minCostFlow.setNodeSupply(edge.to.id, -1);
+			studentVertices.asReadonlyList().stream().filter(s -> s.id == edge.from.id).findAny().get();
+			projectSlotVertices.asReadonlyList().stream().filter(ps -> ps.id == edge.to.id).findAny().get();
 
-			henk.set(0, henk.get(0) + 1);
 		});
 
 		var status = minCostFlow.solveMaxFlowWithMinCost();
 
-		for (int i = 0; i < minCostFlow.getNumArcs(); i++)
+		for (var arc : arcs)
 		{
-			int from = minCostFlow.getTail(i);
-			int to = minCostFlow.getHead(i);
+			if (minCostFlow.getFlow(arc) == 0) continue;
+
+			int from = minCostFlow.getTail(arc);
+			int to = minCostFlow.getHead(arc);
 
 			Agent student = studentVertices.asReadonlyList().stream().filter(v -> v.id == from).findAny().get().content().theStudent;
 			Project project = projectSlotVertices.asReadonlyList().stream().filter(v -> v.id == to).findAny().get().content().theProjectSlot.belongingToProject();
