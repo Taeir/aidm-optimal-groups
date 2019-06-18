@@ -7,5 +7,6 @@ build
 .project
 .classpath
 bin/
+lib
 
 !/gradle
