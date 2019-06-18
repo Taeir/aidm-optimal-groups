@@ -28,7 +28,6 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
     public CombinedPreferencesGreedy(Agents students, int minGroupSize, int maxGroupSize) {
         this.students = students;
-        this.students.combinePreferences();
 
         this.minGroupSize = minGroupSize;
         this.maxGroupSize = maxGroupSize;
@@ -49,6 +48,8 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
         if (this.formedGroups.count() > 0) {
             initializeObjects(this.students);
         }
+
+        this.students.useCombinedPreferences();
 
         // Construct a list of agent sorted (descending) by the size of their group preference (as an attempt for a nice heuristic)
         List<Agent> sortedList = new ArrayList<>(this.students.asCollection());
@@ -97,6 +98,8 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
             Group.TentativeGroup newTentativeGroup = new Group.TentativeGroup(newGroupAgents, aggregatedPreference);
             this.formedGroups.addAsFormed(newTentativeGroup);
         }
+
+        this.students.useDatabasePreferences();
     }
 
     @Override

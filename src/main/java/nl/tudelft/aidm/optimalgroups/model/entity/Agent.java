@@ -27,6 +27,10 @@ public abstract class Agent
 		this.usingCombinedPreference = true;
 	}
 
+	public void useDatabaseProjectPreferences() {
+		this.usingCombinedPreference = false;
+	}
+
 	public ProjectPreference getProjectPreference() {
 		return (usingCombinedPreference) ? this.combinedPreference : this.projectPreference;
 	}

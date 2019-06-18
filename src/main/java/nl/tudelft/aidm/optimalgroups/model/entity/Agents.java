@@ -48,9 +48,15 @@ public class Agents
 		return agents;
 	}
 
-	public void combinePreferences() {
+	public void useCombinedPreferences() {
 		for (Agent a : this.asCollection()) {
 			a.replaceProjectPreferenceWithCombined(this);
+		}
+	}
+
+	public void useDatabasePreferences() {
+		for (Agent a : this.asCollection()) {
+			a.useDatabaseProjectPreferences();
 		}
 	}
 
