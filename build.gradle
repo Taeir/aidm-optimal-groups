@@ -20,7 +20,7 @@ repositories {
 //    }
 //}
 
-applicationDefaultJvmArgs = ["-Djava.library.path=optimization/lib"]
+applicationDefaultJvmArgs = ["-Djava.library.path=lib"]
 
 dependencies {
 
