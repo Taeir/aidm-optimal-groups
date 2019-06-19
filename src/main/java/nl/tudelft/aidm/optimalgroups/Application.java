@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 
 public class Application
 {
-	public static final int iterations = 1;
+	public static final int iterations = 200;
 	public static final int courseEdition = 4;
 	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
 	public static final String preferenceAggregatingMethod = "Copeland";
@@ -20,7 +20,7 @@ public class Application
 	public static void main(String[] args) {
 		DataSource dataSource;
 
-		if (true)
+		if (false)
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
 		else
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");

@@ -134,7 +134,12 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 					int wins = 0;
 					int defeats = 0;
 					for (Agent a : this.agents.asCollection()) {
-						if (a.getProjectPreference().asMap().get(project) < a.getProjectPreference().asMap().get(compareProject)) {
+						Map<Integer, Integer> preferences = a.getProjectPreference().asMap();
+						if (preferences.get(project) == null || preferences.get(compareProject) == null) {
+							continue;
+						}
+
+						if (preferences.get(project) < preferences.get(compareProject)) {
 							wins++;
 						} else {
 							defeats++;

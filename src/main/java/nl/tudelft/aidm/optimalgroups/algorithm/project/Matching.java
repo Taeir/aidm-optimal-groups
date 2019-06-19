@@ -106,7 +106,7 @@ public interface Matching<FROM, TO>
 
 		public FormedGroupToProjecMatchings toProjectMatchings()
 		{
-			if (toProjectMatchingsResult.get() != null)
+			if (toProjectMatchingsResult != null && toProjectMatchingsResult.get() != null)
 				return toProjectMatchingsResult.get();
 
 			var result = this.asList().stream().map(formedGroupProjectSlotMatch -> {
