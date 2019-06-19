@@ -17,7 +17,7 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 	}
 
 	// make new
-	public Group addAsFormed(Group tentativeGroup)
+	public Group.FormedGroup addAsFormed(Group tentativeGroup)
 	{
 		var group = new Group.FormedGroup(tentativeGroup.members(), tentativeGroup.projectPreference(), groups.size());
 		groups.add(group);

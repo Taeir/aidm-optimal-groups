@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.entity.*;
 
 public abstract class AUPCR {
 
-    protected Matching<Group.FormedGroup, Project.ProjectSlot> matching;
+    protected Matching<? extends Group, Project> matching;
     protected Projects projects;
     protected Agents students;
 
@@ -16,7 +16,7 @@ public abstract class AUPCR {
      * An AUPCR of 1 is perfect and an AUPCR of 0 is terrible.
      * Defined on page 8 of (Diebold & Bichler, 2016)
      */
-    public AUPCR (Matching<Group.FormedGroup, Project.ProjectSlot> matching, Projects projects, Agents students) {
+    public AUPCR (Matching<? extends Group, Project> matching, Projects projects, Agents students) {
         this.matching = matching;
         this.projects = projects;
         this.students = students;
@@ -36,7 +36,7 @@ public abstract class AUPCR {
     protected abstract int aupc();
 
     public static class StudentAUPCR extends AUPCR {
-        public StudentAUPCR (Matching<Group.FormedGroup, Project.ProjectSlot> matching, Projects projects, Agents students) {
+        public StudentAUPCR (Matching<? extends Group, Project> matching, Projects projects, Agents students) {
             super(matching, projects, students);
         }
 
@@ -49,7 +49,7 @@ public abstract class AUPCR {
         protected float totalArea() {
             float studentsWithPreference = 0;
             for (Agent student : this.students.asCollection()) {
-                if (student.projectPreference.asArray().length > 0)
+                if (student.projectPreference.isCompletelyIndifferent() == false)
                     studentsWithPreference += 1;
             }
 
@@ -63,8 +63,8 @@ public abstract class AUPCR {
         protected int aupc() {
             int result = 0;
             for (int r = 1; r <= this.projects.count(); r++) {
-                for (Matching.Match<Group.FormedGroup, Project.ProjectSlot> match : this.matching.asList()) {
-                    AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
+                for (Matching.Match<? extends Group, Project> match : this.matching.asList()) {
+                    AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
                     for (AssignedProjectRankStudent metric : assignedProjectRank.studentRanks()) {
 
                         // Student rank -1 indicates no preference, do not include this student
@@ -80,7 +80,7 @@ public abstract class AUPCR {
     }
 
     public static class GroupAUPCR extends AUPCR {
-        public GroupAUPCR (Matching<Group.FormedGroup, Project.ProjectSlot> matching, Projects projects, Agents students) {
+        public GroupAUPCR (Matching<? extends Group, Project> matching, Projects projects, Agents students) {
             super(matching, projects, students);
         }
 
@@ -106,8 +106,8 @@ public abstract class AUPCR {
         protected int aupc() {
             int result = 0;
             for (int r = 1; r <= projects.count(); r++) {
-                for (Matching.Match<Group.FormedGroup, Project.ProjectSlot> match : matching.asList()) {
-                    AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
+                for (Matching.Match<? extends Group, Project> match : matching.asList()) {
+                    AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
                     if (assignedProjectRank.groupRank() <= r) {
                         result += 1;
                     }

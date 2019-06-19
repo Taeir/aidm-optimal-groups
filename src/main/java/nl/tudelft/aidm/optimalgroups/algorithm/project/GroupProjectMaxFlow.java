@@ -13,20 +13,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MaxFlow implements ProjectMatchingAlgorithm
+public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGroup>
 {
 	private final FormedGroups groups;
 	private final Projects projects;
 
-	public MaxFlow(FormedGroups groups, Projects projects)
+	public GroupProjectMaxFlow(FormedGroups groups, Projects projects)
 	{
 		this.groups = groups;
 		this.projects = projects;
 	}
 
+	private FormedGroupToProjectSlotMatchings result = null;
+
 	@Override
-	public Matching.FormedGroupToProjectMatchings result()
+	public List<Match<Group.FormedGroup, Project>> asList()
 	{
+		if (result != null)
+			return result.toProjectMatchings().asList();
+
+		var result = new FormedGroupToProjectSlotMatchings();
+
 		GroupVertices groupVertices = new GroupVertices(groups);
 		ProjectVertices projectVertices = new ProjectVertices(projects);
 
@@ -40,17 +47,18 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 		var matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
 		var matchingAsListOfEdges = matching.asListOfEdges();
 
-		var resultingMatching = new Matching.FormedGroupToProjectMatchings();
 		for (Edge<GroupProjectMatching> matchEdge : matchingAsListOfEdges)
 		{
 			Group.FormedGroup group = ((GroupVertexContent) matchEdge.from.content()).group;
 			Project.ProjectSlot project = ((ProjectVertexContent) matchEdge.to.content()).slot;
 
 			var match = new Matching.FormedGroupToProjectSlotMatch(group, project);
-			resultingMatching.add(match);
+			result.add(match);
 		}
 
-		return resultingMatching;
+		this.result = result;
+
+		return result.toProjectMatchings().asList();
 	}
 
 	private static class GroupVertices extends Vertices<GroupVertexContent>
@@ -102,7 +110,7 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 					List<Vertex<ProjectVertexContent>> projectSlotVertices = projects.slotVerticesForProject(projectId);
 
 					projectSlotVertices.forEach(projectSlotVertex -> {
-						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, rank)); // todo proper weight
+						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, rank));
 					});
 				});
 

@@ -1,10 +1,13 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
+
 import java.util.HashMap;
 import java.util.Map;
 
 final public class SetOfConstrainedGroupSizes
 {
+
     /**
      * How will the algorithm create a set of group sizes with constraints?
      */
@@ -15,8 +18,7 @@ final public class SetOfConstrainedGroupSizes
 
     public Map<Integer, Integer> setOfGroups; // A HashMap where the key is the size of a group and the value the amount of groups with that size
     private int nrStudents;
-    private int minGroupSize;
-    private int maxGroupSize;
+    private final GroupSizeConstraint groupSizeConstraint;
     private SetCreationAlgorithm algorithm;
 
     /**
@@ -25,10 +27,9 @@ final public class SetOfConstrainedGroupSizes
      * To keep track of intermediate group sets, recordGroupFormedOfSize will decrement the amount of groups formable for that size, if possible
      * To check if a group with a certain size can be made, use mayFormGroupOfSize
      */
-    public SetOfConstrainedGroupSizes(int nrStudents, int minGroupSize, int maxGroupSize, SetCreationAlgorithm algorithm){
+    public SetOfConstrainedGroupSizes(int nrStudents, GroupSizeConstraint groupSizeConstraint, SetCreationAlgorithm algorithm){
         this.nrStudents = nrStudents;
-        this.minGroupSize = minGroupSize;
-        this.maxGroupSize = maxGroupSize;
+        this.groupSizeConstraint = groupSizeConstraint;
         this.algorithm = algorithm;
         createSetOfGroups();
     }
@@ -67,11 +68,15 @@ final public class SetOfConstrainedGroupSizes
     @SuppressWarnings("Duplicates")
     private void createSetOfGroups()
     {
+        int minGroupSize = groupSizeConstraint.minSize();
+        int maxGroupSize = groupSizeConstraint.maxSize();
+
         if(algorithm == SetCreationAlgorithm.MAX_FOCUS)
         {
+            boolean matchingDone = false;
 
             setOfGroups = new HashMap<>(); //Key = size of group, Value = amount of groups with that size
-            boolean matchingDone = false;
+
             while(!matchingDone)
             {
                 int nrGroupsWithMaxSize = nrStudents / maxGroupSize; //Create as many groups of max size as possible

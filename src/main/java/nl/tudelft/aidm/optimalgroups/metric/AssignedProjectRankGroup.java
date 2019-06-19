@@ -7,11 +7,11 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class AssignedProjectRank
+public class AssignedProjectRankGroup
 {
-	private Matching.Match<Group.FormedGroup, Project.ProjectSlot> match;
+	private Matching.Match<? extends Group, Project> match;
 
-	public AssignedProjectRank(Matching.Match<Group.FormedGroup, Project.ProjectSlot> match)
+	public AssignedProjectRankGroup(Matching.Match<? extends Group, Project> match)
 	{
 		this.match = match;
 	}
@@ -22,7 +22,7 @@ public class AssignedProjectRank
 	 */
 	public int groupRank()
 	{
-		int projectId = match.to().belongingToProject().id();
+		int projectId = match.to().id();
 		int[] preferences = match.from().projectPreference().asArray();
 
 		RankInArray rankInArray = new RankInArray();

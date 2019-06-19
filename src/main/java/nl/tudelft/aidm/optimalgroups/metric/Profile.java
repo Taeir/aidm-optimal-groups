@@ -9,11 +9,11 @@ import java.util.Map;
 
 public abstract class Profile {
 
-    protected Matching<Group.FormedGroup, Project.ProjectSlot> matching;
+    protected Matching<Group.FormedGroup, Project> matching;
     protected Map<Integer, Integer> profile = null;
     protected int maximumRank = 1;
 
-    public Profile (Matching<Group.FormedGroup, Project.ProjectSlot> matching) {
+    public Profile (Matching<Group.FormedGroup, Project> matching) {
         this.matching = matching;
     }
 
@@ -52,15 +52,15 @@ public abstract class Profile {
 
     public static class StudentProjectProfile extends Profile {
 
-        public StudentProjectProfile(Matching<Group.FormedGroup, Project.ProjectSlot> matching) {
+        public StudentProjectProfile(Matching<Group.FormedGroup, Project> matching) {
             super(matching);
         }
 
         @Override
         void calculate() {
             this.profile = new HashMap<>();
-            for (Matching.Match<Group.FormedGroup, Project.ProjectSlot> match : this.matching.asList()) {
-                AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
+            for (Matching.Match<Group.FormedGroup, Project> match : this.matching.asList()) {
+                AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
 
                 assignedProjectRank.studentRanks().forEach(metric -> {
                     int studentsRank = metric.studentsRank();
@@ -92,15 +92,15 @@ public abstract class Profile {
 
     public static class GroupProjectProfile extends Profile {
 
-        public GroupProjectProfile(Matching<Group.FormedGroup, Project.ProjectSlot> matching) {
+        public GroupProjectProfile(Matching<Group.FormedGroup, Project> matching) {
             super(matching);
         }
 
         @Override
         void calculate() {
             this.profile = new HashMap<>();
-            for (Matching.Match<Group.FormedGroup, Project.ProjectSlot> match : this.matching.asList()) {
-                AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
+            for (Matching.Match<Group.FormedGroup, Project> match : this.matching.asList()) {
+                AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
                 int groupRank = assignedProjectRank.groupRank();
 
                 this.maximumRank = Math.max(this.maximumRank, groupRank);
