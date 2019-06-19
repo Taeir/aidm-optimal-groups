@@ -3,62 +3,65 @@ package nl.tudelft.aidm.optimalgroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.metric.*;
+import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
-import org.sql2o.Query;
-import org.sql2o.ResultSetHandler;
-import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
-import java.util.List;
 
 public class Application
 {
 	public static final int iterations = 200;
-	public static final int courseEdition = 10;
-	public static final String projectAssignmentAlgorithm = "RSD"; // RSD, MaxFlow
-	public static final boolean fixedGrouping = false; //If true, run bepsys with SetOfConstrainedGroupSizes, if not, run original bepsys
+	public static final int courseEdition = 4;
+	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
+	public static final String preferenceAggregatingMethod = "Copeland";
+	public static final String projectAssignmentAlgorithm = "RSD";
 
 	public static void main(String[] args) {
 		DataSource dataSource;
 
 		if (false)
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
 		else
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
 
-		int[] groupSizes = getGroupSizes(dataSource);
-		int minGroupSize = groupSizes[0];
-		int maxGroupSize = groupSizes[1];
-
-
+		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, courseEdition);
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
 
 		GroupPreferenceSatisfactionDistribution[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionDistribution[iterations];
-		AssignedProjectRankDistribution[] groupProjectRankDistributions = new AssignedProjectRankDistribution[iterations];
+		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
 
 		// Fetch agents and from DB before loop; they don't change for another iteration
 		Agents agents = Agents.from(dataSource, courseEdition);
 		Projects projects = Projects.fromDb(dataSource, courseEdition);
 		System.out.println("Amount of projects: " + projects.count());
+		System.out.println("Amount of students: " + agents.count());
 
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
 
-			BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, minGroupSize, maxGroupSize, fixedGrouping);
+			GroupFormingAlgorithm formedGroups;
+			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
+				formedGroups = new CombinedPreferencesGreedy(agents, groupSizeConstraint);
+			} else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
+				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, true);
+			} else {
+				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, false);
+			}
 
-			ProjectMatchingAlgorithm projectMatchingAlgorithm = null;
-			if (projectAssignmentAlgorithm == "RSD") {
-				projectMatchingAlgorithm = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
-			} else if (projectAssignmentAlgorithm == "MaxFlow") {
-				projectMatchingAlgorithm = new MaxFlow(formedGroups.finalFormedGroups(), projects);
+			GroupProjectMatching groupProjectMatching = null;
+
+			if (projectAssignmentAlgorithm.equals("RSD")) {
+				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
+			} else {
+				groupProjectMatching = new GroupProjectMaxFlow(formedGroups.finalFormedGroups(), projects);
 			}
 
 			//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
-			Matching<Group.FormedGroup, Project.ProjectSlot> matching = projectMatchingAlgorithm.result();
+			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
 
 			Profile studentProfile = new Profile.StudentProjectProfile(matching);
 			//studentProfile.printResult();
@@ -75,7 +78,7 @@ public class Application
 			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankDistribution groupProjectRankDistribution = new AssignedProjectRankDistribution(matching, projects.count());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects.count());
 			//groupProjectRankDistribution.printResult();
 
 			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());
@@ -102,41 +105,17 @@ public class Application
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
 		groupPreferenceSatisfactionDistribution.printResult();
-		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
 		groupProjectRankDistribution.printResult();
-		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
 		studentProjectRankDistribution.printResult();
-		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
-	}
-
-
-	public static int[] getGroupSizes(DataSource dataSource)
-	{
-		int[] groupSizes = new int[2];
-		var sql = "SELECT min_group_size FROM course_configurations where course_edition_id = " + courseEdition;
-		var sql2 = "SELECT max_group_size FROM course_configurations where course_edition_id = " + courseEdition;
-		try (var connection = new Sql2o(dataSource).open())
-		{
-			Query query = connection.createQuery(sql);
-			List<Integer> minGroupSizes = query.executeAndFetch(
-					(ResultSetHandler<Integer>) rs ->
-							(rs.getInt("min_group_size"))
-			);
-			Query query2 = connection.createQuery(sql2);
-			List<Integer> maxGroupSizes = query2.executeAndFetch(
-					(ResultSetHandler<Integer>) rs ->
-							(rs.getInt("max_group_size"))
-			);
-			groupSizes[0] = minGroupSizes.get(0);
-			groupSizes[1] = maxGroupSizes.get(0);
-		}
-		return groupSizes;
 	}
 }

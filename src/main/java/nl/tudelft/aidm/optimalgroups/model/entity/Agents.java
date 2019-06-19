@@ -22,7 +22,7 @@ public class Agents
 
 	private String courseEditionId;
 
-	private Agents(List<Agent> agents)
+	public Agents(List<Agent> agents)
 	{
 		this.agents = agents;
 
@@ -46,6 +46,18 @@ public class Agents
 	public Collection<Agent> asCollection()
 	{
 		return agents;
+	}
+
+	public void useCombinedPreferences() {
+		for (Agent a : this.asCollection()) {
+			a.replaceProjectPreferenceWithCombined(this);
+		}
+	}
+
+	public void useDatabasePreferences() {
+		for (Agent a : this.asCollection()) {
+			a.useDatabaseProjectPreferences();
+		}
 	}
 
 	public Agents with(Agents other)

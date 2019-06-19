@@ -3,14 +3,15 @@ package nl.tudelft.aidm.optimalgroups.metric;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
+import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 import nl.tudelft.aidm.optimalgroups.model.entity.Project.ProjectSlot;
 
 public class GroupPreferenceSatisfaction
 {
-	private Matching.Match<Group.FormedGroup, ProjectSlot> match;
+	private Matching.Match<Group.FormedGroup, Project> match;
 	private Agent student;
 
-	public GroupPreferenceSatisfaction(Matching.Match<Group.FormedGroup, ProjectSlot> match, Agent student)
+	public GroupPreferenceSatisfaction(Matching.Match<Group.FormedGroup, Project> match, Agent student)
 	{
 		this.match = match;
 		this.student = student;

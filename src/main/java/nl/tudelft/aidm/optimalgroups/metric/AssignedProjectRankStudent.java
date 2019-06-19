@@ -6,9 +6,9 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 public class AssignedProjectRankStudent
 {
 	private Agent student;
-	private Project.ProjectSlot projectSlot;
+	private Project projectSlot;
 
-	public AssignedProjectRankStudent(Agent student, Project.ProjectSlot projectSlot)
+	public AssignedProjectRankStudent(Agent student, Project projectSlot)
 	{
 		this.student = student;
 		this.projectSlot = projectSlot;
@@ -21,7 +21,10 @@ public class AssignedProjectRankStudent
 
 	public int studentsRank()
 	{
-		int projectId = projectSlot.belongingToProject().id();
+		int projectId = projectSlot.id();
+
+		if (student.projectPreference.isCompletelyIndifferent())
+			return -1;
 
 		int rank = new RankInArray().determineRank(projectId, student.projectPreference.asArray());
 		return rank;
