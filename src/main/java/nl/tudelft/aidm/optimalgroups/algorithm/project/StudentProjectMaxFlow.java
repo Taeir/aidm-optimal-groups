@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 import louchtch.graphmatch.matching.MaxFlowMatching;
 import louchtch.graphmatch.model.*;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
-import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 
 import java.util.*;
 
@@ -56,7 +56,7 @@ public class StudentProjectMaxFlow implements StudentProjectMatching //implement
 		for (var x : groupedBySlot.entrySet())
 		{
 			Agents agents = Agents.from(x.getValue());
-			Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+			Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(tentativeGroup);
 
 
