@@ -13,12 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MaxFlow implements ProjectMatchingAlgorithm
+public class GroupProjectMaxFlow implements ProjectMatchingAlgorithm
 {
 	private final FormedGroups groups;
 	private final Projects projects;
 
-	public MaxFlow(FormedGroups groups, Projects projects)
+	public GroupProjectMaxFlow(FormedGroups groups, Projects projects)
 	{
 		this.groups = groups;
 		this.projects = projects;
@@ -102,7 +102,7 @@ public class MaxFlow implements ProjectMatchingAlgorithm
 					List<Vertex<ProjectVertexContent>> projectSlotVertices = projects.slotVerticesForProject(projectId);
 
 					projectSlotVertices.forEach(projectSlotVertex -> {
-						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, rank)); // todo proper weight
+						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, rank));
 					});
 				});
 

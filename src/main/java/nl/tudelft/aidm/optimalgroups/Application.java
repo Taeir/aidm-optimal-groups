@@ -3,6 +3,7 @@ package nl.tudelft.aidm.optimalgroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.metric.*;
+import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
 import org.sql2o.Query;
@@ -22,16 +23,12 @@ public class Application
 	public static void main(String[] args) {
 		DataSource dataSource;
 
-		if (false)
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
+		if (true)
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
 		else
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
 
-		int[] groupSizes = getGroupSizes(dataSource);
-		int minGroupSize = groupSizes[0];
-		int maxGroupSize = groupSizes[1];
-
-
+		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, courseEdition);
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -49,20 +46,20 @@ public class Application
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
 
-			GroupFormingAlgorithm groupForming;
+			GroupFormingAlgorithm formedGroups;
 			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
-				groupForming = new CombinedPreferencesGreedy(agents, 4, 6);
+				formedGroups = new CombinedPreferencesGreedy(agents, groupSizeConstraint);
 			} else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
-				groupForming = new BepSysWithRandomGroups(agents, 4, 6, true);
+				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, true);
 			} else {
-				groupForming = new BepSysWithRandomGroups(agents, 4, 6, false);
+				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, false);
 			}
 
-			ProjectMatchingAlgorithm projectMatchingAlgorithm;
+			ProjectMatchingAlgorithm projectMatchingAlgorithm = null;
 			if (projectAssignmentAlgorithm.equals("RSD")) {
-				projectMatchingAlgorithm = new RandomizedSerialDictatorship(groupForming.finalFormedGroups(), projects);
+				projectMatchingAlgorithm = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
 			} else {
-				projectMatchingAlgorithm = new MaxFlow(groupForming.finalFormedGroups(), projects);
+				projectMatchingAlgorithm = new GroupProjectMaxFlow(formedGroups.finalFormedGroups(), projects);
 			}
 
 			Matching<Group.FormedGroup, Project.ProjectSlot> matching = projectMatchingAlgorithm.result();
@@ -121,29 +118,5 @@ public class Application
 
 		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
-	}
-
-
-	public static int[] getGroupSizes(DataSource dataSource)
-	{
-		int[] groupSizes = new int[2];
-		var sql = "SELECT min_group_size FROM course_configurations where course_edition_id = " + courseEdition;
-		var sql2 = "SELECT max_group_size FROM course_configurations where course_edition_id = " + courseEdition;
-		try (var connection = new Sql2o(dataSource).open())
-		{
-			Query query = connection.createQuery(sql);
-			List<Integer> minGroupSizes = query.executeAndFetch(
-					(ResultSetHandler<Integer>) rs ->
-							(rs.getInt("min_group_size"))
-			);
-			Query query2 = connection.createQuery(sql2);
-			List<Integer> maxGroupSizes = query2.executeAndFetch(
-					(ResultSetHandler<Integer>) rs ->
-							(rs.getInt("max_group_size"))
-			);
-			groupSizes[0] = minGroupSizes.get(0);
-			groupSizes[1] = maxGroupSizes.get(0);
-		}
-		return groupSizes;
 	}
 }

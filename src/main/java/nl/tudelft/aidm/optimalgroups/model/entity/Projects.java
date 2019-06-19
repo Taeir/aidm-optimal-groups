@@ -5,9 +5,12 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public interface Projects
 {
@@ -17,8 +20,14 @@ public interface Projects
 	List<Project.ProjectSlot> slotsForProject(int projectId);
 
 	void forEach(Consumer<Project> fn);
+	Projects without(Project project);
 
 	Collection<Project> asCollection();
+
+	static Projects from(List<Project> projects)
+	{
+		return new ListBasedProjectsImpl(new ArrayList<>(projects));
+	}
 
 	abstract class ListBasedProjects implements Projects
 	{
@@ -33,6 +42,12 @@ public interface Projects
 		public void forEach(Consumer<Project> fn)
 		{
 			projectList().forEach(fn);
+		}
+
+		@Override
+		public Projects without(Project toExclude)
+		{
+			return new FilteredProjects(this.projectList(), toExclude);
 		}
 
 		@Override
@@ -66,6 +81,60 @@ public interface Projects
 		@Override
 		public Collection<Project> asCollection() { return projectList(); }
 
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o)
+			{
+				return true;
+			}
+			if (!(o instanceof ListBasedProjects))
+			{
+				return false;
+			}
+			ListBasedProjects that = (ListBasedProjects) o;
+			return numTotalSlots == that.numTotalSlots && projectList().equals(that.projectList());
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(numTotalSlots);
+		}
+	}
+
+	class ListBasedProjectsImpl extends ListBasedProjects
+	{
+		private final List<Project> projects;
+
+		ListBasedProjectsImpl(List<Project> projects)
+		{
+			this.projects = projects;
+		}
+
+		@Override
+		protected List<Project> projectList()
+		{
+			return projects;
+		}
+	}
+
+	class FilteredProjects extends Projects.ListBasedProjects
+	{
+		private final List<Project> projects;
+		private final Project excluded;
+
+		public FilteredProjects(List<Project> projects, Project excluded)
+		{
+			this.excluded = excluded;
+			this.projects = projects.stream().filter(p -> !p.equals(excluded)).collect(Collectors.toList());
+		}
+
+		@Override
+		protected List<Project> projectList()
+		{
+			return projects;
+		}
 	}
 
 	class InDb extends ListBasedProjects

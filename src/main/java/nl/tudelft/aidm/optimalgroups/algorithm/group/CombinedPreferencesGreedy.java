@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
 import nl.tudelft.aidm.optimalgroups.model.entity.FormedGroups;
@@ -15,21 +16,18 @@ import static java.util.Map.Entry.*;
 public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
     private Agents students;
+    private final GroupSizeConstraint groupSizeConstraint;
     private Map<String, Agent> availableStudents;
     private Map<String, Agent> unavailableStudents;
-
-    private final int maxGroupSize;
-    private final int minGroupSize;
 
     private FormedGroups formedGroups;
 
     private boolean done = false;
 
-    public CombinedPreferencesGreedy(Agents students, int minGroupSize, int maxGroupSize) {
+    public CombinedPreferencesGreedy(Agents students, GroupSizeConstraint groupSizeConstraint) {
         this.students = students;
+        this.groupSizeConstraint = groupSizeConstraint;
 
-        this.minGroupSize = minGroupSize;
-        this.maxGroupSize = maxGroupSize;
         this.initializeObjects(students);
     }
 
@@ -54,7 +52,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
         List<Agent> sortedList = new ArrayList<>(this.students.asCollection());
         sortedList.sort(Comparator.comparing(Agent::groupPreferenceLength).reversed());
 
-        SetOfConstrainedGroupSizes groupSizes = new SetOfConstrainedGroupSizes(this.students.count(), this.minGroupSize, this.maxGroupSize, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+        SetOfConstrainedGroupSizes groupSizes = new SetOfConstrainedGroupSizes(this.students.count(), groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
 
         // Start iterating and forming groups greedily
         for (Agent student : sortedList) {
@@ -77,7 +75,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
             sortedDifferences.sort(comparingByValue());
 
 
-            List<Agent> agents = new ArrayList<>(this.maxGroupSize);
+            List<Agent> agents = new ArrayList<>(groupSizeConstraint.maxSize());
 
             // Put the student in the group
             this.availableStudents.remove(student.name);
@@ -85,8 +83,8 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
             agents.add(student);
 
             // Determine the group size
-            int groupSize = this.maxGroupSize;
-            while (groupSizes.mayFormGroupOfSize(groupSize) == false && groupSize >= this.minGroupSize) {
+            int groupSize = groupSizeConstraint.maxSize();
+            while (groupSizes.mayFormGroupOfSize(groupSize) == false && groupSize >= groupSizeConstraint.minSize()) {
                 groupSize--;
             }
 
