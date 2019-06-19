@@ -8,5 +8,6 @@ build
 .classpath
 bin/
 lib
+outputtxt/*
 
 !/gradle

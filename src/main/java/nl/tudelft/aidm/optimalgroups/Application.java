@@ -13,6 +13,7 @@ public class Application
 {
 	public static final int iterations = 200;
 	public static final int courseEdition = 4;
+	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
 	public static final String projectAssignmentAlgorithm = "RSD";
 
 	public static void main(String[] args) {
@@ -36,11 +37,19 @@ public class Application
 		Agents agents = Agents.from(dataSource, courseEdition);
 		Projects projects = Projects.fromDb(dataSource, courseEdition);
 		System.out.println("Amount of projects: " + projects.count());
+		System.out.println("Amount of students: " + agents.count());
 
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
 
-			BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint);
+			GroupFormingAlgorithm formedGroups;
+			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
+				formedGroups = new CombinedPreferencesGreedy(agents, groupSizeConstraint);
+			} else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
+				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, true);
+			} else {
+				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, false);
+			}
 
 			GroupProjectMatching groupProjectMatching = null;
 
@@ -95,15 +104,15 @@ public class Application
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
 		groupPreferenceSatisfactionDistribution.printResult();
-		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Group%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
 		groupProjectRankDistribution.printResult();
-		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Group%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
 		studentProjectRankDistribution.printResult();
-		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Project%s.txt", courseEdition, projectAssignmentAlgorithm));
+		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Group%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, projectAssignmentAlgorithm));
 
 		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);

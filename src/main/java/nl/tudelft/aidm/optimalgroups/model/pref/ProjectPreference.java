@@ -1,11 +1,14 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
+import edu.princeton.cs.algs4.StdOut;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface ProjectPreference
 {
@@ -27,8 +30,47 @@ public interface ProjectPreference
 	 * the available choices have equal rank to the agent
 	 * @return
 	 */
-	default boolean isCompletelyIndifferent() {
+	default boolean isCompletelyIndifferent()
+	{
 		return asArray().length == 0;
+	}
+
+	default int differenceTo(ProjectPreference otherPreference) {
+		Map<Integer, Integer> own = asMap();
+		Map<Integer, Integer> other = otherPreference.asMap();
+
+		// If the other does not have any preferences, return maximum difference to
+		// avoid picking this matching over people that do have preferences
+		if (other.size() == 0 || own.size() == 0) {
+			return Integer.MAX_VALUE;
+		}
+
+		int difference = 0;
+		for (Map.Entry<Integer, Integer> entry : own.entrySet()) {
+			difference += Math.abs(entry.getValue() - other.get(entry.getKey()));
+		}
+
+		return difference;
+	}
+
+	/**
+	 * Return the preferences as a map, where the keys represent the project
+	 * and the value represents the rank of the project.
+	 *
+	 * The highest rank is 1 and represents the most preferable project.
+	 *
+	 * @return Map
+	 */
+	default Map<Integer, Integer> asMap() {
+		int[] preferences = this.asArray();
+		var preferencesMap = new HashMap<Integer, Integer>(preferences.length);
+
+		for (int rank = 1; rank <= preferences.length; rank++) {
+			int project = preferences[rank - 1];
+			preferencesMap.put(project, rank);
+		}
+
+		return preferencesMap;
 	}
 
 	interface ProjectPreferenceConsumer
@@ -47,6 +89,7 @@ public interface ProjectPreference
 		private final String courseEditionId;
 
 		private int[] preferences = null;
+		private Map<Integer, Integer> preferencesMap = null;
 
 		public fromDb(DataSource dataSource, String userId, String courseEditionId)
 		{
@@ -66,6 +109,23 @@ public interface ProjectPreference
 			}
 
 			return preferences;
+		}
+
+		@Override
+		public Map<Integer, Integer> asMap() {
+			if (this.preferencesMap == null) {
+
+
+				int[] preferences = this.asArray();
+				this.preferencesMap = new HashMap<>(preferences.length);
+
+				for (int rank = 1; rank <= preferences.length; rank++) {
+					int project = preferences[rank - 1];
+					this.preferencesMap.put(project, rank);
+				}
+			}
+
+			return this.preferencesMap;
 		}
 
 		private List<Integer> fetchFromDb()

@@ -63,7 +63,7 @@ public class StudentProjectORTOOLSMaxflowExperiment
 //		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, 10);
 		groupings.forEach((proj, agentList) -> {
 			Agents agentsWithProject = new Agents(agentList);
-			BepSysWithRandomGroups bepSysWithRandomGroups = new BepSysWithRandomGroups(agentsWithProject, groupSizeConstraint);
+			BepSysWithRandomGroups bepSysWithRandomGroups = new BepSysWithRandomGroups(agentsWithProject, groupSizeConstraint, true);
 			var groups = bepSysWithRandomGroups.asCollection();
 
 			result.put(proj, groups);

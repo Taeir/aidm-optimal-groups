@@ -30,10 +30,10 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 		return groups.size();
 	}
 
-//	public Group getByIndex(int idx)
-//	{
-//		return groups.get(idx);
-//	}
+	public int countTotalStudents()
+	{
+		return groups.stream().mapToInt(formedGroup -> formedGroup.members().count()).sum();
+	}
 
 	public void forEach(Consumer<Group.FormedGroup> fn)
 	{
