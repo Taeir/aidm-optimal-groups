@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.entity;
 
-import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.Collection;
@@ -65,7 +65,7 @@ public interface Group
 		public TentativeGroup combined(TentativeGroup other)
 		{
 			Agents agents = members.with(other.members);
-			AverageProjectPreferenceOfAgents pref = new AverageProjectPreferenceOfAgents(agents);
+			ProjectPreferenceOfAgents pref = ProjectPreferenceOfAgents.getChosenMethod(agents);
 
 			return new TentativeGroup(agents, pref);
 		}

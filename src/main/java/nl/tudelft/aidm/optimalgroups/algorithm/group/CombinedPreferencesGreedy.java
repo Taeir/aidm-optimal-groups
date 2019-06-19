@@ -1,10 +1,11 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import nl.tudelft.aidm.optimalgroups.Application;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
 import nl.tudelft.aidm.optimalgroups.model.entity.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.*;
@@ -104,7 +105,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
             // Transform the new agents into a formed group
             Agents newGroupAgents = Agents.from(agents);
-            ProjectPreference aggregatedPreference = new AverageProjectPreferenceOfAgents(newGroupAgents);
+            ProjectPreference aggregatedPreference = ProjectPreferenceOfAgents.getChosenMethod(newGroupAgents);
             Group.TentativeGroup newTentativeGroup = new Group.TentativeGroup(newGroupAgents, aggregatedPreference);
             this.formedGroups.addAsFormed(newTentativeGroup);
 

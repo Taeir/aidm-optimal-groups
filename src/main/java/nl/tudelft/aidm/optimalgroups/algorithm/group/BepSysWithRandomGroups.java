@@ -2,6 +2,8 @@ package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
+
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -191,7 +193,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                 Agents agents = Agents.from(clique);
 
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
                 System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
@@ -522,7 +524,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
         }
     }
 
@@ -550,7 +552,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = g1.members().with(g2.members());
-            ProjectPreference preferences = new AverageProjectPreferenceOfAgents(agents);
+            ProjectPreference preferences = ProjectPreferenceOfAgents.getChosenMethod(agents);
 
             return new Group.TentativeGroup(agents, preferences);
         }
