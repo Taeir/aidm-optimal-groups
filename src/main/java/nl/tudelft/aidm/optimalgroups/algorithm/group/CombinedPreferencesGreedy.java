@@ -102,7 +102,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
             // Transform the new agents into a formed group
             Agents newGroupAgents = Agents.from(agents);
-            ProjectPreference aggregatedPreference = ProjectPreferenceOfAgents.getChosenMethod(newGroupAgents);
+            ProjectPreference aggregatedPreference = ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(newGroupAgents);
             Group.TentativeGroup newTentativeGroup = new Group.TentativeGroup(newGroupAgents, aggregatedPreference);
             this.formedGroups.addAsFormed(newTentativeGroup);
 

@@ -59,7 +59,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 		}
 	}
 
-	public static ProjectPreferenceOfAgents getChosenMethod(Agents agents) {
+	public static ProjectPreferenceOfAgents aggregateWithGloballyConfiguredAggregationMethod(Agents agents) {
 		if (Application.preferenceAggregatingMethod.equals("Copeland")) {
 			return new ProjectPreferenceOfAgents.Copeland(agents);
 		} else {

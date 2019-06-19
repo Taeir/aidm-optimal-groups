@@ -192,7 +192,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                 Agents agents = Agents.from(clique);
 
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
                 System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
@@ -525,7 +525,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
+            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
         }
     }
 
@@ -553,7 +553,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = g1.members().with(g2.members());
-            ProjectPreference preferences = ProjectPreferenceOfAgents.getChosenMethod(agents);
+            ProjectPreference preferences = ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents);
 
             return new Group.TentativeGroup(agents, preferences);
         }
