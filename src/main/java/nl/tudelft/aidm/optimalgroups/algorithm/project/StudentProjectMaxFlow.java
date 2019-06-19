@@ -8,7 +8,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.AverageProjectPreferenceOfAgents
 import java.util.*;
 
 @SuppressWarnings("Duplicates")
-public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
+public class StudentProjectMaxFlow implements StudentProjectMatching //implements GroupProjectMatching
 {
 	Agents students;
 	Projects projects;
@@ -42,8 +42,8 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 		this.projects = projects;
 	}
 
-	private Matching.FormedGroupToProjectMatchings theMatching = null;
-	public Matching.FormedGroupToProjectMatchings result()
+	private FormedGroupToProjectSlotMatchings theMatching = null;
+	public FormedGroupToProjectSlotMatchings result()
 	{
 		init();
 
@@ -52,7 +52,7 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 
 		FormedGroups formedGroups = new FormedGroups();
 
-		var resultingMatching = new Matching.FormedGroupToProjectMatchings();
+		var resultingMatching = new FormedGroupToProjectSlotMatchings();
 		for (var x : groupedBySlot.entrySet())
 		{
 			Agents agents = Agents.from(x.getValue());
@@ -69,6 +69,32 @@ public class StudentProjectMaxFlow //implements ProjectMatchingAlgorithm
 		return theMatching;
 	}
 
+
+	private List<Match<Agent, Project>> result = null;
+
+	@Override
+	public List<Match<Agent, Project>> asList()
+	{
+		if (result != null)
+			return result;
+
+//		ListBasedMatching listBasedMatching = new ListBasedMatching<Agent, Project>();
+
+		Map<Project, List<Agent>> groupedByProject = groupedByProject();
+
+		result = new ArrayList<>();
+
+		groupedByProject.forEach((project, agents) -> {
+			agents.forEach(agent -> {
+				result.add(new AgentToProjectMatch(agent, project));
+			});
+		});
+
+
+		return result;
+	}
+
+	@Override
 	public Map<Project, List<Agent>> groupedByProject()
 	{
 		init();

@@ -21,7 +21,17 @@ public interface ProjectPreference
 		}
 	}
 
-	public interface ProjectPreferenceConsumer
+	/**
+	 * Checks if the project preferences indicate complete indifference, that is an absence of preference.
+	 * In case of BepSys: the agent has no preferences available. In other scenarios this might mean that the
+	 * the available choices have equal rank to the agent
+	 * @return
+	 */
+	default boolean isCompletelyIndifferent() {
+		return asArray().length == 0;
+	}
+
+	interface ProjectPreferenceConsumer
 	{
 		/**
 		 * @param projectId the id of the project that has the given rank

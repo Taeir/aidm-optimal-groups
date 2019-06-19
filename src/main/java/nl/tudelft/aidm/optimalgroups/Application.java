@@ -6,12 +6,8 @@ import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
-import org.sql2o.Query;
-import org.sql2o.ResultSetHandler;
-import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
-import java.util.List;
 
 public class Application
 {
@@ -33,7 +29,7 @@ public class Application
 		float[] groupAUPCRs = new float[iterations];
 
 		GroupPreferenceSatisfactionDistribution[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionDistribution[iterations];
-		AssignedProjectRankDistribution[] groupProjectRankDistributions = new AssignedProjectRankDistribution[iterations];
+		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
 
 		// Fetch agents and from DB before loop; they don't change for another iteration
@@ -46,15 +42,16 @@ public class Application
 
 			BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint);
 
-			ProjectMatchingAlgorithm projectMatchingAlgorithm = null;
+			GroupProjectMatching groupProjectMatching = null;
+
 			if (projectAssignmentAlgorithm.equals("RSD")) {
-				projectMatchingAlgorithm = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
+				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
 			} else {
-				projectMatchingAlgorithm = new GroupProjectMaxFlow(formedGroups.finalFormedGroups(), projects);
+				groupProjectMatching = new GroupProjectMaxFlow(formedGroups.finalFormedGroups(), projects);
 			}
 
 			//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
-			Matching<Group.FormedGroup, Project.ProjectSlot> matching = projectMatchingAlgorithm.result();
+			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
 
 			Profile studentProfile = new Profile.StudentProjectProfile(matching);
 			//studentProfile.printResult();
@@ -71,7 +68,7 @@ public class Application
 			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankDistribution groupProjectRankDistribution = new AssignedProjectRankDistribution(matching, projects.count());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects.count());
 			//groupProjectRankDistribution.printResult();
 
 			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());

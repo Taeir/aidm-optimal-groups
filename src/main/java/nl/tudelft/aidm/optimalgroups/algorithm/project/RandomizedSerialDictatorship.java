@@ -7,7 +7,7 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
 
 import java.util.*;
 
-public class RandomizedSerialDictatorship implements ProjectMatchingAlgorithm
+public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.FormedGroup>
 {
 	private final FormedGroups groups;
 	private final Projects projects;
@@ -19,12 +19,17 @@ public class RandomizedSerialDictatorship implements ProjectMatchingAlgorithm
 	}
 
 	@Override
-	public Matching.FormedGroupToProjectMatchings result()
+	public List<Match<Group.FormedGroup, Project>> asList()
+	{
+		return result().toProjectMatchings().asList();
+	}
+
+	public FormedGroupToProjectSlotMatchings result()
 	{
 		if (this.projects.countAllSlots() < this.groups.count())
 			throw new RuntimeException("Too little project slots to assign all groups");
 
-		Matching.FormedGroupToProjectMatchings result = new Matching.FormedGroupToProjectMatchings();
+		FormedGroupToProjectSlotMatchings result = new FormedGroupToProjectSlotMatchings();
 
 		// Map from projectIds to amount of used slots
 		Map<Integer, Integer> usedSlots = new HashMap<>();

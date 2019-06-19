@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GroupProjectMaxFlow implements ProjectMatchingAlgorithm
+public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGroup>
 {
 	private final FormedGroups groups;
 	private final Projects projects;
@@ -24,9 +24,16 @@ public class GroupProjectMaxFlow implements ProjectMatchingAlgorithm
 		this.projects = projects;
 	}
 
+	private FormedGroupToProjectSlotMatchings result = null;
+
 	@Override
-	public Matching.FormedGroupToProjectMatchings result()
+	public List<Match<Group.FormedGroup, Project>> asList()
 	{
+		if (result != null)
+			return result.toProjectMatchings().asList();
+
+		var result = new FormedGroupToProjectSlotMatchings();
+
 		GroupVertices groupVertices = new GroupVertices(groups);
 		ProjectVertices projectVertices = new ProjectVertices(projects);
 
@@ -40,17 +47,18 @@ public class GroupProjectMaxFlow implements ProjectMatchingAlgorithm
 		var matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
 		var matchingAsListOfEdges = matching.asListOfEdges();
 
-		var resultingMatching = new Matching.FormedGroupToProjectMatchings();
 		for (Edge<GroupProjectMatching> matchEdge : matchingAsListOfEdges)
 		{
 			Group.FormedGroup group = ((GroupVertexContent) matchEdge.from.content()).group;
 			Project.ProjectSlot project = ((ProjectVertexContent) matchEdge.to.content()).slot;
 
 			var match = new Matching.FormedGroupToProjectSlotMatch(group, project);
-			resultingMatching.add(match);
+			result.add(match);
 		}
 
-		return resultingMatching;
+		this.result = result;
+
+		return result.toProjectMatchings().asList();
 	}
 
 	private static class GroupVertices extends Vertices<GroupVertexContent>

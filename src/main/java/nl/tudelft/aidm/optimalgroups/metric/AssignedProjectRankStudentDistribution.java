@@ -5,18 +5,18 @@ import nl.tudelft.aidm.optimalgroups.model.entity.Group;
 import nl.tudelft.aidm.optimalgroups.model.entity.Project;
 
 public class AssignedProjectRankStudentDistribution extends Distribution{
-    private Matching<Group.FormedGroup, Project.ProjectSlot> matching;
+    private Matching<? extends Group, Project> matching;
 
-    public AssignedProjectRankStudentDistribution(Matching<Group.FormedGroup, Project.ProjectSlot> matching, int projectAmount) {
+    public AssignedProjectRankStudentDistribution(Matching<? extends Group, Project> matching, int projectAmount) {
         super(0.5f, projectAmount + 0.5f, projectAmount);
         this.matching = matching;
     }
 
     @Override
     protected void calculate() {
-        for (Matching.Match<Group.FormedGroup, Project.ProjectSlot> match : this.matching.asList()) {
+        for (Matching.Match<? extends Group, Project> match : this.matching.asList()) {
 
-            AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
+            AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
             for (AssignedProjectRankStudent rank : assignedProjectRank.studentRanks()) {
 
                 //Dont add students without preferences to the distribution

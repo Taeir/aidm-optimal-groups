@@ -1,23 +1,18 @@
 package nl.tudelft.aidm.optimalgroups;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysWithRandomGroups;
+import nl.tudelft.aidm.optimalgroups.algorithm.SingleGroupPerProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlow;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchingORTOOLS;
 import nl.tudelft.aidm.optimalgroups.algorithm.wip.LeastPopularProject;
-import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRank;
-import nl.tudelft.aidm.optimalgroups.metric.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
 
 import javax.sql.DataSource;
-import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class StudentProjectMaxflowExperiment
 {
@@ -41,10 +36,10 @@ public class StudentProjectMaxflowExperiment
 //		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint);
 		//MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
 //		RandomizedSerialDictatorship rsd = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
-		StudentProjectMaxFlow maxFlow = StudentProjectMaxFlow.of(agents, projects);
+		var maxFlow = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projects);
 
 		//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
-		Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxFlow.result();
+		Matching<Group, Project> matching = new SingleGroupPerProjectMatching(maxFlow);
 
 		Map<Project, List<Agent>> groupings = maxFlow.groupedByProject();
 
@@ -57,7 +52,7 @@ public class StudentProjectMaxflowExperiment
 			LeastPopularProject leastPopularProject = new LeastPopularProject(groupings);
 
 			Projects projectsWithoutLeastPopular = projects.without(leastPopularProject);
-			maxFlow = StudentProjectMaxFlow.of(agents, projectsWithoutLeastPopular);
+			maxFlow = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projectsWithoutLeastPopular);
 			groupings = maxFlow.groupedByProject();
 
 			projects = Projects.from(new ArrayList<>(groupings.keySet()));
@@ -67,7 +62,7 @@ public class StudentProjectMaxflowExperiment
 
 
 //		for (var match : matching.asList()) {
-//			AssignedProjectRank assignedProjectRank = new AssignedProjectRank(match);
+//			AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
 //
 //			int rankNumber = assignedProjectRank.groupRank();
 //			System.out.println("Group " + match.from().groupId() + " got project " + match.to().belongingToProject().id() + " (ranked as number " + rankNumber + ")");

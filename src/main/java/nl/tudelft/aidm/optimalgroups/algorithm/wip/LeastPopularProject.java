@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.wip;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlow;
+import nl.tudelft.aidm.optimalgroups.algorithm.SingleGroupPerProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchingORTOOLS;
 import nl.tudelft.aidm.optimalgroups.metric.AUPCR;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
 import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
@@ -63,15 +64,18 @@ public class LeastPopularProject implements Project
 		// mapping: AUPCR scores when Project is exluded
 		var results = new ConcurrentHashMap<Project, AUPCR>(projects.count());
 
-		projects.asCollection().parallelStream().forEach(project -> {
+		projects.asCollection()/*.parallelStream()*/.forEach(project -> {
 			var projectsWithoutOne = projects.without(project);
 
 			// TODO: include this maxflow result?
-			StudentProjectMaxFlow maxflowResultWithoutCurrentProject = StudentProjectMaxFlow.of(students, projectsWithoutOne);
+			var maxflowResultWithoutCurrentProject = StudentProjectMaxFlowMatchingORTOOLS.of(students, projectsWithoutOne);
+
+			SingleGroupPerProjectMatching matching = new SingleGroupPerProjectMatching(maxflowResultWithoutCurrentProject);
 
 			// calc effect
-			var metric = new AUPCR.StudentAUPCR(maxflowResultWithoutCurrentProject.result(), projectsWithoutOne, students);
+			var metric = new AUPCR.StudentAUPCR(matching, projectsWithoutOne, students);
 
+			float result = metric.result();
 			results.put(project, metric);
 		});
 

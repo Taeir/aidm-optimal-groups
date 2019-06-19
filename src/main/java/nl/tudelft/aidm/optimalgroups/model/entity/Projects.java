@@ -5,10 +5,7 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -23,6 +20,11 @@ public interface Projects
 	Projects without(Project project);
 
 	Collection<Project> asCollection();
+
+	default Optional<Project> findWithId(int projectId)
+	{
+		return asCollection().stream().filter(project -> project.id() == projectId).findAny();
+	}
 
 	static Projects from(List<Project> projects)
 	{
@@ -58,7 +60,6 @@ public interface Projects
 				.findAny().get();
 
 			return project.slots();
-
 		}
 
 		private int numTotalSlots = -1;
@@ -106,16 +107,29 @@ public interface Projects
 	class ListBasedProjectsImpl extends ListBasedProjects
 	{
 		private final List<Project> projects;
+		private final Map<Integer, Project> byId;
 
 		ListBasedProjectsImpl(List<Project> projects)
 		{
 			this.projects = projects;
+
+			this.byId = new HashMap<>();
+			projects.forEach(project -> {
+				byId.put(project.id(), project);
+			});
 		}
 
 		@Override
 		protected List<Project> projectList()
 		{
 			return projects;
+		}
+
+		@Override
+		public Optional<Project> findWithId(int projectId)
+		{
+			Project value = byId.get(projectId);
+			return Optional.ofNullable(value);
 		}
 	}
 
@@ -143,8 +157,9 @@ public interface Projects
 		private int courseEditionId;
 
 		private List<Project> projectList = null;
+		private Map<Integer, Project> byId = null;
 
-		InDb(DataSource dataSource, int courseEditionId)
+		private InDb(DataSource dataSource, int courseEditionId)
 		{
 			this.dataSource = dataSource;
 			this.courseEditionId = courseEditionId;
@@ -159,6 +174,20 @@ public interface Projects
 			}
 
 			return projectList;
+		}
+
+
+		@Override
+		public Optional<Project> findWithId(int projectId)
+		{
+			if (byId == null) {
+				projectList().forEach(project -> {
+					byId.put(project.id(), project);
+				});
+			}
+
+			Project value = byId.get(projectId);
+			return Optional.ofNullable(value);
 		}
 
 		private List<Project> fetchFromDb()
