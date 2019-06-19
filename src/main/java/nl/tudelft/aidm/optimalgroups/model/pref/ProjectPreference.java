@@ -6,6 +6,7 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,11 @@ public interface ProjectPreference
 			}
 
 			return preferences;
+		}
+
+		@Override
+		public String toString() {
+			return "proj pref: " + Arrays.toString(asArray());
 		}
 
 		@Override
