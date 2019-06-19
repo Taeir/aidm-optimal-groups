@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysWithRandomGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchingORTOOLS;
 import nl.tudelft.aidm.optimalgroups.algorithm.wip.LeastPopularProject;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -8,6 +9,7 @@ import org.sql2o.GenericDatasource;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -55,6 +57,17 @@ public class StudentProjectORTOOLSMaxflowExperiment
 
 			projects = Projects.from(new ArrayList<>(groupings.keySet()));
 		}
+
+		var result = new HashMap<Project, java.util.Collection<Group.FormedGroup>>();
+
+//		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, 10);
+		groupings.forEach((proj, agentList) -> {
+			Agents agentsWithProject = new Agents(agentList);
+			BepSysWithRandomGroups bepSysWithRandomGroups = new BepSysWithRandomGroups(agentsWithProject, groupSizeConstraint);
+			var groups = bepSysWithRandomGroups.asCollection();
+
+			result.put(proj, groups);
+		});
 
 		System.out.print("Henk.....");
 
