@@ -14,12 +14,15 @@ import java.util.stream.Collectors;
 
 public class LeastPopularProject implements Project
 {
+	private final int maxGroupSize;
+
 	private final Map<Project, List<Agent>> grouping;
 	private Project theLeastPopularProject = null;
 
-	public LeastPopularProject(Map<Project, List<Agent>> grouping)
+	public LeastPopularProject(Map<Project, List<Agent>> grouping, int maxGroupSize)
 	{
 		this.grouping = grouping;
+		this.maxGroupSize = maxGroupSize;
 	}
 
 	@Override
@@ -68,7 +71,7 @@ public class LeastPopularProject implements Project
 			var projectsWithoutOne = projects.without(project);
 
 			// TODO: include this maxflow result?
-			var maxflowResultWithoutCurrentProject = StudentProjectMaxFlowMatchingORTOOLS.of(students, projectsWithoutOne);
+			var maxflowResultWithoutCurrentProject = new StudentProjectMaxFlowMatchingORTOOLS(students, projectsWithoutOne, maxGroupSize);
 
 			SingleGroupPerProjectMatching matching = new SingleGroupPerProjectMatching(maxflowResultWithoutCurrentProject);
 

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatching //implements GroupProjectMatching
 {
 	// MAKE CONFIGURABLE WITH GROUP SIZE CONSTRAINTS
-	private static final int MAX_GROUP_SIZE = 6;
+//	private static final int MAX_GROUP_SIZE = 6;
 
 	static {
 		System.loadLibrary("jniortools");
@@ -26,33 +26,35 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 
 	private Agents students;
 	private Projects projects;
+	private final int maxGroupSize;
 
-//	private Map<Project.ProjectSlot, List<Agent>> groupedBySlot = null;
+	//	private Map<Project.ProjectSlot, List<Agent>> groupedBySlot = null;
 	private Map<Project, List<Agent>> groupedByProject = null;
 
 
-	public static StudentProjectMaxFlowMatchingORTOOLS of(Agents students, Projects projects)
-	{
-//		if (existingResultsCache.containsKey(projects) == false) {
-			StudentProjectMaxFlowMatchingORTOOLS maxflow = new StudentProjectMaxFlowMatchingORTOOLS(students, projects);
-//			existingResultsCache.put(projects, maxflow);
-
-			return maxflow;
-//		}
+//	public static StudentProjectMaxFlowMatchingORTOOLS of(Agents students, Projects projects)
+//	{
+////		if (existingResultsCache.containsKey(projects) == false) {
+//			StudentProjectMaxFlowMatchingORTOOLS maxflow = new StudentProjectMaxFlowMatchingORTOOLS(students, projects);
+////			existingResultsCache.put(projects, maxflow);
 //
-//		StudentProjectMaxFlowMatchingORTOOLS existing = existingResultsCache.get(projects);
-//		if (existing.students != students) {
-//			throw new RuntimeException("Requested a cached StudentsProjectsMaxFlow for previously computed projects, but different student set." +
-//				"Cache implementation only works on projects and assumes identical studens. Decide how to handle this case first (support proj + studs or simply compute this case without caching).");
-//		}
-//
-//		return existing;
-	}
+//			return maxflow;
+////		}
+////
+////		StudentProjectMaxFlowMatchingORTOOLS existing = existingResultsCache.get(projects);
+////		if (existing.students != students) {
+////			throw new RuntimeException("Requested a cached StudentsProjectsMaxFlow for previously computed projects, but different student set." +
+////				"Cache implementation only works on projects and assumes identical studens. Decide how to handle this case first (support proj + studs or simply compute this case without caching).");
+////		}
+////
+////		return existing;
+//	}
 
-	private StudentProjectMaxFlowMatchingORTOOLS(Agents students, Projects projects)
+	public StudentProjectMaxFlowMatchingORTOOLS(Agents students, Projects projects, int maxGroupSize)
 	{
 		this.students = students;
 		this.projects = projects;
+		this.maxGroupSize = maxGroupSize;
 	}
 
 	@Override
@@ -115,7 +117,7 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 
 		projectVertices.forEach(projectVertex -> {
 			Project project = projectVertex.content().theProject;
-			int capacity = project.slots().size() * MAX_GROUP_SIZE;
+			int capacity = project.slots().size() * maxGroupSize;
 			minCostFlow.addArcWithCapacityAndUnitCost(projectVertex.id, sink, capacity, 1);
 		});
 

@@ -36,7 +36,7 @@ public class StudentProjectMaxflowExperiment
 //		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint);
 		//MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
 //		RandomizedSerialDictatorship rsd = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
-		var maxFlow = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projects);
+		var maxFlow = new StudentProjectMaxFlowMatchingORTOOLS(agents, projects, groupSizeConstraint.maxSize());
 
 		//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
 		Matching<Group, Project> matching = new SingleGroupPerProjectMatching(maxFlow);
@@ -49,10 +49,10 @@ public class StudentProjectMaxflowExperiment
 		});
 
 		while (terminationCondition.test(groupings) == false) {
-			LeastPopularProject leastPopularProject = new LeastPopularProject(groupings);
+			LeastPopularProject leastPopularProject = new LeastPopularProject(groupings, groupSizeConstraint.maxSize());
 
 			Projects projectsWithoutLeastPopular = projects.without(leastPopularProject);
-			maxFlow = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projectsWithoutLeastPopular);
+			maxFlow = new StudentProjectMaxFlowMatchingORTOOLS(agents, projectsWithoutLeastPopular, groupSizeConstraint.maxSize());
 			groupings = maxFlow.groupedByProject();
 
 			projects = Projects.from(new ArrayList<>(groupings.keySet()));

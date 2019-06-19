@@ -36,7 +36,7 @@ public class StudentProjectORTOOLSMaxflowExperiment
 //		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint);
 		//MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
 //		RandomizedSerialDictatorship rsd = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
-		StudentProjectMaxFlowMatchingORTOOLS maxFlow = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projects);
+		StudentProjectMaxFlowMatchingORTOOLS maxFlow = new StudentProjectMaxFlowMatchingORTOOLS(agents, projects, groupSizeConstraint.maxSize());
 
 		//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
 //		Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxFlow.result();
@@ -45,14 +45,14 @@ public class StudentProjectORTOOLSMaxflowExperiment
 
 		Predicate<Map<Project, List<Agent>>> terminationCondition = (Map<Project, List<Agent>> g) -> g.values().stream().allMatch(assignedToProject -> {
 			var size = assignedToProject.size();
-			return size >= 4 || size == 0;
+			return size >= groupSizeConstraint.minSize() || size == 0;
 		});
 
 		while (terminationCondition.test(groupings) == false) {
-			LeastPopularProject leastPopularProject = new LeastPopularProject(groupings);
+			LeastPopularProject leastPopularProject = new LeastPopularProject(groupings, groupSizeConstraint.maxSize());
 
 			Projects projectsWithoutLeastPopular = projects.without(leastPopularProject);
-			maxFlow = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projectsWithoutLeastPopular);
+			maxFlow = new StudentProjectMaxFlowMatchingORTOOLS(agents, projectsWithoutLeastPopular, groupSizeConstraint.maxSize());
 			groupings = maxFlow.groupedByProject();
 
 			projects = Projects.from(new ArrayList<>(groupings.keySet()));
