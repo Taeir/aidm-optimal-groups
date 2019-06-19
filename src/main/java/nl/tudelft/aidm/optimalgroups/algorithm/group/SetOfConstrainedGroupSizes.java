@@ -7,12 +7,10 @@ final public class SetOfConstrainedGroupSizes
 {
     /**
      * How will the algorithm create a set of group sizes with constraints?
-     * MAX_FOCUS focuses on as many large groups as possible
-     * MIN_FOCUS focuses on as many small groups as possible
      */
     enum SetCreationAlgorithm{
-        MAX_FOCUS,
-        MIN_FOCUS // Not implemented yet
+        MAX_FOCUS, // focuses on creating large groups first, then evenly reducing the size if necessary
+        MIN_FOCUS // focuses on creating small groups first, then evenly increasing the size if necessary
     }
 
     public Map<Integer, Integer> setOfGroups; // A HashMap where the key is the size of a group and the value the amount of groups with that size
@@ -65,8 +63,8 @@ final public class SetOfConstrainedGroupSizes
 
     /**
      * Calculate a possible set of group sizes
-     * For now, the algorithm works from max size downwards, preferring to create groups with as many students as possible
      */
+    @SuppressWarnings("Duplicates")
     private void createSetOfGroups()
     {
         if(algorithm == SetCreationAlgorithm.MAX_FOCUS)
@@ -85,7 +83,7 @@ final public class SetOfConstrainedGroupSizes
                 }
                 else if(minGroupSize == maxGroupSize) //if there are remainders with a solo size constraint, impossible matching
                 {
-                    throw new RuntimeException("Impossible group matching problem, can't create a set of group sizes with current amount of students and group constraints");
+                    throw new RuntimeException("Impossible group matching problem, can't create a set of group sizes with current amount of students, group constraints and chosen set creation algorithm");
                 }
                 else if(remainder >= minGroupSize) //check if remainder fits in group size constraints
                 {
@@ -117,6 +115,42 @@ final public class SetOfConstrainedGroupSizes
                     else
                     {
                         maxGroupSize = maxGroupSize - 1; // Unable to create a set with current max group size, so reduce it
+                    }
+                }
+            }
+        }
+        else if(algorithm == SetCreationAlgorithm.MIN_FOCUS)
+        {
+            setOfGroups = new HashMap<>(); //Key = size of group, Value = amount of groups with that size
+            boolean matchingDone = false;
+            while(!matchingDone)
+            {
+                int nrGroupsWithMinSize = nrStudents / minGroupSize; //Create as many groups of min size as possible
+                int remainder = nrStudents % minGroupSize; // Remaining students after creating as much groups with min size
+                if(remainder == 0) //if no remaining students
+                {
+                    setOfGroups.put(minGroupSize, nrGroupsWithMinSize); //students are perfect fit for max group size
+                    matchingDone = true;
+                }
+                else if(minGroupSize == maxGroupSize) //if there are remainders with a solo size constraint, impossible matching
+                {
+                    throw new RuntimeException("Impossible group matching problem, can't create a set of group sizes with current amount of students, group constraints and chosen set creation algorithm");
+                }
+                else //check if remainder can be added to other groups, without breaking group size constraints
+                {
+                    if(nrGroupsWithMinSize >= remainder) //if there are more min sized groups than remaining students, set is possible
+                    {
+                        nrGroupsWithMinSize = nrGroupsWithMinSize - remainder; //add remainder to min sized groups, so there are less groups with min size
+                        if(nrGroupsWithMinSize != 0) //if there are still groups with min size
+                        {
+                            setOfGroups.put(minGroupSize, nrGroupsWithMinSize); //create min sized groups
+                        }
+                        setOfGroups.put(minGroupSize+1,remainder); //create groups where the remainder students have been put
+                        matchingDone = true;
+                    }
+                    else
+                    {
+                        minGroupSize = minGroupSize- 1; // Unable to create a set with current min group size, so reduce it
                     }
                 }
             }
