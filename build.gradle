@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 repositories {
@@ -8,8 +9,31 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 
+//sourceSets {
+//    main {
+//        java {
+//            srcDirs = ['src']
+//        }
+//        resources {
+//            srcDirs = ['libs']
+//        }
+//    }
+//}
+
+applicationDefaultJvmArgs = ["-Djava.library.path=optimization/lib"]
+
 dependencies {
-    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:0791eece90'
+
+    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c06314770ed'
+
+    compile 'com.google.protobuf:protobuf-java:3.0.0'
+    compile files('lib/jniortools.dll')
+    compile files('lib/ortools.lib')
+    compile files('lib/com.google.ortools.jar')
+    compile files('lib/protobuf.jar')
+//    compile files('lib/*')
+//    runtime files('lib/')
+
     implementation 'edu.princeton.cs:algs4:1.0.4'
     implementation 'org.sql2o:sql2o:1.6.0'
     implementation 'mysql:mysql-connector-java:8.0.16'

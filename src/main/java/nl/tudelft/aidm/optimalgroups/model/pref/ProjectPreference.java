@@ -6,6 +6,7 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,16 +16,6 @@ public interface ProjectPreference
 	// TODO: determine representation (let algo guide this choice)
 	int[] asArray();
 
-	/**
-	 * Return the preferences as a map, where the keys represent the project
-	 * and the value represents the rank of the project.
-	 *
-	 * The highest rank is 1 and represents the most preferable project.
-	 *
-	 * @return Map
-	 */
-	Map<Integer, Integer> asMap();
-
 	default void forEach(ProjectPreferenceConsumer iter)
 	{
 		int[] prefArray = asArray();
@@ -32,6 +23,17 @@ public interface ProjectPreference
 		{
 			iter.apply(prefArray[i], i+1);
 		}
+	}
+
+	/**
+	 * Checks if the project preferences indicate complete indifference, that is an absence of preference.
+	 * In case of BepSys: the agent has no preferences available. In other scenarios this might mean that the
+	 * the available choices have equal rank to the agent
+	 * @return
+	 */
+	default boolean isCompletelyIndifferent()
+	{
+		return asArray().length == 0;
 	}
 
 	default int differenceTo(ProjectPreference otherPreference) {
@@ -50,6 +52,26 @@ public interface ProjectPreference
 		}
 
 		return difference;
+	}
+
+	/**
+	 * Return the preferences as a map, where the keys represent the project
+	 * and the value represents the rank of the project.
+	 *
+	 * The highest rank is 1 and represents the most preferable project.
+	 *
+	 * @return Map
+	 */
+	default Map<Integer, Integer> asMap() {
+		int[] preferences = this.asArray();
+		var preferencesMap = new HashMap<Integer, Integer>(preferences.length);
+
+		for (int rank = 1; rank <= preferences.length; rank++) {
+			int project = preferences[rank - 1];
+			preferencesMap.put(project, rank);
+		}
+
+		return preferencesMap;
 	}
 
 	interface ProjectPreferenceConsumer
@@ -88,6 +110,11 @@ public interface ProjectPreference
 			}
 
 			return preferences;
+		}
+
+		@Override
+		public String toString() {
+			return "proj pref: " + Arrays.toString(asArray());
 		}
 
 		@Override

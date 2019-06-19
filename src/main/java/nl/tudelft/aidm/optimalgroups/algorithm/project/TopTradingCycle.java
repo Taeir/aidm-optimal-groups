@@ -1,12 +1,16 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
+import java.util.List;
 
-public class TopTradingCycle implements ProjectMatchingAlgorithm
+public class TopTradingCycle implements GroupProjectMatching
 {
+	public FormedGroupToProjectSlotMatchings result()
+	{
+		return null;
+	}
+
 	@Override
-	public Matching.FormedGroupToProjectMatchings result()
+	public List<Match> asList()
 	{
 		return null;
 	}

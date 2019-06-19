@@ -5,6 +5,7 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.List;
 
 public interface GroupPreference
@@ -39,6 +40,11 @@ public interface GroupPreference
 			}
 
 			return preference;
+		}
+
+		@Override
+		public String toString() {
+			return "group pref: " + Arrays.toString(asArray());
 		}
 
 		private List<Integer> fetchFromDb()

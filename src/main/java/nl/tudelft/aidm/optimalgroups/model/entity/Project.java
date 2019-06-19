@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.model.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public interface Project
 {
@@ -33,6 +34,12 @@ public interface Project
 			public Project belongingToProject()
 			{
 				return projectBelongsTo;
+			}
+
+			@Override
+			public String toString()
+			{
+				return "Slot: " + id();
 			}
 		}
 	}
@@ -75,6 +82,33 @@ public interface Project
 		public List<ProjectSlot> slots()
 		{
 			return slots;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "Project: " + id();
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o)
+			{
+				return true;
+			}
+			if (!(o instanceof Project))
+			{
+				return false;
+			}
+			Project that = (Project) o;
+			return id == that.id();
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(id);
 		}
 	}
 }
