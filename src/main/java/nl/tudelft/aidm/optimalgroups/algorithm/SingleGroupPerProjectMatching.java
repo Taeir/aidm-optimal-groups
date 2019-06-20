@@ -1,14 +1,12 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group>
 {
@@ -33,7 +31,7 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 
 		studentProjectMatching.groupedByProject().forEach((project, agentsAsList) -> {
 			Agents agents = new Agents(agentsAsList);
-			Group.TentativeGroup group = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
+			Group.TentativeGroup group = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
 
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(group);
 			result.add(new StudentsToProjectMatch(formedGroup, project));

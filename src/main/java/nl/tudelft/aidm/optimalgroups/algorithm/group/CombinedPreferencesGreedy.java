@@ -63,7 +63,8 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
             Map<String, Integer> differences = new HashMap<>(this.availableStudents.size());
 
             for (Agent other : this.students.asCollection()) {
-                if (student.name == other.name || this.unavailableStudents.containsKey(other.name)) {
+
+                if (student.equals(other) || this.unavailableStudents.containsKey(other.name)) {
                     continue;
                 }
 
@@ -102,7 +103,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
             // Transform the new agents into a formed group
             Agents newGroupAgents = Agents.from(agents);
-            ProjectPreference aggregatedPreference = ProjectPreferenceOfAgents.getChosenMethod(newGroupAgents);
+            ProjectPreference aggregatedPreference = ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(newGroupAgents);
             Group.TentativeGroup newTentativeGroup = new Group.TentativeGroup(newGroupAgents, aggregatedPreference);
             this.formedGroups.addAsFormed(newTentativeGroup);
 

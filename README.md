@@ -9,7 +9,8 @@ Maven contains the Google OR-Tools Java wrapper but is not packaged together wit
 
 Please download the binary distribution for your platform here: https://developers.google.com/optimization/install/#binary
 
-Then, make a 'lib' directory in the root of this repository and place the 'com.google.ortools.jar' file in the 'lib' directory of the downloaded archive therein.
+Then, make a 'lib' directory in the root of this repository and place the files contained in the 'lib' directory of the downloaded archive therein.
+On Windows, these are: `com.google.ortools.jar`, `jniortools.dll`, `ortools.lib` and `protobuf.jar`. MacOS has a lot of files, so copy all to be safe. If less works too, please update these instructions!
 
 ## Running with IntelliJ
 Add `-Djava.library.path=lib` (or an absolute/relative path to where you've extracted the binaries to) to the 'VM options' of your run configuration.

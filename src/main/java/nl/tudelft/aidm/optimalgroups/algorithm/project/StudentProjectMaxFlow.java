@@ -56,7 +56,7 @@ public class StudentProjectMaxFlow implements StudentProjectMatching //implement
 		for (var x : groupedBySlot.entrySet())
 		{
 			Agents agents = Agents.from(x.getValue());
-			Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
+			Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(tentativeGroup);
 
 
