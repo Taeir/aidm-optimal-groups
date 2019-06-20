@@ -12,7 +12,9 @@ import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
 
 import javax.sql.DataSource;
+import javax.swing.text.html.Option;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 public class StudentProjectORTOOLSMaxflowExperiment
@@ -52,7 +54,7 @@ public class StudentProjectORTOOLSMaxflowExperiment
 			}
 		);
 
-		StudentProjectMaxFlowMatchingORTOOLS resultingMatching  = solve(terminationCondition, projects, agents, groupSizeConstraint);
+		StudentProjectMaxFlowMatchingORTOOLS resultingMatching  = solve(terminationCondition, projects, agents, groupSizeConstraint).get();
 
 		var result = new HashMap<Project, java.util.Collection<Group.FormedGroup>>();
 
@@ -84,39 +86,61 @@ public class StudentProjectORTOOLSMaxflowExperiment
 //		}
 	}
 
+	static final Object lock = new Object();
+	static float bestSoFar = 0;
 
+	static Optional<StudentProjectMaxFlowMatchingORTOOLS> solve(Predicate<StudentProjectMaxFlowMatchingORTOOLS> terminationCondition, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {
 
-	static StudentProjectMaxFlowMatchingORTOOLS solve(Predicate<StudentProjectMaxFlowMatchingORTOOLS> terminationCondition, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {
+		var matching = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projects, groupSizeConstraint.maxSize());
 
-		var matching = new StudentProjectMaxFlowMatchingORTOOLS(agents, projects, groupSizeConstraint.maxSize());
+		SingleGroupPerProjectMatching singleGroup = new SingleGroupPerProjectMatching(matching);
+		var metric = new AUPCR.StudentAUPCR(singleGroup, projects, agents);
+
+		synchronized (lock) {
+			if (metric.result() <= bestSoFar) {
+				// We don't have to explore solution further, it's less good
+				return Optional.empty();
+			}
+		}
+
 		var matchingGroupedByProject = matching.groupedByProject();
 		var equallyLeastPopularProjects = new EquallyLeastPopularProjects(matchingGroupedByProject, groupSizeConstraint.maxSize());
 
 		if (terminationCondition.test(matching)) {
-			return matching;
+			return Optional.of(matching);
 		}
 
-		var result = equallyLeastPopularProjects.asCollection ().stream()
+		var result = equallyLeastPopularProjects.asCollection().parallelStream()
 			.map(leastPopularProject -> {
 				Projects projectsWithoutLeastPopular = projects.without(leastPopularProject);
 
-				var matchingWithProjectRemoved = solve(terminationCondition, projectsWithoutLeastPopular, agents, groupSizeConstraint);
+				return solve(terminationCondition, projectsWithoutLeastPopular, agents, groupSizeConstraint).map(foundSolution -> {
+					SingleGroupPerProjectMatching matchingWithSingleLargeGroupPerProject = new SingleGroupPerProjectMatching(foundSolution);
+					var metricFoundSolution = new AUPCR.StudentAUPCR(matchingWithSingleLargeGroupPerProject, projectsWithoutLeastPopular, agents);
 
+					synchronized (lock) {
+						if (metricFoundSolution.result() > bestSoFar) {
+							bestSoFar = metricFoundSolution.result();
+							var pair = new MatchingWithMetric(matching, metricFoundSolution);
 
-				SingleGroupPerProjectMatching matchingWithSingleLargeGroupPerProject = new SingleGroupPerProjectMatching(matchingWithProjectRemoved);
-				var metric = new AUPCR.StudentAUPCR(matchingWithSingleLargeGroupPerProject, projectsWithoutLeastPopular, agents);
+							return pair;
+						}
+						else {
+							return null;
+						}
+					}
+				});
 
-				return new MatchingWithMetric(matching, metric);
 			})
-			.sorted(
-					Comparator.comparing(
-						(MatchingWithMetric matchingWithMetric) -> matchingWithMetric.metric.result()
-					).reversed()
-			)
-			.findAny()
-			.get(); // assume there's always one returned
+			.flatMap(Optional::stream)// discard empty optionals, unpack non-empty ones
+			.max(
+				Comparator.comparing((MatchingWithMetric matchingWithMetric) ->
+					matchingWithMetric.metric.result()
+			))
+			.map(matchingWithMetric -> matchingWithMetric.matching);
+//			.get(); // assume there's always one returned
 
-		return result.matching;
+		return result;
 	}
 
 	static class Solution {
