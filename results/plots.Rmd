@@ -17,7 +17,6 @@ When you click the **Knit** button a document will be generated that includes bo
 courseEditions <- c("CourseEdition_3", "CourseEdition_4", "CourseEdition_10")
 for(courseEdition in courseEditions)
 {
-  courseEdition = courseEditions[1]
   algorithms <- list.files(courseEdition)
   for(algorithm in algorithms)
   {
@@ -35,7 +34,8 @@ for(courseEdition in courseEditions)
       fileDirectory <- paste(directory, file, sep = "/")
       metricName <- substr(file, 0, nchar(file)-4)
       pngFileName <- paste(metricName, ".png", sep = "")
-      pngDirectory <- paste(directory, pngFileName, sep = "/")
+      #pngDirectory <- paste(directory, pngFileName, sep = "/")
+      pngDirectory <- paste(courseEdition,algorithm,pngFileName,sep="_")
       data <- read.csv(fileDirectory)
       png(pngDirectory)
       if(metricName == "groupPreferenceSatisfaction")
