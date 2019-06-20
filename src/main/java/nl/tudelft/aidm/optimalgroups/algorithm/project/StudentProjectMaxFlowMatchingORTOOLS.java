@@ -24,9 +24,9 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 	private static Vertex<Object> sink = new Vertex<>(null);
 
 
-	private Agents students;
-	private Projects projects;
-	private final int maxGroupSize;
+	public final Agents students;
+	public final Projects projects;
+	public final int maxGroupSize;
 
 	//	private Map<Project.ProjectSlot, List<Agent>> groupedBySlot = null;
 	private Map<Project, List<Agent>> groupedByProject = null;
