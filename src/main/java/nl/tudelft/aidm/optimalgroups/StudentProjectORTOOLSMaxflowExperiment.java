@@ -14,6 +14,7 @@ import org.sql2o.GenericDatasource;
 import javax.sql.DataSource;
 import javax.swing.text.html.Option;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
@@ -54,7 +55,7 @@ public class StudentProjectORTOOLSMaxflowExperiment
 			}
 		);
 
-		StudentProjectMaxFlowMatchingORTOOLS resultingMatching  = solve(terminationCondition, projects, agents, groupSizeConstraint).get();
+		StudentProjectMaxFlowMatchingORTOOLS resultingMatching  = solve(terminationCondition, projects, agents, groupSizeConstraint).get().matching;
 
 		var result = new HashMap<Project, java.util.Collection<Group.FormedGroup>>();
 
@@ -86,10 +87,47 @@ public class StudentProjectORTOOLSMaxflowExperiment
 //		}
 	}
 
+	static boolean canFormValidGroupsWithoutRemainders(StudentProjectMaxFlowMatchingORTOOLS matching, GroupSizeConstraint groupSizeConstraint)
+	{
+		var groupedByProject = matching.groupedByProject();
+
+		// using exceptions for control flow, bepsys group forming is not as flexible yet to do otherwise...
+		try {
+			groupedByProject.forEach((proj, agentList) -> {
+				Agents agentsWithProject = new Agents(agentList);
+				BepSysWithRandomGroups bepSysWithRandomGroups = new BepSysWithRandomGroups(agentsWithProject, groupSizeConstraint, true);
+				var groups = bepSysWithRandomGroups.asCollection();
+			});
+		}
+		catch (RuntimeException ex) {
+			return false;
+		}
+
+		return true;
+	}
+
 	static final Object lock = new Object();
 	static float bestSoFar = 0;
 
-	static Optional<StudentProjectMaxFlowMatchingORTOOLS> solve(Predicate<StudentProjectMaxFlowMatchingORTOOLS> terminationCondition, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {
+	static final ConcurrentHashMap<Projects, Optional<MatchingWithMetric>> pastSolutions = new ConcurrentHashMap<>();
+
+	static Optional<MatchingWithMetric> solve(Predicate<StudentProjectMaxFlowMatchingORTOOLS> candidateSolutionTest, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {
+
+		Optional<MatchingWithMetric> pastSolution = pastSolutions.get(projects);
+		//noinspection OptionalAssignedToNull -- map contains values of Optional, checking if key is present and getting is 2x lookups while the map retuns null if no such key is present!
+		if (pastSolution != null) {
+			return pastSolution;
+		}
+
+		// key doesn't exist - do the work
+		Optional<MatchingWithMetric> result = solveReal(candidateSolutionTest, projects, agents, groupSizeConstraint);
+
+		pastSolutions.put(projects, result);
+
+		return result;
+	}
+
+	static Optional<MatchingWithMetric> solveReal(Predicate<StudentProjectMaxFlowMatchingORTOOLS> candidateSoltutionTest, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {
 
 		var matching = StudentProjectMaxFlowMatchingORTOOLS.of(agents, projects, groupSizeConstraint.maxSize());
 
@@ -101,44 +139,33 @@ public class StudentProjectORTOOLSMaxflowExperiment
 				// We don't have to explore solution further, it's less good
 				return Optional.empty();
 			}
+
+			// this solution is >= bestSoFar, but is it a candidate solution?
+			if (candidateSoltutionTest.test(matching) && canFormValidGroupsWithoutRemainders(matching, groupSizeConstraint)) {
+				bestSoFar = metric.result();
+
+				return Optional.of(new MatchingWithMetric(matching, metric));
+			}
 		}
+
 
 		var matchingGroupedByProject = matching.groupedByProject();
 		var equallyLeastPopularProjects = new EquallyLeastPopularProjects(matchingGroupedByProject, groupSizeConstraint.maxSize());
 
-		if (terminationCondition.test(matching)) {
-			return Optional.of(matching);
-		}
+		var result = equallyLeastPopularProjects.asCollection()
+			.parallelStream()
 
-		var result = equallyLeastPopularProjects.asCollection().parallelStream()
-			.map(leastPopularProject -> {
-				Projects projectsWithoutLeastPopular = projects.without(leastPopularProject);
+			.map(leastPopularProject ->
+				solve(candidateSoltutionTest,  projects.without(leastPopularProject), agents, groupSizeConstraint)
+			)
 
-				return solve(terminationCondition, projectsWithoutLeastPopular, agents, groupSizeConstraint).map(foundSolution -> {
-					SingleGroupPerProjectMatching matchingWithSingleLargeGroupPerProject = new SingleGroupPerProjectMatching(foundSolution);
-					var metricFoundSolution = new AUPCR.StudentAUPCR(matchingWithSingleLargeGroupPerProject, projectsWithoutLeastPopular, agents);
+			// discard empty optionals, unpack non-empty ones
+			.flatMap(Optional::stream)
 
-					synchronized (lock) {
-						if (metricFoundSolution.result() > bestSoFar) {
-							bestSoFar = metricFoundSolution.result();
-							var pair = new MatchingWithMetric(matching, metricFoundSolution);
-
-							return pair;
-						}
-						else {
-							return null;
-						}
-					}
-				});
-
-			})
-			.flatMap(Optional::stream)// discard empty optionals, unpack non-empty ones
-			.max(
-				Comparator.comparing((MatchingWithMetric matchingWithMetric) ->
-					matchingWithMetric.metric.result()
-			))
-			.map(matchingWithMetric -> matchingWithMetric.matching);
-//			.get(); // assume there's always one returned
+			// take best
+			.max(Comparator.comparing(matchingWithMetric ->
+				matchingWithMetric.metric.result()
+			));
 
 		return result;
 	}

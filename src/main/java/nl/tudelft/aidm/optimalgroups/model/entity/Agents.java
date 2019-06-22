@@ -96,8 +96,14 @@ public class Agents
 		}
 
 		for (String friend : friends) {
+			if (idToAgentsMap.containsKey(friend) == false) {
+				// friend is not part of this 'Agents' set therefore the lists are not equal
+				return false;
+			}
+
 			Set<String> friendsOfFriend = new HashSet<>();
 			friendsOfFriend.add(friend); // Add friend himself to list
+
 
 			for (int i : idToAgentsMap.get(friend).groupPreference.asArray()) {
 				friendsOfFriend.add(String.valueOf(i));
