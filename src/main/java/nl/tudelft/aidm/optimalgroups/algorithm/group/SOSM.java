@@ -175,7 +175,7 @@ public class SOSM implements GroupFormingAlgorithm
 
                 Agents agents = Agents.from(clique);
 
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
                 System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
@@ -341,7 +341,7 @@ public class SOSM implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
         }
     }
 
