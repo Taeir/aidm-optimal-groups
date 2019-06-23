@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class BepSysWithRandomGroups implements GroupFormingAlgorithm
+public class BepSysImprovedGroups implements GroupFormingAlgorithm
 {
     private Agents students;
 
@@ -27,7 +27,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     private boolean done = false;
 
     // Pass the list of students to make groups from
-    public BepSysWithRandomGroups(Agents students, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
+    public BepSysImprovedGroups(Agents students, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
         this.students = students;
 
         this.availableStudents = new HashMap<>();
@@ -373,14 +373,14 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                 int unmergedGroupSize = unmergedGroup.members().count();
 
-                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysWithRandomGroups.PossibleGroupMerge::matchScore));
+                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysImprovedGroups.PossibleGroupMerge::matchScore));
 
                 for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
                     int together = unmergedGroupSize + otherUnmergedGroup.members().count();
 
                     // Only add group if it is a final form
                     if(groupConstraints.mayFormGroupOfSize(together)){
-                        possibleGroupMerges.add(new BepSysWithRandomGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+                        possibleGroupMerges.add(new BepSysImprovedGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                     }
                 }
 

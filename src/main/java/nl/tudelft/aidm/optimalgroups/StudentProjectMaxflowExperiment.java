@@ -33,7 +33,7 @@ public class StudentProjectMaxflowExperiment
 		System.out.println("Amount of projects: " + projects.count());
 
 		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, courseEdition);
-//		BepSysWithRandomGroups formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint);
+//		BepSysImprovedGroups formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint);
 		//MaxFlow maxflow = new MaxFlow(formedGroups.finalFormedGroups(), projects);
 //		RandomizedSerialDictatorship rsd = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
 		var maxFlow = new StudentProjectMaxFlowMatchingORTOOLS(agents, projects, groupSizeConstraint.maxSize());

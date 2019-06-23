@@ -47,9 +47,9 @@ public class Application
 			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
 				formedGroups = new CombinedPreferencesGreedy(agents, groupSizeConstraint);
 			} else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
-				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, true);
+				formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint, true);
 			} else {
-				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, false);
+				formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint, false);
 			}
 
 			GroupProjectMatching groupProjectMatching = null;
