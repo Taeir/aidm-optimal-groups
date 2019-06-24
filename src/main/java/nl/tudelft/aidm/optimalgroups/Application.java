@@ -18,7 +18,7 @@ public class Application
 	public static final int iterations = 10;
 	public static final int courseEdition = 10;
 	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
-	public static final String preferenceAggregatingMethod = "Copeland";
+	public static String preferenceAggregatingMethod = "Copeland";
 	public static final String projectAssignmentAlgorithm = "MaxFlow";
 
 	public static void main(String[] args) {
