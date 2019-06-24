@@ -138,7 +138,7 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 			this.projects = projects;
 		}
 
-		public Optional<MatchingWithMetric> solution() {
+		public synchronized Optional<MatchingWithMetric> solution() {
 			//noinspection OptionalAssignedToNull
 			if (solution == null) {
 				solution = solve(this::solutionIsAcceptable, projects, agents, groupSizeConstraint);
