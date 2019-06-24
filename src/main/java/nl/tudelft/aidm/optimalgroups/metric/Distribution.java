@@ -73,6 +73,20 @@ public class Distribution {
         }
     }
 
+    public float average() {
+        float sum = 0;
+        int amountOfValues = 0;
+
+        for (Partition partition : this.asList()) {
+            for (Float f : partition.getValues()) {
+                sum += f.floatValue();
+                amountOfValues++;
+            }
+        }
+
+        return (amountOfValues == 0) ? 0 : (sum / amountOfValues);
+    }
+
     public float getStartValue() { return this.startValue; }
     public float getEndValue() { return this.endValue; }
 
@@ -151,6 +165,23 @@ public class Distribution {
             }
 
             return averagePartitions;
+        }
+
+        @Override
+        public float average() {
+            float sum = 0;
+            int amountOfValues = 0;
+
+            for (Distribution distribution : this.distributions) {
+                for (Partition partition : distribution.asList()) {
+                    for (Float f : partition.getValues()) {
+                        sum += f.floatValue();
+                        amountOfValues++;
+                    }
+                }
+            }
+
+            return (amountOfValues == 0) ? 0 : (sum / amountOfValues);
         }
 
         public void printToTxtFile(String fileName) {

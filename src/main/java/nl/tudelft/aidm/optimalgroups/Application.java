@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups;
 
+import edu.princeton.cs.algs4.StdOut;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.metric.*;
@@ -8,14 +9,16 @@ import nl.tudelft.aidm.optimalgroups.model.entity.*;
 import org.sql2o.GenericDatasource;
 
 import javax.sql.DataSource;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 public class Application
 {
-	public static final int iterations = 200;
-	public static final int courseEdition = 4;
+	public static final int iterations = 10;
+	public static final int courseEdition = 10;
 	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
 	public static final String preferenceAggregatingMethod = "Copeland";
-	public static final String projectAssignmentAlgorithm = "RSD";
+	public static final String projectAssignmentAlgorithm = "MaxFlow";
 
 	public static void main(String[] args) {
 		DataSource dataSource;
@@ -42,6 +45,8 @@ public class Application
 
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
+
+			System.out.printf("Iteration %d\n", iteration+1);
 
 			GroupFormingAlgorithm formedGroups;
 			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
@@ -104,18 +109,32 @@ public class Application
 		groupAUPCRAverage = groupAUPCRAverage / groupAUPCRs.length;
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
-		groupPreferenceSatisfactionDistribution.printResult();
-		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		//groupPreferenceSatisfactionDistribution.printResult();
+		groupPreferenceSatisfactionDistribution.printToTxtFile("outputtxt/groupPreferenceSatisfaction.txt");
+		System.out.println("Average group preference satisfaction: " + groupPreferenceSatisfactionDistribution.average());
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
-		groupProjectRankDistribution.printResult();
-		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		//groupProjectRankDistribution.printResult();
+		groupProjectRankDistribution.printToTxtFile("outputtxt/groupProjectRank.txt");
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
-		studentProjectRankDistribution.printResult();
-		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition, groupMatchingAlgorithm, preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		//studentProjectRankDistribution.printResult();
+		studentProjectRankDistribution.printToTxtFile("outputtxt/studentProjectRank.txt");
 
 		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
+		writeToFile("outputtxt/studentAUPCR.txt", String.valueOf(studentAUPCRAverage));
+
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
+		writeToFile("outputtxt/groupAUPCR.txt", String.valueOf(groupAUPCRAverage));
+	}
+
+	public static void writeToFile(String fileName, String content) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false));
+			writer.write(content);
+			writer.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 }
