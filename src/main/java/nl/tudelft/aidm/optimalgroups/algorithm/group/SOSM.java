@@ -129,7 +129,7 @@ public class SOSM implements GroupFormingAlgorithm
                 }
                 else
                 {
-                    throw new RuntimeException("Help");
+                    throw new RuntimeException("Incomplete case");
                 }
             }
             else
@@ -142,9 +142,92 @@ public class SOSM implements GroupFormingAlgorithm
     }
 
     private void doSOSM(){
-        throw new RuntimeException("omg it works");
+
+
         //step 1:
-        //each student proposes to first choice
+        //each student proposes to first choice: choice is based on average project preference of group and student
+
+        List<Group.TentativeGroup> unmerged = new ArrayList<>();
+
+        // todo: split groups into those that are finalized and those that are not
+        //  s.t. no need to do this kind of case distinction here...
+        tentativelyFormedGroups.forEach(group -> {
+            boolean groupIsOfMaximumSize = group.members().count() == this.groupSizeConstraint.maxSize();
+
+            if (groupIsOfMaximumSize) {
+                finalFormedGroups.addAsFormed(group);
+            }
+            else {
+                unmerged.add(new Group.TentativeGroup(group));
+            }
+        });
+
+        for(var group : groups) {
+            var hyptheticalGroup = group.withExtraMember(student)
+            var hypotheticalAggregGroupPref = hyptheticalGroup.aggregatedProjectPreference
+
+            var peerSatisfaction = new PeerSatisfactionMetric(student, hyptheticalGroup)
+
+            var score = peerSatisfaction.asPercentFloat() * new AUPCR.Student(student, hypotheticalAggregGroupPref) // don't rememeber the signature
+
+                    ????
+        }
+
+        //we need to calculate for each student its priority for each group and vice-versa for groups.
+        //only then can we assign them based on their priority order, which is what SOSM does.
+        Map<String, Map<Integer, Integer>> studentGroupPreference = new HashMap<>(unmerged.size()); // student preference of certain group
+        Map<String, Integer> groupStudentPreference = new HashMap<>(unmerged.size()); // group preference of certain student
+
+        // per student
+        this.availableStudents.forEach(student -> {
+            // check per group what the best project is
+            unmerged.forEach(group -> {
+
+
+            });
+        });
+        for (Agent student : this.students.asCollection())
+        {
+
+
+            if (this.unavailableStudents.containsKey(student.name))
+            {
+                continue;
+            }
+
+        }
+
+        Group.TentativeGroup unmergedGroup = unmerged.get(0);
+        unmerged.remove(0);
+
+        int unmergedGroupSize = unmergedGroup.members().count();
+
+        var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysWithRandomGroups.PossibleGroupMerge::matchScore));
+
+        for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
+            int together = unmergedGroupSize + otherUnmergedGroup.members().count();
+
+            // Only add group if it is a final form
+            if(groupConstraints.mayFormGroupOfSize(together)){
+                possibleGroupMerges.add(new BepSysWithRandomGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+            }
+        }
+
+        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: " + this.availableStudents.size() + " students left to group");
+        List<PossibleGroup> possibleGroups = new ArrayList<>();
+
+        // Iterate over students instead of available students to prevent ConcurrentModificationException
+        // when removing from availableStudents
+        for (Agent student : this.students.asCollection()) {
+            if (this.unavailableStudents.containsKey(student.name)) continue;
+
+            List<Agent> friends = this.getAvailableFriends(student);
+            int score = this.computeScore(friends, student);
+            friends.add(student); // Add self to group
+            possibleGroups.add(new PossibleGroup(friends, score));
+        }
+
+        this.pickBestGroups(possibleGroups);
 
         //each group tentatively assigns slots to one at a time following their priority order
         //any remaining proposers are rejected
@@ -175,7 +258,7 @@ public class SOSM implements GroupFormingAlgorithm
 
                 Agents agents = Agents.from(clique);
 
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
                 System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
@@ -341,7 +424,7 @@ public class SOSM implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, new AverageProjectPreferenceOfAgents(agents));
+            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
         }
     }
 
