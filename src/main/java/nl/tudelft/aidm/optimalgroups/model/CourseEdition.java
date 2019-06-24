@@ -3,6 +3,8 @@ package nl.tudelft.aidm.optimalgroups.model;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CourseEdition
 {
@@ -19,12 +21,22 @@ public class CourseEdition
 		this.groupSizeConstraint = groupSizeConstraint;
 	}
 
+	private static Map<Integer, CourseEdition> cachedCourseEditions = new HashMap<>();
+
 	public static CourseEdition fromBepSysDatabase(DataSource dataSource, int courseEditionId)
 	{
+		CourseEdition cached = cachedCourseEditions.get(courseEditionId);
+		if (cached != null) {
+			return cached;
+		}
+
 		Agents agents = Agents.fromBepSysDb(dataSource, courseEditionId);
 		Projects projects = Projects.fromDb(dataSource, courseEditionId);
 		GroupSizeConstraint groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, courseEditionId);
 
-		return new CourseEdition(courseEditionId, agents, projects, groupSizeConstraint);
+		CourseEdition courseEdition = new CourseEdition(courseEditionId, agents, projects, groupSizeConstraint);
+		cachedCourseEditions.put(courseEditionId, courseEdition);
+
+		return courseEdition;
 	}
 }

@@ -36,7 +36,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
         this.groupSizeConstraint = groupSizeConstraint;
 
-        System.out.println("Student amount: " + students.count());
+//        System.out.println("Student amount: " + students.count());
 
         for (Agent a : students.asCollection()) {
             this.availableStudents.put(a.name, a);
@@ -67,9 +67,9 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         db_list
         */
 
-        System.out.println(System.currentTimeMillis() + ": Start constructing cliques (state 1/3)");
+//        System.out.println(System.currentTimeMillis() + ": Start constructing cliques (state 1/3)");
         constructGroupsFromCliques();
-        System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students (state 2/3)");
+//        System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students (state 2/3)");
         bestMatchUngrouped();
 
         // Check if all students are in groups and that there are no students with multiple groups (sanity check)
@@ -89,11 +89,11 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             cumulativeTentativeGroupSize += entry.getValue();
         }
 
-        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple tentatively formed groups (should be zero!): " + (cumulativeTentativeGroupSize - agentsInTentativelyFormedGroups.size()));
+//        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple tentatively formed groups (should be zero!): " + (cumulativeTentativeGroupSize - agentsInTentativelyFormedGroups.size()));
 
-        System.out.println(System.currentTimeMillis() + ": Start merging groups (state 3/3)");
+//        System.out.println(System.currentTimeMillis() + ": Start merging groups (state 3/3)");
         mergeGroups();
-        System.out.println(System.currentTimeMillis() + ": Done!");
+//        System.out.println(System.currentTimeMillis() + ": Done!");
 
         // Check if all students are in groups and that there are no students with multiple groups (sanity check)
         Map<String, Integer> agentsInFinalGroups = new HashMap<>();
@@ -113,9 +113,9 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             cumulativeGroupSize += entry.getValue();
         }
 
-        System.out.println(System.currentTimeMillis() + ": Amount of final groups: " + this.finalFormedGroups.count());
-        System.out.println(System.currentTimeMillis() + ": Amount of students that are grouped: " + agentsInFinalGroups.size());
-        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple groups (should be zero!): " + (cumulativeGroupSize - agentsInFinalGroups.size()));
+//        System.out.println(System.currentTimeMillis() + ": Amount of final groups: " + this.finalFormedGroups.count());
+//        System.out.println(System.currentTimeMillis() + ": Amount of students that are grouped: " + agentsInFinalGroups.size());
+//        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple groups (should be zero!): " + (cumulativeGroupSize - agentsInFinalGroups.size()));
 
         this.done = true;
     }
@@ -194,7 +194,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                 Agents agents = Agents.from(clique);
 
                 Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
-                System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
+//                System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
 
@@ -210,12 +210,12 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             }
         }
 
-        System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Total students in cliques: " + studentsInClique + " of a total of " + this.students.count() + " students");
+//        System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Total students in cliques: " + studentsInClique + " of a total of " + this.students.count() + " students");
     }
 
     private void bestMatchUngrouped()
     {
-        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: " + this.availableStudents.size() + " students left to group");
+//        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: " + this.availableStudents.size() + " students left to group");
         List<PossibleGroup> possibleGroups = new ArrayList<>();
 
         // Iterate over students instead of available students to prevent ConcurrentModificationException
@@ -230,7 +230,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         }
 
         this.pickBestGroups(possibleGroups);
-        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
+//        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
     }
 
     private int computeScore(List<Agent> friends, Agent a)
@@ -310,8 +310,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             }
         });
 
-        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + finalFormedGroups.asCollection().size() + " max size (final) groups");
-        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + tentativelyFormedGroups.asCollection().size() + " groups to be merged");
+//        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + finalFormedGroups.asCollection().size() + " max size (final) groups");
+//        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + tentativelyFormedGroups.asCollection().size() + " groups to be merged");
 
         unmerged.sort(Comparator.comparingInt((Group group) -> group.members().count()));
 
@@ -362,8 +362,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                 if (remainder == 0)
                     break;
             }
-            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + groupsMax + " groups of maximum size");
-            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + numberOfGroups + " groups in total");
+//            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + groupsMax + " groups of maximum size");
+//            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + numberOfGroups + " groups in total");
         }
 
         while (unmerged.size() > 0) {
@@ -412,7 +412,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                     // remove the "other" group from unmerged
                     boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
                     if (!removedSomething) {
-                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
+//                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
                     }
 
                     Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
@@ -483,7 +483,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                     // remove the "other" group from unmerged
                     boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
                     if (!removedSomething) {
-                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
+//                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
                     }
 
                     Group.TentativeGroup tentativeGroup = bestMerge.toGroup();

@@ -36,6 +36,10 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 	//	private Map<Project.ProjectSlot, List<Agent>> groupedBySlot = null;
 	private Map<Project, List<Agent>> groupedByProject = null;
 
+	public static void flushCache()
+	{
+		existingResultsCache = new ConcurrentHashMap<>();
+	}
 
 	public static StudentProjectMaxFlowMatchings of(Agents students, Projects projects, int maxGroupSize)
 	{

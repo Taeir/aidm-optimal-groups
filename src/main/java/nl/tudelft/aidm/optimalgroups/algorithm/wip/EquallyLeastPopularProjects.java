@@ -64,10 +64,10 @@ public class EquallyLeastPopularProjects implements Projects
 		entries.sort(Comparator.comparing((Map.Entry<Project, AUPCR> entry) -> entry.getValue().result()).reversed());
 
 		// some dbg / progess report
-		for (Map.Entry<Project, AUPCR> entry : entries)
-		{
-			System.out.printf("\tExcluding project '%s' with %s students has effect: %s\n", entry.getKey(), grouping.get(entry.getKey()).size(), entry.getValue().result());
-		}
+//		for (Map.Entry<Project, AUPCR> entry : entries)
+//		{
+//			System.out.printf("\tExcluding project '%s' with %s students has effect: %s\n", entry.getKey(), grouping.get(entry.getKey()).size(), entry.getValue().result());
+//		}
 
 		// We want to get all Projects that share same, highest AUPCR-after-removal. Use streams to collect into a map with the AUPCR-as-float as key
 		// note: not very efficient implementation, but as easy to write and should read easier
@@ -77,9 +77,9 @@ public class EquallyLeastPopularProjects implements Projects
 		var leastPopular = entries.get(0);
 
 		var equallyLeastPopularAsList = groupedByAUPCR.get(leastPopular.getValue().result());
-		equallyLeastPopularAsList.forEach(entry -> {
-			System.out.printf("Removing project '%s' has least effect on AUPCR (resulting in: %s)\n", entry.getKey(), entry.getValue().result());
-		});
+//		equallyLeastPopularAsList.forEach(entry -> {
+//			System.out.printf("Removing project '%s' has least effect on AUPCR (resulting in: %s)\n", entry.getKey(), entry.getValue().result());
+//		});
 
 		// Need to map the list of entries to just the projects
 		return equallyLeastPopularAsList.stream().map(Map.Entry::getKey).collect(Collectors.toList());

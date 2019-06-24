@@ -89,13 +89,13 @@ public class LeastPopularProject implements Project
 		entries.sort(Comparator.comparing((Map.Entry<Project, AUPCR> entry) -> entry.getValue().result()).reversed());
 
 		// some dbg / progess report
-		for (Map.Entry<Project, AUPCR> entry : entries)
-		{
-			System.out.printf("\tExcluding project '%s' with %s students has effect: %s\n", entry.getKey(), grouping.get(entry.getKey()).size(), entry.getValue().result());
-		}
+//		for (Map.Entry<Project, AUPCR> entry : entries)
+//		{
+//			System.out.printf("\tExcluding project '%s' with %s students has effect: %s\n", entry.getKey(), grouping.get(entry.getKey()).size(), entry.getValue().result());
+//		}
 
 		var leastPopular = entries.get(0);
-		System.out.printf("Removing project '%s' has least effect on AUPCR (resulting in: %s)\n", leastPopular.getKey(), leastPopular.getValue().result());
+//		System.out.printf("Removing project '%s' has least effect on AUPCR (resulting in: %s)\n", leastPopular.getKey(), leastPopular.getValue().result());
 
 		return leastPopular.getKey();
 	}
