@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
-import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 
 import java.util.*;
 

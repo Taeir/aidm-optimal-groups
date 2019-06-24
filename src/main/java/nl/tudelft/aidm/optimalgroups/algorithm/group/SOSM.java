@@ -1,7 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
-import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
-import nl.tudelft.aidm.optimalgroups.model.entity.*;
+import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 
 import java.util.*;
@@ -59,8 +60,8 @@ public class SOSM implements GroupFormingAlgorithm
         //to make sure we can do SOSM, we need to know how many groups we can make minimum and maximum,
         //because we can't ensure SOSM can be applied otherwise,
         //since SOSM applies on one side there are single students and the other side groupslots
-        SetOfConstrainedGroupSizes maxGroupConstraints = new SetOfConstrainedGroupSizes(studentsToAssign, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MIN_FOCUS);
-        SetOfConstrainedGroupSizes minGroupConstraints = new SetOfConstrainedGroupSizes(studentsToAssign, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+        SetOfGroupSizesThatCanStillBeCreated maxGroupConstraints = new SetOfGroupSizesThatCanStillBeCreated(studentsToAssign, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MIN_FOCUS);
+        SetOfGroupSizesThatCanStillBeCreated minGroupConstraints = new SetOfGroupSizesThatCanStillBeCreated(studentsToAssign, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
         int maxAmountOfGroups = 0;
         for(int i : maxGroupConstraints.setOfGroups.values()){
             maxAmountOfGroups += i;
@@ -84,7 +85,7 @@ public class SOSM implements GroupFormingAlgorithm
         else
         {
             // first check if SOSM can be done
-            System.out.println(System.currentTimeMillis() + ": Start matching ungrouped students in SOSM");
+            System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students in SOSM");
             bestMatchUngrouped();
             // first, after groupmatching, check if enough slots
 
@@ -215,7 +216,7 @@ public class SOSM implements GroupFormingAlgorithm
         System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
     }
 
-    public FormedGroups finalFormedGroups()
+    public FormedGroups asFormedGroups()
     {
         if (!done) {
             constructGroups();
@@ -303,19 +304,19 @@ public class SOSM implements GroupFormingAlgorithm
     @Override
     public Collection<Group.FormedGroup> asCollection()
     {
-        return finalFormedGroups().asCollection();
+        return asFormedGroups().asCollection();
     }
 
     @Override
     public void forEach(Consumer<Group.FormedGroup> fn)
     {
-        finalFormedGroups().forEach(fn);
+        asFormedGroups().forEach(fn);
     }
 
     @Override
     public int count()
     {
-        return finalFormedGroups().count();
+        return asFormedGroups().count();
     }
 
     private List<Agent> getAvailableFriends(Agent a) {

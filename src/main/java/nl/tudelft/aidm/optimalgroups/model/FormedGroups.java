@@ -1,6 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model.entity;
-
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+package nl.tudelft.aidm.optimalgroups.model;
 
 import java.util.ArrayList;
 import java.util.Collection;

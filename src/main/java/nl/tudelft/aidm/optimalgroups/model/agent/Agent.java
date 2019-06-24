@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model.entity;
+package nl.tudelft.aidm.optimalgroups.model.agent;
 
 import nl.tudelft.aidm.optimalgroups.model.pref.CombinedPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
@@ -52,17 +52,19 @@ public abstract class Agent
 		return "Agent (" + name + ")";
 	}
 
-	public int groupPreferenceLength() { return this.groupPreference.asArray().length; }
+	public int groupPreferenceLength() {
+		return this.groupPreference.asArray().length;
+	}
 
 	/**
 	 * Represents an Agent whose data is retrieved from a data source
 	 */
-	public static class fromDb extends Agent
+	public static class fromBepSysDb extends Agent
 	{
 		private String userId;
 		private String courseEditionId;
 
-		public fromDb(DataSource dataSource, String userId, String courseEditionId)
+		public fromBepSysDb(DataSource dataSource, String userId, String courseEditionId)
 		{
 			super(
 				userId,

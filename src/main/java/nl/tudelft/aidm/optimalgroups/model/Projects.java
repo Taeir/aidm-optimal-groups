@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model.entity;
+package nl.tudelft.aidm.optimalgroups.model;
 
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;

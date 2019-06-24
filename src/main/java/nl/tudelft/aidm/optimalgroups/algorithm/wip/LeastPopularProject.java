@@ -1,12 +1,12 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.wip;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.SingleGroupPerProjectMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchingORTOOLS;
+import nl.tudelft.aidm.optimalgroups.algorithm.SingleGroupPerProjectMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchings;
 import nl.tudelft.aidm.optimalgroups.metric.AUPCR;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
-import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.Project;
+import nl.tudelft.aidm.optimalgroups.model.Projects;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,9 +71,9 @@ public class LeastPopularProject implements Project
 			var projectsWithoutOne = projects.without(project);
 
 			// TODO: include this maxflow result?
-			var maxflowResultWithoutCurrentProject = new StudentProjectMaxFlowMatchingORTOOLS(students, projectsWithoutOne, maxGroupSize);
+			var maxflowResultWithoutCurrentProject = new StudentProjectMaxFlowMatchings(students, projectsWithoutOne, maxGroupSize);
 
-			SingleGroupPerProjectMatching matching = new SingleGroupPerProjectMatching(maxflowResultWithoutCurrentProject);
+			SingleGroupPerProjectMatchings matching = new SingleGroupPerProjectMatchings(maxflowResultWithoutCurrentProject);
 
 			// calc effect
 			var metric = new AUPCR.StudentAUPCR(matching, projectsWithoutOne, students);

@@ -41,7 +41,7 @@ public interface ProjectPreference
 		Map<Integer, Integer> other = otherPreference.asMap();
 
 		// If the other does not have any preferences, return maximum difference to
-		// avoid picking this matching over people that do have preferences
+		// avoid picking this matchings over people that do have preferences
 		if (other.size() == 0 || own.size() == 0) {
 			return Integer.MAX_VALUE;
 		}

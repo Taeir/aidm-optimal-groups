@@ -1,7 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
-import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
-import nl.tudelft.aidm.optimalgroups.model.entity.*;
+import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 
@@ -68,7 +69,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
         System.out.println(System.currentTimeMillis() + ": Start constructing cliques (state 1/3)");
         constructGroupsFromCliques();
-        System.out.println(System.currentTimeMillis() + ": Start matching ungrouped students (state 2/3)");
+        System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students (state 2/3)");
         bestMatchUngrouped();
 
         // Check if all students are in groups and that there are no students with multiple groups (sanity check)
@@ -120,7 +121,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
     }
 
     @Override
-    public FormedGroups finalFormedGroups()
+    public FormedGroups asFormedGroups()
     {
         if (!done) {
             constructGroups();
@@ -132,19 +133,19 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
     @Override
     public Collection<Group.FormedGroup> asCollection()
     {
-        return finalFormedGroups().asCollection();
+        return asFormedGroups().asCollection();
     }
 
     @Override
     public void forEach(Consumer<Group.FormedGroup> fn)
     {
-        finalFormedGroups().forEach(fn);
+        asFormedGroups().forEach(fn);
     }
 
     @Override
     public int count()
     {
-        return finalFormedGroups().count();
+        return asFormedGroups().count();
     }
 
     private void constructGroupsFromCliques() {
@@ -314,13 +315,13 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
         unmerged.sort(Comparator.comparingInt((Group group) -> group.members().count()));
 
-        SetOfConstrainedGroupSizes groupConstraints = null;
+        SetOfGroupSizesThatCanStillBeCreated groupConstraints = null;
         int groupsMax = 0;
 
         if(useImprovedAlgo)
         {
             int amountOfStudentsToGroup = tentativelyFormedGroups.countTotalStudents() - finalFormedGroups.countTotalStudents();
-            groupConstraints = new SetOfConstrainedGroupSizes(amountOfStudentsToGroup, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+            groupConstraints = new SetOfGroupSizesThatCanStillBeCreated(amountOfStudentsToGroup, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
         }
         else
         {

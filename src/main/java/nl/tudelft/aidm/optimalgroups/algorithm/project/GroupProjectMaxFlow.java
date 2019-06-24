@@ -2,10 +2,10 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import louchtch.graphmatch.matching.MaxFlowMatching;
 import louchtch.graphmatch.model.*;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.FormedGroups;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
-import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
+import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
+import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatchings;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGroup>
+public class GroupProjectMaxFlow implements GroupProjectMatchings<Group.FormedGroup>
 {
 	private final FormedGroups groups;
 	private final Projects projects;
@@ -52,7 +52,7 @@ public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGro
 			Group.FormedGroup group = ((GroupVertexContent) matchEdge.from.content()).group;
 			Project.ProjectSlot project = ((ProjectVertexContent) matchEdge.to.content()).slot;
 
-			var match = new Matching.FormedGroupToProjectSlotMatch(group, project);
+			var match = new FormedGroupToProjectSlotMatch(group, project);
 			result.add(match);
 		}
 

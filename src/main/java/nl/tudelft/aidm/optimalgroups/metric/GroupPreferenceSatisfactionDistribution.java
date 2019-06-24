@@ -1,23 +1,22 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
-
-import java.util.Map;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
+import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.Project;
 
 public class GroupPreferenceSatisfactionDistribution extends Distribution {
 
-    private Matching<Group.FormedGroup, Project> matching;
+    private Matchings<Group.FormedGroup, Project> matchings;
 
-    public GroupPreferenceSatisfactionDistribution(Matching<Group.FormedGroup, Project> matching, int partitionAmount) {
+    public GroupPreferenceSatisfactionDistribution(Matchings<Group.FormedGroup, Project> matchings, int partitionAmount) {
         super(0, 1, partitionAmount);
-        this.matching = matching;
+        this.matchings = matchings;
     }
 
     @Override
     protected void calculate() {
-        for (Matching.Match<Group.FormedGroup, Project> match : this.matching.asList()) {
+        for (Match<Group.FormedGroup, Project> match : this.matchings.asList()) {
             match.from().members().forEach(student -> {
                 GroupPreferenceSatisfaction preferenceSatisfaction = new GroupPreferenceSatisfaction(match, student);
                 boolean added = this.addValue(preferenceSatisfaction.asFloat());

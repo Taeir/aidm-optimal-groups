@@ -5,13 +5,14 @@ import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import java.util.HashMap;
 import java.util.Map;
 
-final public class SetOfConstrainedGroupSizes
+final public class SetOfGroupSizesThatCanStillBeCreated
 {
 
     /**
      * How will the algorithm create a set of group sizes with constraints?
      */
-    enum SetCreationAlgorithm{
+    enum FocusMode
+    {
         MAX_FOCUS, // focuses on creating large groups first, then evenly reducing the size if necessary
         MIN_FOCUS // focuses on creating small groups first, then evenly increasing the size if necessary
     }
@@ -19,7 +20,7 @@ final public class SetOfConstrainedGroupSizes
     public Map<Integer, Integer> setOfGroups; // A HashMap where the key is the size of a group and the value the amount of groups with that size
     private int nrStudents;
     private final GroupSizeConstraint groupSizeConstraint;
-    private SetCreationAlgorithm algorithm;
+    private FocusMode algorithm;
 
     /**
      * Given an amount of students and group size constraints, create a set of possible group sizes
@@ -27,7 +28,7 @@ final public class SetOfConstrainedGroupSizes
      * To keep track of intermediate group sets, recordGroupFormedOfSize will decrement the amount of groups formable for that size, if possible
      * To check if a group with a certain size can be made, use mayFormGroupOfSize
      */
-    public SetOfConstrainedGroupSizes(int nrStudents, GroupSizeConstraint groupSizeConstraint, SetCreationAlgorithm algorithm){
+    public SetOfGroupSizesThatCanStillBeCreated(int nrStudents, GroupSizeConstraint groupSizeConstraint, FocusMode algorithm){
         this.nrStudents = nrStudents;
         this.groupSizeConstraint = groupSizeConstraint;
         this.algorithm = algorithm;
@@ -65,13 +66,12 @@ final public class SetOfConstrainedGroupSizes
     /**
      * Calculate a possible set of group sizes
      */
-    @SuppressWarnings("Duplicates")
     private void createSetOfGroups()
     {
         int minGroupSize = groupSizeConstraint.minSize();
         int maxGroupSize = groupSizeConstraint.maxSize();
 
-        if(algorithm == SetCreationAlgorithm.MAX_FOCUS)
+        if(algorithm == FocusMode.MAX_FOCUS)
         {
             boolean matchingDone = false;
 
@@ -86,9 +86,9 @@ final public class SetOfConstrainedGroupSizes
                     setOfGroups.put(maxGroupSize, nrGroupsWithMaxSize); //students are perfect fit for max group size
                     matchingDone = true;
                 }
-                else if(minGroupSize == maxGroupSize) //if there are remainders with a solo size constraint, impossible matching
+                else if(minGroupSize == maxGroupSize) //if there are remainders with a solo size constraint, impossible matchings
                 {
-                    throw new RuntimeException("Impossible group matching problem, can't create a set of group sizes with current amount of students, group constraints and chosen set creation algorithm");
+                    throw new RuntimeException("Impossible group matchings problem, can't create a set of group sizes with current amount of students, group constraints and chosen set creation algorithm");
                 }
                 else if(remainder >= minGroupSize) //check if remainder fits in group size constraints
                 {
@@ -124,7 +124,7 @@ final public class SetOfConstrainedGroupSizes
                 }
             }
         }
-        else if(algorithm == SetCreationAlgorithm.MIN_FOCUS)
+        else if(algorithm == FocusMode.MIN_FOCUS)
         {
             setOfGroups = new HashMap<>(); //Key = size of group, Value = amount of groups with that size
             boolean matchingDone = false;
@@ -137,9 +137,9 @@ final public class SetOfConstrainedGroupSizes
                     setOfGroups.put(minGroupSize, nrGroupsWithMinSize); //students are perfect fit for max group size
                     matchingDone = true;
                 }
-                else if(minGroupSize == maxGroupSize) //if there are remainders with a solo size constraint, impossible matching
+                else if(minGroupSize == maxGroupSize) //if there are remainders with a solo size constraint, impossible matchings
                 {
-                    throw new RuntimeException("Impossible group matching problem, can't create a set of group sizes with current amount of students, group constraints and chosen set creation algorithm");
+                    throw new RuntimeException("Impossible group matchings problem, can't create a set of group sizes with current amount of students, group constraints and chosen set creation algorithm");
                 }
                 else //check if remainder can be added to other groups, without breaking group size constraints
                 {
