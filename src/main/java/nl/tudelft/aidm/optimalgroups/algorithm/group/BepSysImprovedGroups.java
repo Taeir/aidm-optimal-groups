@@ -180,6 +180,11 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                 continue;
             }
 
+            if(useImprovedAlgo && student.groupPreferenceLength() > groupSizeConstraint.maxSize()) //Don't allow cliques larger than max group size with improved algo
+            {
+                continue;
+            }
+
             if (students.hasEqualFriendLists(student))
             {
                 int[] friends = student.groupPreference.asArray();
