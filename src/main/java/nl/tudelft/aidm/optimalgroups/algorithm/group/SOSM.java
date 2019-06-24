@@ -58,7 +58,7 @@ public class SOSM implements GroupFormingAlgorithm
 
         //to make sure we can do SOSM, we need to know how many groups we can make minimum and maximum,
         //because we can't ensure SOSM can be applied otherwise,
-        //since SOSM applies on one side there are single students and the other side groupslots
+        //since SOSM there are single students on one side and on the other side groupslots
         SetOfConstrainedGroupSizes maxGroupConstraints = new SetOfConstrainedGroupSizes(studentsToAssign, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MIN_FOCUS);
         SetOfConstrainedGroupSizes minGroupConstraints = new SetOfConstrainedGroupSizes(studentsToAssign, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
         int maxAmountOfGroups = 0;
