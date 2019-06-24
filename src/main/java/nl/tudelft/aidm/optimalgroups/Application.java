@@ -4,8 +4,9 @@ import edu.princeton.cs.algs4.StdOut;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.metric.*;
-import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
-import nl.tudelft.aidm.optimalgroups.model.entity.*;
+import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
 import org.sql2o.GenericDatasource;
 
 import javax.sql.DataSource;
@@ -38,7 +39,7 @@ public class Application
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
 
 		// Fetch agents and from DB before loop; they don't change for another iteration
-		Agents agents = Agents.from(dataSource, courseEdition);
+		Agents agents = Agents.fromBepSysDb(dataSource, courseEdition);
 		Projects projects = Projects.fromDb(dataSource, courseEdition);
 		System.out.println("Amount of projects: " + projects.count());
 		System.out.println("Amount of students: " + agents.count());
@@ -52,41 +53,41 @@ public class Application
 			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
 				formedGroups = new CombinedPreferencesGreedy(agents, groupSizeConstraint);
 			} else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
-				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, true);
+				formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint, true);
 			} else {
-				formedGroups = new BepSysWithRandomGroups(agents, groupSizeConstraint, false);
+				formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint, false);
 			}
 
-			GroupProjectMatching groupProjectMatching = null;
+			GroupProjectMatchings groupProjectMatching = null;
 
 			if (projectAssignmentAlgorithm.equals("RSD")) {
-				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.finalFormedGroups(), projects);
+				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), projects);
 			} else {
-				groupProjectMatching = new GroupProjectMaxFlow(formedGroups.finalFormedGroups(), projects);
+				groupProjectMatching = new GroupProjectMaxFlow(formedGroups.asFormedGroups(), projects);
 			}
 
-			//Matching<Group.FormedGroup, Project.ProjectSlot> matching = maxflow.result();
-			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
+			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
+			Matchings<Group.FormedGroup, Project> matchings = groupProjectMatching;
 
-			Profile studentProfile = new Profile.StudentProjectProfile(matching);
+			Profile studentProfile = new Profile.StudentProjectProfile(matchings);
 			//studentProfile.printResult();
 
-			Profile groupProfile = new Profile.GroupProjectProfile(matching);
+			Profile groupProfile = new Profile.GroupProjectProfile(matchings);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, projects, agents);
+			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matchings, projects, agents);
 			//studentAUPCR.printResult();
 
-			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
+			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matchings, projects, agents);
 			//groupAUPCR.printResult();
 
-			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
+			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matchings, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects.count());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matchings, projects.count());
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());
+			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matchings, projects.count());
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics

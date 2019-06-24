@@ -1,12 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.Application;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * ProjectPreference implementation for a whole group. This is an average of the group member preferences (as implemented in BepSYS)

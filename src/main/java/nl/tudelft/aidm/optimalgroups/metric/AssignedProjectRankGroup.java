@@ -1,17 +1,17 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.Project;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
 public class AssignedProjectRankGroup
 {
-	private Matching.Match<? extends Group, Project> match;
+	private Match<? extends Group, Project> match;
 
-	public AssignedProjectRankGroup(Matching.Match<? extends Group, Project> match)
+	public AssignedProjectRankGroup(Match<? extends Group, Project> match)
 	{
 		this.match = match;
 	}

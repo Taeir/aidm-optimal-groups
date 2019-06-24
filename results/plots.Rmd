@@ -1,0 +1,113 @@
+---
+title: "IDMP Plots"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+courseEditions <- c("CourseEdition_3", "CourseEdition_4", "CourseEdition_10")
+for(courseEdition in courseEditions)
+{
+  algorithms <- list.files(courseEdition)
+  for(algorithm in algorithms)
+  {
+    algorithmString <- unlist(strsplit(algorithm, '_'))
+    #groupingAlgo <- paste(algorithmString[1], )
+    projectAssignmentAlgo <- tail(unlist(strsplit(algorithm, '_')), n=1)
+    directory <- paste(courseEdition, algorithm, sep = "/")
+    files <- list.files(directory)
+    for(file in files)
+    {
+      if(file == "NO_RESULTS_INFINITE_LOOP") next
+      if(file == "NO_RESULTS_IMPOSSIBLE_MATCHING") next
+      if(substr(file, nchar(file)-3, nchar(file)) == ".png") next
+      if(substr(file, nchar(file)-8, nchar(file)-4) == "AUPCR") next #cant plot AUPCR metric
+      fileDirectory <- paste(directory, file, sep = "/")
+      metricName <- substr(file, 0, nchar(file)-4)
+      pngFileName <- paste(metricName, ".png", sep = "")
+      #pngDirectory <- paste(directory, pngFileName, sep = "/")
+      pngDirectory <- paste(courseEdition,algorithm,pngFileName,sep="_")
+      data <- read.csv(fileDirectory)
+      png(pngDirectory)
+      if(metricName == "groupPreferenceSatisfaction")
+      {
+        barplot(data[,1], names.arg = rev(seq(5,100,5)), main = paste("Peer satisfaction level in % with", projectAssignmentAlgo), xlab = "%", ylab = "Amount of students")
+      }
+      else if(metricName == "groupProjectRank")
+      {
+        barplot(data[,1], names.arg = (1:length(data[,1])), main = paste("Group project rank with", projectAssignmentAlgo), xlab = "Rank", ylab = "Amount of groups")
+      }
+      else if(metricName == "studentProjectRank")
+      {
+        barplot(data[,1], names.arg = (1:length(data[,1])), main = paste("Student project rank with", projectAssignmentAlgo), xlab = "Rank", ylab = "Amount of students")
+        #barplot(data$X0.500000.42.500000.42, names.arg = (1:length(data$X0.500000.42.500000.42)), main = "Student project rank with MaxFlow", xlab = "Rank", ylab = "Amount of students", ylim = c(0,65))
+      }
+      dev.off()
+    }
+  }
+}
+```
+
+```{r eval = FALSE}
+png("groupProjectRank_CE4_ProjectMaxFlow.png")
+data <- read.csv("groupProjectRank_CE4_ProjectMaxFlow.txt")
+barplot(data$X0.500000.8.500000.8, names.arg = (1:length(data$X0.500000.8.500000.8)), main = "Group project rank with MaxFlow", xlab = "Rank", ylab = "Amount of groups", ylim = c(0,20))
+dev.off()
+
+png("groupProjectRank_CE4_ProjectRSD.png")
+data <- read.csv("groupProjectRank_CE4_ProjectRSD.txt")
+barplot(data$X0.500000.8.500000.8, names.arg = (1:length(data$X0.500000.8.500000.8)), main = "Group project rank with RSD", xlab = "Rank", ylab = "Amount of groups", ylim = c(0,20))
+dev.off()
+
+png("studentProjectRank_CE4_ProjectMaxFlow.png")
+data <- read.csv("studentProjectRank_CE4_ProjectMaxFlow.txt")
+barplot(data$X0.500000.8.500000.8, names.arg = (1:length(data$X0.500000.8.500000.8)), main = "Student project rank with MaxFlow", xlab = "Rank", ylab = "Amount of students", ylim = c(0,80))
+dev.off()
+
+png("studentProjectRank_CE4_ProjectRSD.png")
+data <- read.csv("studentProjectRank_CE4_ProjectRSD.txt")
+barplot(data$X0.500000.8.500000.8, names.arg = (1:length(data$X0.500000.8.500000.8)), main = "Student project rank with RSD", xlab = "Rank", ylab = "Amount of students", ylim = c(0,80))
+dev.off()
+
+png("groupPreferenceSatisfaction_CE4_ProjectMaxFlow.png")
+data <- read.csv("groupPreferenceSatisfaction_CE4_ProjectMaxFlow.txt")
+barplot(rev(data$X0.000000.1.000000.20), names.arg = rev(seq(5,100,5)), main = "Peer satisfaction level in %", xlab = "%", ylab = "Amount of students")
+dev.off()
+
+
+
+png("groupProjectRank_CE10_ProjectMaxFlow.png")
+data <- read.csv("groupProjectRank_CE10_ProjectMaxFlow.txt")
+barplot(data$X0.500000.42.500000.42, names.arg = (1:length(data$X0.500000.42.500000.42)), main = "Group project rank with MaxFlow", xlab = "Rank", ylab = "Amount of groups", ylim = c(0,20))
+dev.off()
+
+png("groupProjectRank_CE10_ProjectRSD.png")
+data <- read.csv("groupProjectRank_CE10_ProjectRSD.txt")
+barplot(data$X0.500000.42.500000.42, names.arg = (1:length(data$X0.500000.42.500000.42)), main = "Group project rank with RSD", xlab = "Rank", ylab = "Amount of groups", ylim = c(0,20))
+dev.off()
+
+png("studentProjectRank_CE10_ProjectMaxFlow.png")
+data <- read.csv("studentProjectRank_CE10_ProjectMaxFlow.txt")
+barplot(data$X0.500000.42.500000.42, names.arg = (1:length(data$X0.500000.42.500000.42)), main = "Student project rank with MaxFlow", xlab = "Rank", ylab = "Amount of students", ylim = c(0,65))
+dev.off()
+
+png("studentProjectRank_CE10_ProjectRSD.png")
+data <- read.csv("studentProjectRank_CE10_ProjectRSD.txt")
+barplot(data$X0.500000.42.500000.42, names.arg = (1:length(data$X0.500000.42.500000.42)), main = "Student project rank with RSD", xlab = "Rank", ylab = "Amount of students", ylim = c(0,65))
+dev.off()
+
+png("groupPreferenceSatisfaction_CE10_ProjectMaxFlow.png")
+data <- read.csv("groupPreferenceSatisfaction_CE10_ProjectMaxFlow.txt")
+barplot(rev(data$X0.000000.1.000000.20), names.arg = rev(seq(5,100,5)), main = "Peer satisfaction level in %", xlab = "%", ylab = "Amount of students", ylim = c(0,150))
+dev.off()
+
+```

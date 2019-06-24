@@ -1,10 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agents;
-import nl.tudelft.aidm.optimalgroups.model.entity.FormedGroups;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.FormedGroups;
+import nl.tudelft.aidm.optimalgroups.model.Group;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
@@ -52,7 +52,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
         List<Agent> sortedList = new ArrayList<>(this.students.asCollection());
         sortedList.sort(Comparator.comparing(Agent::groupPreferenceLength).reversed());
 
-        SetOfConstrainedGroupSizes groupSizes = new SetOfConstrainedGroupSizes(this.students.count(), groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+        SetOfGroupSizesThatCanStillBeCreated groupSizes = new SetOfGroupSizesThatCanStillBeCreated(this.students.count(), groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
 
         // Start iterating and forming groups greedily
         for (Agent student : sortedList) {
@@ -68,7 +68,8 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
                     continue;
                 }
 
-                differences.put(other.name, student.getProjectPreference().differenceTo(other.getProjectPreference()));
+                int differenceToOther = student.projectPreference.differenceTo(other.projectPreference);
+                differences.put(other.name, differenceToOther);
             }
 
             // Sort differences in ascending order (least difference first)
@@ -115,7 +116,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
     }
 
     @Override
-    public FormedGroups finalFormedGroups() {
+    public FormedGroups asFormedGroups() {
         if (this.done == false) {
             this.constructGroups();
         }
@@ -125,7 +126,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
     @Override
     public Collection<Group.FormedGroup> asCollection() {
-        return this.finalFormedGroups().asCollection();
+        return this.asFormedGroups().asCollection();
     }
 
     @Override

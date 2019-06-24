@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
-import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.Project;
 
 public class AssignedProjectRankStudent
 {
