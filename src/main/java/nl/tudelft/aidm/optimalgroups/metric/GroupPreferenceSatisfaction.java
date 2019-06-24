@@ -1,17 +1,16 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
-import nl.tudelft.aidm.optimalgroups.model.entity.Agent;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project.ProjectSlot;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.Project;
 
 public class GroupPreferenceSatisfaction
 {
-	private Matching.Match<Group.FormedGroup, Project> match;
+	private Match<Group.FormedGroup, Project> match;
 	private Agent student;
 
-	public GroupPreferenceSatisfaction(Matching.Match<Group.FormedGroup, Project> match, Agent student)
+	public GroupPreferenceSatisfaction(Match<Group.FormedGroup, Project> match, Agent student)
 	{
 		this.match = match;
 		this.student = student;

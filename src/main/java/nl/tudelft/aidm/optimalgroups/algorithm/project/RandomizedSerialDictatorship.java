@@ -1,13 +1,13 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
-import nl.tudelft.aidm.optimalgroups.model.entity.FormedGroups;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
-import nl.tudelft.aidm.optimalgroups.model.entity.Projects;
+import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
+import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatchings;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
 
 import java.util.*;
 
-public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.FormedGroup>
+public class RandomizedSerialDictatorship implements GroupProjectMatchings<Group.FormedGroup>
 {
 	private final FormedGroups groups;
 	private final Projects projects;
@@ -53,7 +53,7 @@ public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.
 
 					// Retrieve the slot to use (if the currentlyUsedSlots is 0, get index 0, etc)
 					Project.ProjectSlot unusedSlot = this.projects.slotsForProject(projectId).get(currentlyUsedSlots);
-					Matching.FormedGroupToProjectSlotMatch newMatch = new Matching.FormedGroupToProjectSlotMatch(group, unusedSlot);
+					FormedGroupToProjectSlotMatch newMatch = new FormedGroupToProjectSlotMatch(group, unusedSlot);
 					result.add(newMatch);
 					break;
 				}

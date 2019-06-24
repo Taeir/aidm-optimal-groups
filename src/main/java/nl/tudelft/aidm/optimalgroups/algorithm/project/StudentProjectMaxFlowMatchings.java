@@ -2,13 +2,18 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import com.google.ortools.graph.MinCostFlow;
 import louchtch.graphmatch.model.*;
-import nl.tudelft.aidm.optimalgroups.model.entity.*;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.Project;
+import nl.tudelft.aidm.optimalgroups.model.Projects;
+import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings({"Duplicates"})
-public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatching //implements GroupProjectMatching
+public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings //implements GroupProjectMatchings
 {
 	// MAKE CONFIGURABLE WITH GROUP SIZE CONSTRAINTS
 //	private static final int MAX_GROUP_SIZE = 6;
@@ -17,7 +22,7 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 		System.loadLibrary("jniortools");
 	}
 
-	private static Map<Collection<Project>, StudentProjectMaxFlowMatchingORTOOLS> existingResultsCache = new ConcurrentHashMap<>();
+	private static Map<Collection<Project>, StudentProjectMaxFlowMatchings> existingResultsCache = new ConcurrentHashMap<>();
 
 	// source and sink vertices
 	private static Vertex<Object> source = new Vertex<>(null);
@@ -32,17 +37,17 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 	private Map<Project, List<Agent>> groupedByProject = null;
 
 
-	public static StudentProjectMaxFlowMatchingORTOOLS of(Agents students, Projects projects, int maxGroupSize)
+	public static StudentProjectMaxFlowMatchings of(Agents students, Projects projects, int maxGroupSize)
 	{
 		if (existingResultsCache.containsKey(projects.asCollection()) == false) {
-			StudentProjectMaxFlowMatchingORTOOLS maxflow = new StudentProjectMaxFlowMatchingORTOOLS(students, projects, maxGroupSize);
+			StudentProjectMaxFlowMatchings maxflow = new StudentProjectMaxFlowMatchings(students, projects, maxGroupSize);
 			existingResultsCache.put(projects.asCollection(), maxflow);
 
 			return maxflow;
 		}
 
-		StudentProjectMaxFlowMatchingORTOOLS existing = existingResultsCache.get(projects.asCollection());
-		if (existing.students != students) {
+		StudentProjectMaxFlowMatchings existing = existingResultsCache.get(projects.asCollection());
+		if (existing.students != students) { // reference equality suffices
 			throw new RuntimeException("Requested a cached StudentsProjectsMaxFlow for previously computed projects, but different student set." +
 				"Cache implementation only works on projects and assumes identical studens. Decide how to handle this case first (support proj + studs or simply compute this case without caching).");
 		}
@@ -50,7 +55,7 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 		return existing;
 	}
 
-	public StudentProjectMaxFlowMatchingORTOOLS(Agents students, Projects projects, int maxGroupSize)
+	public StudentProjectMaxFlowMatchings(Agents students, Projects projects, int maxGroupSize)
 	{
 		this.students = students;
 		this.projects = projects;
@@ -73,7 +78,7 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 		if (asList != null)
 			return asList;
 
-//		ListBasedMatching listBasedMatching = new ListBasedMatching<Agent, Project>();
+//		ListBasedMatchings listBasedMatching = new ListBasedMatchings<Agent, Project>();
 
 		this.asList = new ArrayList<>();
 
@@ -104,8 +109,8 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 
 		MinCostFlow minCostFlow = new MinCostFlow();
 
-		int source = StudentProjectMaxFlowMatchingORTOOLS.source.id;
-		int sink = StudentProjectMaxFlowMatchingORTOOLS.sink.id;
+		int source = StudentProjectMaxFlowMatchings.source.id;
+		int sink = StudentProjectMaxFlowMatchings.sink.id;
 
 		// Source and Sink do not need to supply/consume more than we have students
 		minCostFlow.setNodeSupply(source, studentVertices.count());
@@ -173,7 +178,7 @@ public class StudentProjectMaxFlowMatchingORTOOLS implements StudentProjectMatch
 					projectVertices.forEach(projectVertex -> {
 						// This student is indifferent, therefore prioritize everyone else by assigning lowest rank
 						// the "combined preferences" algorithm does the same. Another approach: exclude these studens from
-						// the maxflow matching and only add them at the very end as "wildcard" students
+						// the maxflow matchings and only add them at the very end as "wildcard" students
 						// TODO: investigate effects
 						int rank = projectVertices.count() - 1;
 

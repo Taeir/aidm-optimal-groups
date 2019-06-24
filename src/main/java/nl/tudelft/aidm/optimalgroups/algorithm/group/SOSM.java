@@ -1,7 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
-import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
-import nl.tudelft.aidm.optimalgroups.model.entity.*;
+import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 
 import java.util.*;
@@ -58,9 +59,15 @@ public class SOSM implements GroupFormingAlgorithm
 
         //to make sure we can do SOSM, we need to know how many groups we can make minimum and maximum,
         //because we can't ensure SOSM can be applied otherwise,
+/*
         //since SOSM there are single students on one side and on the other side groupslots
         SetOfConstrainedGroupSizes maxGroupConstraints = new SetOfConstrainedGroupSizes(studentsToAssign, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MIN_FOCUS);
         SetOfConstrainedGroupSizes minGroupConstraints = new SetOfConstrainedGroupSizes(studentsToAssign, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+*/
+        //since SOSM applies on one side there are single students and the other side groupslots
+        SetOfGroupSizesThatCanStillBeCreated maxGroupConstraints = new SetOfGroupSizesThatCanStillBeCreated(studentsToAssign, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MIN_FOCUS);
+        SetOfGroupSizesThatCanStillBeCreated minGroupConstraints = new SetOfGroupSizesThatCanStillBeCreated(studentsToAssign, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
+
         int maxAmountOfGroups = 0;
         for(int i : maxGroupConstraints.setOfGroups.values()){
             maxAmountOfGroups += i;
@@ -84,7 +91,7 @@ public class SOSM implements GroupFormingAlgorithm
         else
         {
             // first check if SOSM can be done
-            System.out.println(System.currentTimeMillis() + ": Start matching ungrouped students in SOSM");
+            System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students in SOSM");
             bestMatchUngrouped();
             // first, after groupmatching, check if enough slots
 
@@ -162,7 +169,7 @@ public class SOSM implements GroupFormingAlgorithm
             }
         });
 
-        for(var group : groups) {
+        /*for(var group : groups) {
             var hyptheticalGroup = group.withExtraMember(student)
             var hypotheticalAggregGroupPref = hyptheticalGroup.aggregatedProjectPreference
 
@@ -171,7 +178,7 @@ public class SOSM implements GroupFormingAlgorithm
             var score = peerSatisfaction.asPercentFloat() * new AUPCR.Student(student, hypotheticalAggregGroupPref) // don't rememeber the signature
 
                     ????
-        }
+        }*/
 
         //we need to calculate for each student its priority for each group and vice-versa for groups.
         //only then can we assign them based on their priority order, which is what SOSM does.
@@ -179,13 +186,13 @@ public class SOSM implements GroupFormingAlgorithm
         Map<String, Integer> groupStudentPreference = new HashMap<>(unmerged.size()); // group preference of certain student
 
         // per student
-        this.availableStudents.forEach(student -> {
+        /*this.availableStudents.forEach(student -> {
             // check per group what the best project is
             unmerged.forEach(group -> {
 
 
             });
-        });
+        });*/
         for (Agent student : this.students.asCollection())
         {
 
@@ -202,7 +209,7 @@ public class SOSM implements GroupFormingAlgorithm
 
         int unmergedGroupSize = unmergedGroup.members().count();
 
-        var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysWithRandomGroups.PossibleGroupMerge::matchScore));
+        /*var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysWithRandomGroups.PossibleGroupMerge::matchScore));
 
         for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
             int together = unmergedGroupSize + otherUnmergedGroup.members().count();
@@ -211,7 +218,7 @@ public class SOSM implements GroupFormingAlgorithm
             if(groupConstraints.mayFormGroupOfSize(together)){
                 possibleGroupMerges.add(new BepSysWithRandomGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
             }
-        }
+        }*/
 
         System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: " + this.availableStudents.size() + " students left to group");
         List<PossibleGroup> possibleGroups = new ArrayList<>();
@@ -258,7 +265,10 @@ public class SOSM implements GroupFormingAlgorithm
 
                 Agents agents = Agents.from(clique);
 
+/*
                 Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
+*/
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
                 System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
@@ -298,7 +308,7 @@ public class SOSM implements GroupFormingAlgorithm
         System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
     }
 
-    public FormedGroups finalFormedGroups()
+    public FormedGroups asFormedGroups()
     {
         if (!done) {
             constructGroups();
@@ -386,19 +396,19 @@ public class SOSM implements GroupFormingAlgorithm
     @Override
     public Collection<Group.FormedGroup> asCollection()
     {
-        return finalFormedGroups().asCollection();
+        return asFormedGroups().asCollection();
     }
 
     @Override
     public void forEach(Consumer<Group.FormedGroup> fn)
     {
-        finalFormedGroups().forEach(fn);
+        asFormedGroups().forEach(fn);
     }
 
     @Override
     public int count()
     {
-        return finalFormedGroups().count();
+        return asFormedGroups().count();
     }
 
     private List<Agent> getAvailableFriends(Agent a) {
@@ -424,7 +434,11 @@ public class SOSM implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
+
+            //return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
+
+            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
+
         }
     }
 

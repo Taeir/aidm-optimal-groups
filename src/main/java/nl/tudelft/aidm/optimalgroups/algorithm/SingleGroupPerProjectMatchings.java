@@ -1,18 +1,22 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.entity.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatchings;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.FormedGroups;
+import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.Project;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group>
+public class SingleGroupPerProjectMatchings implements GroupProjectMatchings<Group>
 {
-	private final StudentProjectMatching studentProjectMatching;
+	private final StudentProjectMatchings studentProjectMatching;
 
-	public SingleGroupPerProjectMatching(StudentProjectMatching studentProjectMatching)
+	public SingleGroupPerProjectMatchings(StudentProjectMatchings studentProjectMatching)
 	{
 		this.studentProjectMatching = studentProjectMatching;
 	}
@@ -42,14 +46,14 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 	}
 
 
-//	public Matching<Group, Project> result()
+//	public Matchings<Group, Project> result()
 //	{
 //		if (theMatching != null)
 //			return theMatching;
 //
 //		FormedGroups formedGroups = new FormedGroups();
 //
-//		var resultingMatching = new Matching.ListBasedMatching<Group, Project>();
+//		var resultingMatching = new Matchings.ListBasedMatchings<Group, Project>();
 //		for (var x : groupedByProject().entrySet())
 //		{
 //			// TODO: proper group creation
@@ -58,7 +62,7 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 //			Group.FormedGroup formedGroup = formedGroups.addAsFormed(tentativeGroup);
 //
 //
-//			var match = new Matching.StudentsToProjectMatch(formedGroup, x.getKey());
+//			var match = new Matchings.StudentsToProjectMatch(formedGroup, x.getKey());
 //			resultingMatching.add(match);
 //		}
 //

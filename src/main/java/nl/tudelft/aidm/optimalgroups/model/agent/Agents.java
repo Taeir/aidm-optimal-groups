@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model.entity;
+package nl.tudelft.aidm.optimalgroups.model.agent;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -96,8 +96,14 @@ public class Agents
 		}
 
 		for (String friend : friends) {
+			if (idToAgentsMap.containsKey(friend) == false) {
+				// friend is not part of this 'Agents' set therefore the lists are not equal
+				return false;
+			}
+
 			Set<String> friendsOfFriend = new HashSet<>();
 			friendsOfFriend.add(friend); // Add friend himself to list
+
 
 			for (int i : idToAgentsMap.get(friend).groupPreference.asArray()) {
 				friendsOfFriend.add(String.valueOf(i));
@@ -128,7 +134,7 @@ public class Agents
 	 * @param dataSource
 	 * @return
 	 */
-	public static Agents from(DataSource dataSource, int courseEditionId)
+	public static Agents fromBepSysDb(DataSource dataSource, int courseEditionId)
 	{
 		var sql2o = new Sql2o(dataSource);
 		try (var connection = sql2o.open()) {
@@ -138,7 +144,7 @@ public class Agents
 				.addParameter("courseEditionId", courseEditionId);
 
 			List<String> userIds = query.executeAndFetch((ResultSetHandler<String>) resultSet -> String.valueOf(resultSet.getInt("user_id")));
-			List<Agent> agents = userIds.stream().map(id -> new Agent.fromDb(dataSource, id, String.valueOf(courseEditionId))).collect(Collectors.toList());
+			List<Agent> agents = userIds.stream().map(id -> new Agent.fromBepSysDb(dataSource, id, String.valueOf(courseEditionId))).collect(Collectors.toList());
 
 			return new Agents(agents);
 		}

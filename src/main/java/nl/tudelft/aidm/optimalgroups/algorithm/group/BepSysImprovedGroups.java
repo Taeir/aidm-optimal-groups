@@ -1,7 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
-import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
-import nl.tudelft.aidm.optimalgroups.model.entity.*;
+import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 
@@ -10,7 +11,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class BepSysWithRandomGroups implements GroupFormingAlgorithm
+public class BepSysImprovedGroups implements GroupFormingAlgorithm
 {
     private Agents students;
 
@@ -27,7 +28,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     private boolean done = false;
 
     // Pass the list of students to make groups from
-    public BepSysWithRandomGroups(Agents students, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
+    public BepSysImprovedGroups(Agents students, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
         this.students = students;
 
         this.availableStudents = new HashMap<>();
@@ -68,7 +69,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
         System.out.println(System.currentTimeMillis() + ": Start constructing cliques (state 1/3)");
         constructGroupsFromCliques();
-        System.out.println(System.currentTimeMillis() + ": Start matching ungrouped students (state 2/3)");
+        System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students (state 2/3)");
         bestMatchUngrouped();
 
         // Check if all students are in groups and that there are no students with multiple groups (sanity check)
@@ -120,7 +121,7 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     }
 
     @Override
-    public FormedGroups finalFormedGroups()
+    public FormedGroups asFormedGroups()
     {
         if (!done) {
             constructGroups();
@@ -132,19 +133,19 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
     @Override
     public Collection<Group.FormedGroup> asCollection()
     {
-        return finalFormedGroups().asCollection();
+        return asFormedGroups().asCollection();
     }
 
     @Override
     public void forEach(Consumer<Group.FormedGroup> fn)
     {
-        finalFormedGroups().forEach(fn);
+        asFormedGroups().forEach(fn);
     }
 
     @Override
     public int count()
     {
-        return finalFormedGroups().count();
+        return asFormedGroups().count();
     }
 
     private void constructGroupsFromCliques() {
@@ -314,13 +315,13 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
         unmerged.sort(Comparator.comparingInt((Group group) -> group.members().count()));
 
-        SetOfConstrainedGroupSizes groupConstraints = null;
+        SetOfGroupSizesThatCanStillBeCreated groupConstraints = null;
         int groupsMax = 0;
 
         if(useImprovedAlgo)
         {
             int amountOfStudentsToGroup = tentativelyFormedGroups.countTotalStudents() - finalFormedGroups.countTotalStudents();
-            groupConstraints = new SetOfConstrainedGroupSizes(amountOfStudentsToGroup, groupSizeConstraint, SetOfConstrainedGroupSizes.SetCreationAlgorithm.MAX_FOCUS);
+            groupConstraints = new SetOfGroupSizesThatCanStillBeCreated(amountOfStudentsToGroup, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
         }
         else
         {
@@ -373,14 +374,14 @@ public class BepSysWithRandomGroups implements GroupFormingAlgorithm
 
                 int unmergedGroupSize = unmergedGroup.members().count();
 
-                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysWithRandomGroups.PossibleGroupMerge::matchScore));
+                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysImprovedGroups.PossibleGroupMerge::matchScore));
 
                 for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
                     int together = unmergedGroupSize + otherUnmergedGroup.members().count();
 
                     // Only add group if it is a final form
                     if(groupConstraints.mayFormGroupOfSize(together)){
-                        possibleGroupMerges.add(new BepSysWithRandomGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
+                        possibleGroupMerges.add(new BepSysImprovedGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                     }
                 }
 

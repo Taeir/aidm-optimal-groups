@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model.entity;
+package nl.tudelft.aidm.optimalgroups.model;
 
 import java.util.Collection;
 import java.util.function.Consumer;

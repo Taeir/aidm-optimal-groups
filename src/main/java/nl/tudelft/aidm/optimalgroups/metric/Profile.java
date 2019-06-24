@@ -1,20 +1,21 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.Matching;
-import nl.tudelft.aidm.optimalgroups.model.entity.Group;
-import nl.tudelft.aidm.optimalgroups.model.entity.Project;
+import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
+import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.Project;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Profile {
 
-    protected Matching<Group.FormedGroup, Project> matching;
+    protected Matchings<Group.FormedGroup, Project> matchings;
     protected Map<Integer, Integer> profile = null;
     protected int maximumRank = 1;
 
-    public Profile (Matching<Group.FormedGroup, Project> matching) {
-        this.matching = matching;
+    public Profile (Matchings<Group.FormedGroup, Project> matchings) {
+        this.matchings = matchings;
     }
 
     public Map<Integer, Integer> asMap() {
@@ -52,14 +53,14 @@ public abstract class Profile {
 
     public static class StudentProjectProfile extends Profile {
 
-        public StudentProjectProfile(Matching<Group.FormedGroup, Project> matching) {
-            super(matching);
+        public StudentProjectProfile(Matchings<Group.FormedGroup, Project> matchings) {
+            super(matchings);
         }
 
         @Override
         void calculate() {
             this.profile = new HashMap<>();
-            for (Matching.Match<Group.FormedGroup, Project> match : this.matching.asList()) {
+            for (Match<Group.FormedGroup, Project> match : this.matchings.asList()) {
                 AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
 
                 assignedProjectRank.studentRanks().forEach(metric -> {
@@ -92,14 +93,14 @@ public abstract class Profile {
 
     public static class GroupProjectProfile extends Profile {
 
-        public GroupProjectProfile(Matching<Group.FormedGroup, Project> matching) {
-            super(matching);
+        public GroupProjectProfile(Matchings<Group.FormedGroup, Project> matchings) {
+            super(matchings);
         }
 
         @Override
         void calculate() {
             this.profile = new HashMap<>();
-            for (Matching.Match<Group.FormedGroup, Project> match : this.matching.asList()) {
+            for (Match<Group.FormedGroup, Project> match : this.matchings.asList()) {
                 AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
                 int groupRank = assignedProjectRank.groupRank();
 
