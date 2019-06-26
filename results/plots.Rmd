@@ -15,8 +15,15 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ```{r}
 courseEditions <- c("CourseEdition_3", "CourseEdition_4", "CourseEdition_10")
+
 for(courseEdition in courseEditions)
 {
+  studentProjectRanks <- vector("list")
+  studentProjectNames <- vector("list")
+  groupProjectRanks <- vector("list")
+  groupProjectNames <- vector("list")
+  studentProjects <- 1
+  groupProjects <- 1
   algorithms <- list.files(courseEdition)
   for(algorithm in algorithms)
   {
@@ -37,23 +44,113 @@ for(courseEdition in courseEditions)
       #pngDirectory <- paste(directory, pngFileName, sep = "/")
       pngDirectory <- paste(courseEdition,algorithm,pngFileName,sep="_")
       data <- read.csv(fileDirectory)
-      png(pngDirectory)
+      #png(pngDirectory)
       if(metricName == "groupPreferenceSatisfaction")
       {
-        barplot(data[,1], names.arg = rev(seq(5,100,5)), main = paste("Peer satisfaction level in % with", projectAssignmentAlgo), xlab = "%", ylab = "Amount of students")
+        if(algorithmString[1] == "CombinedPreferencesGreedy")
+        {
+          algorithmName <- "combined preference grouping"
+        }
+        else if(algorithmString[1] == "BEPSys")
+        {
+          algorithmName <- "BEPSys"
+        }
+        else if(algorithmString[1] == "BEPSysFixed")
+        {
+          algorithmName <- "improved BEPSys"
+        }
+        barplot(rev(data[,1]), names.arg = rev(seq(5,100,5)), main = paste("Peer satisfaction level in % with", algorithmName), xlab = "%", ylab = "Amount of students")
+        test <- data
       }
       else if(metricName == "groupProjectRank")
       {
-        barplot(data[,1], names.arg = (1:length(data[,1])), main = paste("Group project rank with", projectAssignmentAlgo), xlab = "Rank", ylab = "Amount of groups")
+        groupProjectRanks[groupProjects] <- list(data[,1])
+        groupProjectNames[groupProjects] <- algorithm
+        groupProjects <- groupProjects + 1
+        
+        #barplot(data[,1], names.arg = (1:length(data[,1])), main = paste("Group project rank with", projectAssignmentAlgo), xlab = "Rank", ylab = "Amount of groups")
       }
       else if(metricName == "studentProjectRank")
       {
-        barplot(data[,1], names.arg = (1:length(data[,1])), main = paste("Student project rank with", projectAssignmentAlgo), xlab = "Rank", ylab = "Amount of students")
-        #barplot(data$X0.500000.42.500000.42, names.arg = (1:length(data$X0.500000.42.500000.42)), main = "Student project rank with MaxFlow", xlab = "Rank", ylab = "Amount of students", ylim = c(0,65))
+        studentProjectRanks[studentProjects] <- list(data[,1])
+        studentProjectNames[studentProjects] <- algorithm
+        studentProjects <- studentProjects + 1
+        #barplot(data[,1], names.arg = (1:length(data[,1])), main = paste("Student project rank with", projectAssignmentAlgo), xlab = "Rank", ylab = "Amount of students")
+        
       }
-      dev.off()
+      #dev.off()
     }
   }
+  colors = c('red', 'orange', 'gray', 'black', 'yellowgreen', 'forestgreen', 'cyan4', 'blue', 'mediumpurple', 'purple', 'pink', 'deeppink2', 'cyan', 'chartreuse')
+  first <- FALSE
+  for(x in 1:length(studentProjectRanks))
+  {
+    if(first == FALSE)
+    {
+      png(paste(courseEdition,"_Student_Project_Ranks.png", sep=""))
+      first <- TRUE  
+    }
+    else
+    {
+      par(new=TRUE)      
+    }
+    
+    if(courseEdition == "CourseEdition_3")
+    {
+      plot(cumsum(unlist(studentProjectRanks[x])), main = "Course edition 3", xlab="Student rank", ylab="Cumulated #students", ylim=c(60,110), xlim=c(0,33), type="S", lty=(((x-1) %% 5) + 2), col=colors[(((x-1) %% length(colors)) + 1)], lwd=3)
+    }
+    else if(courseEdition == "CourseEdition_4")
+    {
+      plot(cumsum(unlist(studentProjectRanks[x])), main = "Course edition 4", xlab="Student rank", ylab="Cumulated #students", ylim=c(115,155), type="S", lty=(((x-1) %% 5) + 2), col=colors[(((x-1) %% length(colors)) + 1)], lwd=3)    
+    }
+    else if(courseEdition == "CourseEdition_10")
+    {
+      plot(cumsum(unlist(studentProjectRanks[x])), main = "Course edition 10", xlab="Student rank", ylab="Cumulated #students", ylim=c(105,145), xlim=c(0,40), type="S", lty=(((x-1) %% 5) + 2), col=colors[(((x-1) %% length(colors)) + 1)], lwd=3)    
+    }
+  }
+  if(courseEdition == "CourseEdition_3")
+  {
+    legend("bottom", legend=studentProjectNames, col=colors, lty=(((1:length(studentProjectNames)-1) %% 5) + 2), lwd=3, cex=0.68)
+  }
+  else if(courseEdition == "CourseEdition_4")
+  {
+    legend("bottomright", legend=studentProjectNames, col=colors, lty=(((1:length(studentProjectNames)-1) %% 5) + 2), lwd=3, cex=0.68)
+  }
+  else if(courseEdition == "CourseEdition_10")
+  {
+    legend("bottomright", legend=studentProjectNames, col=colors, lty=(((1:length(studentProjectNames)-1) %% 5) + 2), lwd=3, cex=0.68)
+  }
+
+  dev.off()
+  
+  first <- FALSE
+  for(x in 1:length(groupProjectRanks))
+  {
+    if(first == FALSE)
+    {
+      first <- TRUE
+      png(paste(courseEdition,"_Group_Project_Ranks.png", sep=""))
+    }
+    else
+    {
+      par(new=TRUE)      
+    }
+
+    if(courseEdition == "CourseEdition_3")
+    {
+      plot(cumsum(unlist(groupProjectRanks[x])), main = "Course edition 3", xlab="Group rank", ylab="Cumulated #groups", ylim=c(32,36),  type="S", lty=(((x-1) %% 5) + 2), col=colors[(((x-1) %% length(colors)) + 1)], lwd=3)
+    }
+    else if(courseEdition == "CourseEdition_4")
+    {
+      plot(cumsum(unlist(groupProjectRanks[x])), main = "Course edition 4", xlab="Group rank", ylab="Cumulated #groups", ylim=c(27,34), type="S", lty=(((x-1) %% 5) + 2), col=colors[(((x-1) %% length(colors)) + 1)], lwd=3)    
+    }
+    else if(courseEdition == "CourseEdition_10")
+    {
+      plot(cumsum(unlist(groupProjectRanks[x])), main = "Course edition 10", xlab="Group rank", ylab="Cumulated #groups", ylim=c(27,31), xlim=c(1,30), type="S", lty=(((x-1) %% 5) + 2), col=colors[(((x-1) %% length(colors)) + 1)], lwd=3)    
+    }
+  }
+  legend("bottomright", legend=studentProjectNames, col=colors, lty=(((1:length(studentProjectNames)-1) %% 5) + 2), lwd=3, cex=0.68)
+  dev.off()
 }
 ```
 
