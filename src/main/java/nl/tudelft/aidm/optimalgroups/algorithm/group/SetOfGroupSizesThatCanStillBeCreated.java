@@ -155,7 +155,7 @@ final public class SetOfGroupSizesThatCanStillBeCreated
                     }
                     else
                     {
-                        minGroupSize = minGroupSize- 1; // Unable to create a set with current min group size, so reduce it
+                        minGroupSize = minGroupSize + 1; // Unable to create a set with current min group size, so reduce it
                     }
                 }
             }
