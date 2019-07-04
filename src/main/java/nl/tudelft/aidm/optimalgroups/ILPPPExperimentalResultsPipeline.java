@@ -115,7 +115,7 @@ public class ILPPPExperimentalResultsPipeline
 		DataSource dataSource;
 
 		if (true)
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
 		else
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
 

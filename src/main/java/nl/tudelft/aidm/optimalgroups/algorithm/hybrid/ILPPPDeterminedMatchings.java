@@ -156,7 +156,7 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 				}
 			);
 
-			return noProjectsWithStudentsButLessThanMinimumSize && canFormValidGroupsWithoutRemainders(m, groupSizeConstraint);
+			return noProjectsWithStudentsButLessThanMinimumSize && m.allStudentsAreMatched() && canFormValidGroupsWithoutRemainders(m, groupSizeConstraint);
 		}
 
 		private Optional<MatchingWithMetric> solve(Predicate<StudentProjectMaxFlowMatchings> candidateSoltutionTest, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {

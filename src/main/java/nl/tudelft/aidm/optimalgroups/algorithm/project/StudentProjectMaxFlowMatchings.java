@@ -35,6 +35,8 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 
 	//	private Map<Project.ProjectSlot, List<Agent>> groupedBySlot = null;
 	private Map<Project, List<Agent>> groupedByProject = null;
+	private List<Match<Agent, Project>> asList = null;
+	private Boolean allStudentsAreMatched = null;
 
 	public static void flushCache()
 	{
@@ -74,8 +76,6 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 		return groupedByProject;
 	}
 
-	private List<Match<Agent, Project>> asList = null;
-
 	@Override
 	public List<Match<Agent, Project>> asList()
 	{
@@ -96,9 +96,19 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 		return this.asList;
 	}
 
+	public boolean allStudentsAreMatched()
+	{
+		if (allStudentsAreMatched == null) {
+			long studentsMatched = this.groupedByProject.values().stream().mapToLong(Collection::size).sum();
+			allStudentsAreMatched = studentsMatched == this.students.count();
+		}
+
+		return allStudentsAreMatched;
+	}
+
 
 	// quick and dirty: want access to groupedByProject but also keep the asList() method functioning AND without unnecessary recomputing values each time
-	public void init()
+	private void init()
 	{
 		// Very simple check: init only once, subsequent calls return directly
 		if (this.groupedByProject != null) {
