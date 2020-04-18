@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import javax.sql.DataSource;
 import java.util.HashMap;

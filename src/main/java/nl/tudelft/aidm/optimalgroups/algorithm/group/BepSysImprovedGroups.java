@@ -15,8 +15,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 {
     private Agents students;
 
-    private Map<String, Agent> availableStudents;
-    private Map<String, Agent> unavailableStudents;
+    private HashSet<Agent> availableStudents;
+    private HashSet<Agent> unavailableStudents;
 
     private final GroupSizeConstraint groupSizeConstraint;
 
@@ -31,16 +31,14 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
     public BepSysImprovedGroups(Agents students, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
         this.students = students;
 
-        this.availableStudents = new HashMap<>();
-        this.unavailableStudents = new HashMap<>();
+        this.availableStudents = new HashSet<>();
+        this.unavailableStudents = new HashSet<>();
 
         this.groupSizeConstraint = groupSizeConstraint;
 
 //        System.out.println("Student amount: " + students.count());
 
-        for (Agent a : students.asCollection()) {
-            this.availableStudents.put(a.name, a);
-        }
+        this.availableStudents.addAll(students.asCollection());
 
         tentativelyFormedGroups = new FormedGroups();
         finalFormedGroups = new FormedGroups();
@@ -76,10 +74,11 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         Map<String, Integer> agentsInTentativelyFormedGroups = new HashMap<>();
         this.tentativelyFormedGroups.forEach(group -> {
             for (Agent a : group.members().asCollection()) {
-                if (agentsInTentativelyFormedGroups.containsKey(a.name)) {
-                    agentsInTentativelyFormedGroups.put(a.name, agentsInTentativelyFormedGroups.get(a.name) + 1);
+                var agentName = a.id.toString();
+                if (agentsInTentativelyFormedGroups.containsKey(agentName)) {
+                    agentsInTentativelyFormedGroups.put(agentName, agentsInTentativelyFormedGroups.get(agentName) + 1);
                 } else {
-                    agentsInTentativelyFormedGroups.put(a.name, 1);
+                    agentsInTentativelyFormedGroups.put(agentName, 1);
                 }
             }
         });
@@ -99,10 +98,11 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         Map<String, Integer> agentsInFinalGroups = new HashMap<>();
         this.finalFormedGroups.forEach(group -> {
             for (Agent a : group.members().asCollection()) {
-                if (agentsInFinalGroups.containsKey(a.name)) {
-                    agentsInFinalGroups.put(a.name, agentsInFinalGroups.get(a.name) + 1);
+                var agentName = a.id.toString();
+                if (agentsInFinalGroups.containsKey(agentName)) {
+                    agentsInFinalGroups.put(agentName, agentsInFinalGroups.get(agentName) + 1);
                 } else {
-                    agentsInFinalGroups.put(a.name, 1);
+                    agentsInFinalGroups.put(agentName, 1);
                 }
             }
         });
@@ -175,7 +175,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         int studentsInClique = 0;
         for (Agent student : this.students.asCollection())
         {
-            if (this.unavailableStudents.containsKey(student.name))
+            if (this.unavailableStudents.contains(student))
             {
                 continue;
             }
@@ -209,8 +209,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                 this.tentativelyFormedGroups.addAsFormed(tentativeGroup);
                 for (Agent studentInGroup : tentativeGroup.members().asCollection())
                 {
-                    Agent removedAgent = this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
-                    this.unavailableStudents.put(studentInGroup.name, studentInGroup);
+                    this.availableStudents.remove(studentInGroup); // todo: more efficient remove (does keySet.removeall have the same semantics?)
+                    this.unavailableStudents.add(studentInGroup);
                 }
             }
         }
@@ -226,7 +226,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         // Iterate over students instead of available students to prevent ConcurrentModificationException
         // when removing from availableStudents
         for (Agent student : this.students.asCollection()) {
-            if (this.unavailableStudents.containsKey(student.name)) continue;
+            if (this.unavailableStudents.contains(student)) continue;
 
             List<Agent> friends = this.getAvailableFriends(student);
             int score = this.computeScore(friends, student);
@@ -264,8 +264,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             Group formedGroup = tentativelyFormedGroups.addAsFormed(bestGroup.toGroup());
 
             for (Agent a : formedGroup.members().asCollection()) {
-                this.availableStudents.remove(a.name);
-                this.unavailableStudents.put(a.name, a);
+                this.availableStudents.remove(a);
+                this.unavailableStudents.add(a);
             }
         }
     }
@@ -283,7 +283,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             // check if any of the members are already grouped
             for (Agent member : possiblyBestGroup.members)
             {
-                if (unavailableStudents.containsKey(member.name)) {
+                if (unavailableStudents.contains(member)) {
                     available = false;
                     bestGroupsIter.remove();
                     break;
@@ -509,13 +509,16 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
 
     private List<Agent> getAvailableFriends(Agent a) {
-        List<Agent> friends = new ArrayList<Agent>();
-        for (int i : a.groupPreference.asArray()) {
-            var friendName = String.valueOf(i);
-            if (availableStudents.containsKey(friendName)) {
-                friends.add(availableStudents.get(friendName));
+        List<Agent> friends = new ArrayList<>();
+
+        // Some friends might be unavilable? If so, need to get group prefs and check
+        for (var friend : a.groupPreference.asList()) {
+            if (availableStudents.contains(friend)) {
+                availableStudents.remove(friend);
+                friends.add(friend);
             }
         }
+
         return friends;
     }
 

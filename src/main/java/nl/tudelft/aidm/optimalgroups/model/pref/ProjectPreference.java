@@ -86,13 +86,13 @@ public interface ProjectPreference
 	class fromDb implements ProjectPreference
 	{
 		private final DataSource dataSource;
-		private final String userId;
+		private final Integer userId;
 		private final String courseEditionId;
 
 		private int[] preferences = null;
 		private Map<Integer, Integer> preferencesMap = null;
 
-		public fromDb(DataSource dataSource, String userId, String courseEditionId)
+		public fromDb(DataSource dataSource, Integer userId, String courseEditionId)
 		{
 			this.dataSource = dataSource;
 			this.userId = userId;

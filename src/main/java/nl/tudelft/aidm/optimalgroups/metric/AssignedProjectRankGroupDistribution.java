@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.metric;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
 import nl.tudelft.aidm.optimalgroups.model.Group;
-import nl.tudelft.aidm.optimalgroups.model.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 public class AssignedProjectRankGroupDistribution extends Distribution {
 

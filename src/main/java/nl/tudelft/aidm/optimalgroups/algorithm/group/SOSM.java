@@ -14,8 +14,8 @@ public class SOSM implements GroupFormingAlgorithm
 {
     private Agents students;
 
-    private Map<String, Agent> availableStudents;
-    private Map<String, Agent> unavailableStudents;
+    private HashSet<Agent> availableStudents;
+    private HashSet<Agent> unavailableStudents;
 
     private final GroupSizeConstraint groupSizeConstraint;
 
@@ -38,16 +38,12 @@ public class SOSM implements GroupFormingAlgorithm
     public SOSM(Agents students, GroupSizeConstraint groupSizeConstraint) {
         this.students = students;
 
-        this.availableStudents = new HashMap<>();
-        this.unavailableStudents = new HashMap<>();
+        this.availableStudents = new HashSet<>(students.asCollection());
+        this.unavailableStudents = new HashSet<>();
 
         this.groupSizeConstraint = groupSizeConstraint;
 
         System.out.println("Student amount: " + students.count());
-
-        for (Agent a : students.asCollection()) {
-            this.availableStudents.put(a.name, a);
-        }
 
         tentativelyFormedGroups = new FormedGroups();
         finalFormedGroups = new FormedGroups();
@@ -110,8 +106,8 @@ public class SOSM implements GroupFormingAlgorithm
                     Agent randomStudent = this.students.asCollection().iterator().next();
                     Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(Agents.from(randomStudent), randomStudent.projectPreference);
                     this.tentativelyFormedGroups.addAsFormed(tentativeGroup);
-                    this.availableStudents.remove(randomStudent.name);
-                    this.unavailableStudents.put(randomStudent.name, randomStudent);
+                    this.availableStudents.remove(randomStudent);
+                    this.unavailableStudents.add(randomStudent);
                 }
                 doSOSM();
                 this.done = true;
@@ -124,8 +120,8 @@ public class SOSM implements GroupFormingAlgorithm
                     // break a TentativelyFormedGroup
                     Group randomGroup = this.tentativelyFormedGroups.asCollection().iterator().next(); //remove random group
                     randomGroup.members().forEach(member -> {
-                        this.unavailableStudents.remove(member.name);
-                        this.availableStudents.put(member.name, member);
+                        this.unavailableStudents.remove(member);
+                        this.availableStudents.add(member);
                     });
                     this.tentativelyFormedGroups = tentativelyFormedGroups.without(randomGroup);
                 }
@@ -197,7 +193,7 @@ public class SOSM implements GroupFormingAlgorithm
         {
 
 
-            if (this.unavailableStudents.containsKey(student.name))
+            if (this.unavailableStudents.contains(student))
             {
                 continue;
             }
@@ -226,7 +222,7 @@ public class SOSM implements GroupFormingAlgorithm
         // Iterate over students instead of available students to prevent ConcurrentModificationException
         // when removing from availableStudents
         for (Agent student : this.students.asCollection()) {
-            if (this.unavailableStudents.containsKey(student.name)) continue;
+            if (this.unavailableStudents.contains(student)) continue;
 
             List<Agent> friends = this.getAvailableFriends(student);
             int score = this.computeScore(friends, student);
@@ -247,7 +243,7 @@ public class SOSM implements GroupFormingAlgorithm
         int studentsInClique = 0;
         for (Agent student : this.students.asCollection())
         {
-            if (this.unavailableStudents.containsKey(student.name))
+            if (this.unavailableStudents.contains(student))
             {
                 continue;
             }
@@ -279,8 +275,8 @@ public class SOSM implements GroupFormingAlgorithm
                 this.tentativelyFormedGroups.addAsFormed(tentativeGroup);
                 for (Agent studentInGroup : tentativeGroup.members().asCollection())
                 {
-                    Agent removedAgent = this.availableStudents.remove(studentInGroup.name); // todo: more efficient remove (does keySet.removeall have the same semantics?)
-                    this.unavailableStudents.put(studentInGroup.name, studentInGroup);
+                    this.availableStudents.remove(studentInGroup); // todo: more efficient remove (does keySet.removeall have the same semantics?)
+                    this.unavailableStudents.add(studentInGroup);
                 }
             }
         }
@@ -296,7 +292,7 @@ public class SOSM implements GroupFormingAlgorithm
         // Iterate over students instead of available students to prevent ConcurrentModificationException
         // when removing from availableStudents
         for (Agent student : this.students.asCollection()) {
-            if (this.unavailableStudents.containsKey(student.name)) continue;
+            if (this.unavailableStudents.contains(student)) continue;
 
             List<Agent> friends = this.getAvailableFriends(student);
             int score = this.computeScore(friends, student);
@@ -329,8 +325,8 @@ public class SOSM implements GroupFormingAlgorithm
             Group formedGroup = tentativelyFormedGroups.addAsFormed(bestGroup.toGroup());
 
             for (Agent a : formedGroup.members().asCollection()) {
-                this.availableStudents.remove(a.name);
-                this.unavailableStudents.put(a.name, a);
+                this.availableStudents.remove(a);
+                this.unavailableStudents.add(a);
             }
         }
     }
@@ -348,7 +344,7 @@ public class SOSM implements GroupFormingAlgorithm
             // check if any of the members are already grouped
             for (Agent member : possiblyBestGroup.members)
             {
-                if (unavailableStudents.containsKey(member.name)) {
+                if (unavailableStudents.contains(member)) {
                     available = false;
                     bestGroupsIter.remove();
                     break;
@@ -412,11 +408,10 @@ public class SOSM implements GroupFormingAlgorithm
     }
 
     private List<Agent> getAvailableFriends(Agent a) {
-        List<Agent> friends = new ArrayList<Agent>();
-        for (int i : a.groupPreference.asArray()) {
-            var friendName = String.valueOf(i);
-            if (availableStudents.containsKey(friendName)) {
-                friends.add(availableStudents.get(friendName));
+        List<Agent> friends = new ArrayList<>();
+        for (var friend : a.groupPreference.asList()) {
+            if (availableStudents.contains(friend)) {
+                friends.add(friend);
             }
         }
         return friends;

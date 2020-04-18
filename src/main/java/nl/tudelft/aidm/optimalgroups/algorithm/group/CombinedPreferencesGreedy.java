@@ -17,8 +17,8 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
     private Agents students;
     private final GroupSizeConstraint groupSizeConstraint;
-    private Map<String, Agent> availableStudents;
-    private Map<String, Agent> unavailableStudents;
+    private HashSet<Agent> availableStudents;
+    private HashSet<Agent> unavailableStudents;
 
     private FormedGroups formedGroups;
 
@@ -33,12 +33,9 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
     private void initializeObjects(Agents students) {
         this.formedGroups = new FormedGroups();
-        this.availableStudents = new HashMap<>(students.count());
-        this.unavailableStudents = new HashMap<>(students.count());
 
-        this.students.forEach(student -> {
-            this.availableStudents.put(student.name, student);
-        });
+        this.availableStudents = new HashSet<>(students.asCollection());
+        this.unavailableStudents = new HashSet<>(Math.max((int) (students.count()/.75f) + 1, 16));
     }
 
     private void constructGroups() {
@@ -56,32 +53,32 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
         // Start iterating and forming groups greedily
         for (Agent student : sortedList) {
-            if (this.unavailableStudents.containsKey(student.name)) {
+            if (this.unavailableStudents.contains(student)) {
                 continue;
             }
 
-            Map<String, Integer> differences = new HashMap<>(this.availableStudents.size());
+            Map<Agent, Integer> differences = new HashMap<>(this.availableStudents.size());
 
             for (Agent other : this.students.asCollection()) {
 
-                if (student.equals(other) || this.unavailableStudents.containsKey(other.name)) {
+                if (student.equals(other) || this.unavailableStudents.contains(other)) {
                     continue;
                 }
 
                 int differenceToOther = student.projectPreference.differenceTo(other.projectPreference);
-                differences.put(other.name, differenceToOther);
+                differences.put(other, differenceToOther);
             }
 
             // Sort differences in ascending order (least difference first)
-            List<Map.Entry<String, Integer>> sortedDifferences = new ArrayList<>(differences.entrySet());
+            List<Map.Entry<Agent, Integer>> sortedDifferences = new ArrayList<>(differences.entrySet());
             sortedDifferences.sort(comparingByValue());
 
 
             List<Agent> agents = new ArrayList<>(groupSizeConstraint.maxSize());
 
             // Put the student in the group
-            this.availableStudents.remove(student.name);
-            this.unavailableStudents.put(student.name, student);
+            this.availableStudents.remove(student);
+            this.unavailableStudents.add(student);
             agents.add(student);
 
             // Determine the group size
@@ -91,15 +88,16 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
             }
 
             // Start inserting the remaining group members (students of which the combined preference has the least difference)
-            for (Map.Entry<String, Integer> entry : sortedDifferences) {
+            for (Map.Entry<Agent, Integer> entry : sortedDifferences) {
                 if (agents.size() >= groupSize) {
                     break;
                 }
 
-                Agent removed = this.availableStudents.remove(entry.getKey());
-                this.unavailableStudents.put(entry.getKey(), removed);
+                Agent agent = entry.getKey();
+                this.availableStudents.remove(agent);
+                this.unavailableStudents.add(agent);
 
-                agents.add(removed);
+                agents.add(agent);
             }
 
             // Transform the new agents into a formed group

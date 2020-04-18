@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.metric;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.Group;
-import nl.tudelft.aidm.optimalgroups.model.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 public class GroupPreferenceSatisfaction
 {
@@ -26,7 +26,8 @@ public class GroupPreferenceSatisfaction
 	}
 
 	private int peersInGroup() {
-		int[] groupMembers = match.from().members().asCollection().stream().mapToInt(agent -> Integer.decode(agent.name)).toArray();
+		Group.FormedGroup group = match.from();
+		int[] groupMembers = group.members().asCollection().stream().mapToInt(agent -> agent.id).toArray();
 		int[] pref = student.groupPreference.asArray();
 
 		NumMatchingArrayElements numMatchingArrayElements = new NumMatchingArrayElements(groupMembers, pref);

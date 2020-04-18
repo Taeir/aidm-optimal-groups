@@ -2,7 +2,7 @@ package nl.tudelft.aidm.optimalgroups.model.match;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectSlotMatchings;
 import nl.tudelft.aidm.optimalgroups.model.Group;
-import nl.tudelft.aidm.optimalgroups.model.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 
 import java.lang.ref.WeakReference;

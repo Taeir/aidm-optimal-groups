@@ -1,19 +1,18 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.hybrid;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.SingleGroupPerProjectMatchings;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatchings;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchings;
-import nl.tudelft.aidm.optimalgroups.algorithm.wip.EquallyLeastPopularProjects;
 import nl.tudelft.aidm.optimalgroups.metric.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.metric.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.*;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjecMatchings;
 import nl.tudelft.aidm.optimalgroups.model.match.GroupToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.GenericDatasource;
 
 import java.util.*;
@@ -44,7 +43,7 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");
 
 			assignedProjectRank.studentRanks().forEach(metric -> {
-				System.out.printf("\t\t-Student %s", metric.student().name);
+				System.out.printf("\t\t-Student %s", metric.student().id);
 				System.out.printf(", rank: %s", metric.studentsRank());
 
 				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, metric.student()).asFraction());

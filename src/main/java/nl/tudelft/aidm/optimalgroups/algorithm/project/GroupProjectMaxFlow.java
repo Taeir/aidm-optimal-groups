@@ -7,6 +7,8 @@ import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatchings;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.ArrayList;
 import java.util.HashMap;

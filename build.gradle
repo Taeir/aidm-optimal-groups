@@ -25,6 +25,7 @@ applicationDefaultJvmArgs = ["-Djava.library.path=lib"]
 dependencies {
 
     implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c06314770ed'
+    implementation 'com.github.PhilipeLouchtch:plouchtch-lib-java:d1fd8c41d'
 
     compile 'com.google.protobuf:protobuf-java:3.0.0'
     compile files('lib/jniortools.dll')

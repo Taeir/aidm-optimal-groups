@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
@@ -7,6 +8,7 @@ import org.sql2o.Sql2o;
 import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface GroupPreference
 {
@@ -14,15 +16,17 @@ public interface GroupPreference
 	// for now as int array purely for memory efficiency
 	int[] asArray();
 
+	List<Agent> asList();
+
 	class fromDb implements GroupPreference
 	{
 		private DataSource dataSource;
-		private String userId;
+		private Integer userId;
 		private String courseEditionId;
 
 		private int[] preference = null;
 
-		public fromDb(DataSource dataSource, String userId, String courseEditionId)
+		public fromDb(DataSource dataSource, Integer userId, String courseEditionId)
 		{
 			this.dataSource = dataSource;
 			this.userId = userId;
@@ -42,8 +46,23 @@ public interface GroupPreference
 			return preference;
 		}
 
+		private List<Agent> asList = null;
 		@Override
-		public String toString() {
+		public List<Agent> asList()
+		{
+			if (asList == null) {
+				asList = Arrays.stream(asArray())
+					.boxed()
+					.map(friendAgentId -> Agent.AgentInBepSysSchemaDb.from(dataSource, friendAgentId, courseEditionId))
+					.collect(Collectors.toList());
+			}
+
+			return asList;
+		}
+
+		@Override
+		public String toString()
+		{
 			return "group pref: " + Arrays.toString(asArray());
 		}
 

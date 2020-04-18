@@ -4,10 +4,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
-import org.sql2o.data.Table;
 
 import javax.sql.DataSource;
 
@@ -18,7 +16,7 @@ public class Agents
 {
 	// list for now
 	private List<Agent> agents;
-	private Map<String, Agent> idToAgentsMap;
+	private Map<Integer, Agent> idToAgentsMap;
 
 	private String courseEditionId;
 
@@ -29,7 +27,7 @@ public class Agents
 		idToAgentsMap = new HashMap<>(agents.size());
 		for (Agent agent : agents)
 		{
-			idToAgentsMap.put(agent.name, agent);
+			idToAgentsMap.put(agent.id, agent);
 		}
 	}
 
@@ -83,11 +81,11 @@ public class Agents
 	 */
 	public boolean hasEqualFriendLists(Agent agent)
 	{
-		Set<String> friends = new HashSet<String>();
-		friends.add(agent.name); //Add agent himself to set
+		var friends = new HashSet<Integer>();
+		friends.add(agent.id); //Add agent himself to set
 
 		for (int i : agent.groupPreference.asArray()) {
-			friends.add(String.valueOf(i));
+			friends.add(i);
 		}
 
 		// If friends only contain himself, prevent forming a clique
@@ -95,18 +93,18 @@ public class Agents
 			return false;
 		}
 
-		for (String friend : friends) {
+		for (var friend : friends) {
 			if (idToAgentsMap.containsKey(friend) == false) {
 				// friend is not part of this 'Agents' set therefore the lists are not equal
 				return false;
 			}
 
-			Set<String> friendsOfFriend = new HashSet<>();
+			var friendsOfFriend = new HashSet<Integer>();
 			friendsOfFriend.add(friend); // Add friend himself to list
 
 
 			for (int i : idToAgentsMap.get(friend).groupPreference.asArray()) {
-				friendsOfFriend.add(String.valueOf(i));
+				friendsOfFriend.add(i);
 			}
 
 			if (friends.equals(friendsOfFriend) == false) {
@@ -143,8 +141,10 @@ public class Agents
 				"WHERE cp.course_edition_id = :courseEditionId")
 				.addParameter("courseEditionId", courseEditionId);
 
-			List<String> userIds = query.executeAndFetch((ResultSetHandler<String>) resultSet -> String.valueOf(resultSet.getInt("user_id")));
-			List<Agent> agents = userIds.stream().map(id -> new Agent.fromBepSysDb(dataSource, id, String.valueOf(courseEditionId))).collect(Collectors.toList());
+			List<Integer> userIds = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("user_id"));
+			List<Agent> agents = userIds.stream().map(id ->
+					Agent.AgentInBepSysSchemaDb.from(dataSource, id, String.valueOf(courseEditionId)))
+					.collect(Collectors.toList());
 
 			return new Agents(agents);
 		}
