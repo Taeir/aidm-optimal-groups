@@ -59,7 +59,7 @@ public abstract class ListBasedProjects implements Projects
 	@Override
 	public Collection<Project> asCollection()
 	{
-		return projectList();
+		return Collections.unmodifiableCollection(projectList());
 	}
 
 	@Override

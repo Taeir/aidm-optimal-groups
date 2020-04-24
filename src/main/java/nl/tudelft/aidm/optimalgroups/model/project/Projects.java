@@ -21,15 +21,35 @@ public interface Projects
 		return asCollection().stream().filter(project -> project.id() == projectId).findAny();
 	}
 
+	default Projects without(Projects other)
+	{
+		// Note: this is eerly similar to filteredprojects, but use-case is different...?
+		Collection<Project> toFilter = new ArrayList<>(asCollection());
+		toFilter.removeAll(other.asCollection());
+
+		return Projects.from(toFilter);
+	}
+
 	/**
 	 * Projects contained in the given (bepsys) datasource
 	 * @param dataSource A datasource that has same schema as bepsys
-	 * @param courseEditionInt Course edition to look in
+	 * @param courseEditionId Course edition to look in
 	 * @return The projects that are offered in the given course edition
 	 */
-	static ProjectsInDb fromDb(DataSource dataSource, int courseEditionInt)
+	static ProjectsInDb fromDb(DataSource dataSource, String courseEditionId)
 	{
-		return new ProjectsInDb(dataSource, courseEditionInt);
+		return ProjectsInDb.possibleCached(dataSource, courseEditionId);
+	}
+
+	/**
+	 * Projects contained in the given (bepsys) datasource
+	 * @param dataSource A datasource that has same schema as bepsys
+	 * @param courseEditionId Course edition to look in
+	 * @return The projects that are offered in the given course edition
+	 */
+	static ProjectsInDb fromDb(DataSource dataSource, int courseEditionId)
+	{
+		return ProjectsInDb.possibleCached(dataSource, String.valueOf(courseEditionId));
 	}
 
 	/**
@@ -37,7 +57,7 @@ public interface Projects
 	 * @param projects Projects to copy
 	 * @return A copy
 	 */
-	static Projects from(List<Project> projects)
+	static Projects from(Collection<Project> projects)
 	{
 		return new ListBasedProjects.ListBasedProjectsImpl(new ArrayList<>(projects));
 	}

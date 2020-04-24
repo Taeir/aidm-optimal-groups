@@ -1,15 +1,16 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import edu.princeton.cs.algs4.StdOut;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface ProjectPreference
 {
@@ -104,9 +105,30 @@ public interface ProjectPreference
 		{
 			if (preferences == null)
 			{
-				preferences = fetchFromDb().stream()
+				var preferencesOfAgent = fetchFromDb().stream()
 					.mapToInt(Integer::intValue)
 					.toArray();
+
+				var projectsInPreferences = Projects.from(
+					Arrays.stream(preferencesOfAgent).boxed()
+						.map(Project.withDefaultSlots::new).collect(Collectors.toList())
+				);
+
+				var allProjects = Projects.fromDb(dataSource, courseEditionId);
+
+				var projectsNotInPreferences = allProjects.without(projectsInPreferences);
+
+				ArrayList<Project> shuffledMissingProjects = new ArrayList<>(projectsNotInPreferences.asCollection());
+				Collections.shuffle(shuffledMissingProjects);
+
+				// Join the two lists/arrays with streams into a single array - Java has not native Array.join
+				preferences = Stream.concat(
+						Arrays.stream(preferencesOfAgent).boxed(),
+						shuffledMissingProjects.stream().map(Project::id)
+					)
+					.mapToInt(Integer::intValue)
+					.toArray();
+
 			}
 
 			return preferences;

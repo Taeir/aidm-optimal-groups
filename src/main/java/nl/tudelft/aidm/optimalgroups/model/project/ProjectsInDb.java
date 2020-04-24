@@ -1,10 +1,13 @@
 package nl.tudelft.aidm.optimalgroups.model.project;
 
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
+import plouchtch.assertion.Assert;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,16 +15,18 @@ import java.util.Optional;
 public class ProjectsInDb extends ListBasedProjects
 {
 	private DataSource dataSource;
-	private int courseEditionId;
+	private String courseEditionId;
 
 	private List<Project> projectList = null;
 	private Map<Integer, Project> byId = null;
 
-	ProjectsInDb(DataSource dataSource, int courseEditionId)
+	ProjectsInDb(DataSource dataSource, String courseEditionId)
 	{
 		this.dataSource = dataSource;
 		this.courseEditionId = courseEditionId;
 	}
+
+
 
 	@Override
 	protected List<Project> projectList()
@@ -54,7 +59,7 @@ public class ProjectsInDb extends ListBasedProjects
 		try (var connection = new Sql2o(dataSource).open())
 		{
 			Query query = connection.createQuery(sql);
-			query.addParameter("courseEditionId", courseEditionId);
+			query.addParameter("courseEditionId", Integer.decode(courseEditionId));
 
 			List<Project> projectsAsList = query.executeAndFetch(
 				(ResultSetHandler<Project>) rs ->
@@ -63,6 +68,29 @@ public class ProjectsInDb extends ListBasedProjects
 
 			return projectsAsList;
 		}
+	}
+
+
+	/* FACTORY METHOD / CACHE */
+
+	private static DataSource lastUsedDataSource = null;
+	private static final Map<String, ProjectsInDb> projectsCache = new HashMap<>();
+
+	public static ProjectsInDb possibleCached(DataSource dataSource, String courseEditionId)
+	{
+		if (lastUsedDataSource == null) {
+			lastUsedDataSource = dataSource;
+		}
+
+		Assert.that(lastUsedDataSource == dataSource)
+			.orThrow(RuntimeException.class, "Projects are cached for a different datasource! Please fix the cache impl to support this use case.");
+
+		if (projectsCache.containsKey(courseEditionId) == false) {
+			projectsCache.put(courseEditionId, new ProjectsInDb(dataSource, courseEditionId));
+		}
+
+		var proj = projectsCache.get(courseEditionId);
+		return proj;
 	}
 
 }
