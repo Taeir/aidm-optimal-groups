@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * The result of a matchings algorithm
  */
-public interface Matchings<FROM, TO>
+public interface Matching<FROM, TO>
 {
 	/**
 	 * The matchings as a list representation

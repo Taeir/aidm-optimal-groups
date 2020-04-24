@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings({"Duplicates"})
-public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings //implements GroupProjectMatchings
+public class StudentProjectMaxFlowMatching implements StudentProjectMatching //implements GroupProjectMatchings
 {
 	// MAKE CONFIGURABLE WITH GROUP SIZE CONSTRAINTS
 //	private static final int MAX_GROUP_SIZE = 6;
@@ -22,7 +22,7 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 		System.loadLibrary("jniortools");
 	}
 
-	private static Map<Collection<Project>, StudentProjectMaxFlowMatchings> existingResultsCache = new ConcurrentHashMap<>();
+	private static Map<Collection<Project>, StudentProjectMaxFlowMatching> existingResultsCache = new ConcurrentHashMap<>();
 
 	// source and sink vertices
 	private static Vertex<Object> source = new Vertex<>(null);
@@ -43,16 +43,16 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 		existingResultsCache = new ConcurrentHashMap<>();
 	}
 
-	public static StudentProjectMaxFlowMatchings of(Agents students, Projects projects, int maxGroupSize)
+	public static StudentProjectMaxFlowMatching of(Agents students, Projects projects, int maxGroupSize)
 	{
 		if (existingResultsCache.containsKey(projects.asCollection()) == false) {
-			StudentProjectMaxFlowMatchings maxflow = new StudentProjectMaxFlowMatchings(students, projects, maxGroupSize);
+			StudentProjectMaxFlowMatching maxflow = new StudentProjectMaxFlowMatching(students, projects, maxGroupSize);
 			existingResultsCache.put(projects.asCollection(), maxflow);
 
 			return maxflow;
 		}
 
-		StudentProjectMaxFlowMatchings existing = existingResultsCache.get(projects.asCollection());
+		StudentProjectMaxFlowMatching existing = existingResultsCache.get(projects.asCollection());
 		if (existing.students != students) { // reference equality suffices
 			throw new RuntimeException("Requested a cached StudentsProjectsMaxFlow for previously computed projects, but different student set." +
 				"Cache implementation only works on projects and assumes identical studens. Decide how to handle this case first (support proj + studs or simply compute this case without caching).");
@@ -61,7 +61,7 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 		return existing;
 	}
 
-	public StudentProjectMaxFlowMatchings(Agents students, Projects projects, int maxGroupSize)
+	public StudentProjectMaxFlowMatching(Agents students, Projects projects, int maxGroupSize)
 	{
 		this.students = students;
 		this.projects = projects;
@@ -123,8 +123,8 @@ public class StudentProjectMaxFlowMatchings implements StudentProjectMatchings /
 
 		MinCostFlow minCostFlow = new MinCostFlow();
 
-		int source = StudentProjectMaxFlowMatchings.source.id;
-		int sink = StudentProjectMaxFlowMatchings.sink.id;
+		int source = StudentProjectMaxFlowMatching.source.id;
+		int sink = StudentProjectMaxFlowMatching.sink.id;
 
 		// Source and Sink do not need to supply/consume more than we have students
 		minCostFlow.setNodeSupply(source, studentVertices.count());

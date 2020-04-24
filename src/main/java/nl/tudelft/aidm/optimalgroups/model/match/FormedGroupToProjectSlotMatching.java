@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.match;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectSlotMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectSlotMatching;
 import nl.tudelft.aidm.optimalgroups.model.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -11,12 +11,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 // The collection of match tuples
-public class FormedGroupToProjectSlotMatchings extends ListBasedMatchings<Group.FormedGroup, Project.ProjectSlot> implements GroupProjectSlotMatchings<Group.FormedGroup>
+public class FormedGroupToProjectSlotMatching extends ListBasedMatching<Group.FormedGroup, Project.ProjectSlot> implements GroupProjectSlotMatching<Group.FormedGroup>
 {
 	private Set<Project.ProjectSlot> assignedSlots;
 	private Set<Agent> assignedStudents;
 
-	public FormedGroupToProjectSlotMatchings()
+	public FormedGroupToProjectSlotMatching()
 	{
 		super();
 		assignedSlots = new HashSet<>();
@@ -55,9 +55,9 @@ public class FormedGroupToProjectSlotMatchings extends ListBasedMatchings<Group.
 		super.add(match);
 	}
 
-	private WeakReference<FormedGroupToProjecMatchings> toProjectMatchingsResult;
+	private WeakReference<FormedGroupToProjectMatching> toProjectMatchingsResult;
 
-	public FormedGroupToProjecMatchings toProjectMatchings()
+	public FormedGroupToProjectMatching toProjectMatchings()
 	{
 		if (toProjectMatchingsResult != null && toProjectMatchingsResult.get() != null)
 			return toProjectMatchingsResult.get();
@@ -69,9 +69,9 @@ public class FormedGroupToProjectSlotMatchings extends ListBasedMatchings<Group.
 			return new GroupToProjectMatch<>(group, project);
 		}).collect(Collectors.toList());
 
-		FormedGroupToProjecMatchings formedGroupToProjecMatchings = new FormedGroupToProjecMatchings(result);
+		FormedGroupToProjectMatching formedGroupToProjectMatchings = new FormedGroupToProjectMatching(result);
 
-		toProjectMatchingsResult = new WeakReference<>(formedGroupToProjecMatchings);
-		return formedGroupToProjecMatchings;
+		toProjectMatchingsResult = new WeakReference<>(formedGroupToProjectMatchings);
+		return formedGroupToProjectMatchings;
 	}
 }

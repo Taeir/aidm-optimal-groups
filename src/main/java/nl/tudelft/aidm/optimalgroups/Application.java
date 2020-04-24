@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
+import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.GenericDatasource;
@@ -59,7 +59,7 @@ public class Application
 				formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint, false);
 			}
 
-			GroupProjectMatchings groupProjectMatching = null;
+			GroupProjectMatching groupProjectMatching = null;
 
 			if (projectAssignmentAlgorithm.equals("RSD")) {
 				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), projects);
@@ -68,27 +68,27 @@ public class Application
 			}
 
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
-			Matchings<Group.FormedGroup, Project> matchings = groupProjectMatching;
+			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
 
-			Profile studentProfile = new Profile.StudentProjectProfile(matchings);
+			Profile studentProfile = new Profile.StudentProjectProfile(matching);
 			//studentProfile.printResult();
 
-			Profile groupProfile = new Profile.GroupProjectProfile(matchings);
+			Profile groupProfile = new Profile.GroupProjectProfile(matching);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matchings, projects, agents);
+			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, projects, agents);
 			//studentAUPCR.printResult();
 
-			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matchings, projects, agents);
+			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
 			//groupAUPCR.printResult();
 
-			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matchings, 20);
+			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matchings, projects.count());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects.count());
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matchings, projects.count());
+			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics

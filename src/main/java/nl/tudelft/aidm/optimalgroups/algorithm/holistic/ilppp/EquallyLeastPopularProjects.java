@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.metric.AUPCR;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -45,9 +45,9 @@ public class EquallyLeastPopularProjects implements Projects
 			var projectsWithoutOne = projects.without(project);
 
 			// TODO: include this maxflow result?
-			var maxflowResultWithoutCurrentProject = new StudentProjectMaxFlowMatchings(students, projectsWithoutOne, maxGroupSize);
+			var maxflowResultWithoutCurrentProject = new StudentProjectMaxFlowMatching(students, projectsWithoutOne, maxGroupSize);
 
-			SingleGroupPerProjectMatchings matching = new SingleGroupPerProjectMatchings(maxflowResultWithoutCurrentProject);
+			SingleGroupPerProjectMatching matching = new SingleGroupPerProjectMatching(maxflowResultWithoutCurrentProject);
 
 			// calc effect
 			var metric = new AUPCR.StudentAUPCR(matching, projectsWithoutOne, students);

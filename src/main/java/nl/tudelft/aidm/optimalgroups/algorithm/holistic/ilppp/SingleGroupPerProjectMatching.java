@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatchings;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.Group;
@@ -15,11 +15,11 @@ import java.util.List;
 /**
  * Puts *all* students matched to some project into a single group
  */
-public class SingleGroupPerProjectMatchings implements GroupProjectMatchings<Group>
+public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group>
 {
-	private final StudentProjectMatchings studentProjectMatching;
+	private final StudentProjectMatching studentProjectMatching;
 
-	public SingleGroupPerProjectMatchings(StudentProjectMatchings studentProjectMatching)
+	public SingleGroupPerProjectMatching(StudentProjectMatching studentProjectMatching)
 	{
 		this.studentProjectMatching = studentProjectMatching;
 	}

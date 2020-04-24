@@ -2,14 +2,14 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
-import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatchings;
+import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatching;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.*;
 
-public class RandomizedSerialDictatorship implements GroupProjectMatchings<Group.FormedGroup>
+public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.FormedGroup>
 {
 	private final FormedGroups groups;
 	private final Projects projects;
@@ -26,12 +26,12 @@ public class RandomizedSerialDictatorship implements GroupProjectMatchings<Group
 		return result().toProjectMatchings().asList();
 	}
 
-	public FormedGroupToProjectSlotMatchings result()
+	public FormedGroupToProjectSlotMatching result()
 	{
 		if (this.projects.countAllSlots() < this.groups.count())
 			throw new RuntimeException("Too little project slots to assign all groups");
 
-		FormedGroupToProjectSlotMatchings result = new FormedGroupToProjectSlotMatchings();
+		FormedGroupToProjectSlotMatching result = new FormedGroupToProjectSlotMatching();
 
 		// Map from projectIds to amount of used slots
 		Map<Integer, Integer> usedSlots = new HashMap<>();

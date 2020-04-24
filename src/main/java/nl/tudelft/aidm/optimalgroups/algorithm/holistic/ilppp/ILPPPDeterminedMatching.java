@@ -1,14 +1,14 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatchings;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.metric.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.metric.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjecMatchings;
+import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.match.GroupToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -20,19 +20,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.FormedGroup>
+public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.FormedGroup>
 {
 	private final Agents agents;
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
 
-	private FormedGroupToProjecMatchings matchings = null;
+	private FormedGroupToProjectMatching matchings = null;
 
 	// for testing
 	public static void main(String[] args)
 	{
 		var dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
-		var matching = new ILPPPDeterminedMatchings(CourseEdition.fromBepSysDatabase(dataSource, 10));
+		var matching = new ILPPPDeterminedMatching(CourseEdition.fromBepSysDatabase(dataSource, 10));
 
 		List<Match<Group.FormedGroup, Project>> matches = matching.asList();
 
@@ -53,7 +53,7 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 		return;
 	}
 
-	public ILPPPDeterminedMatchings(CourseEdition courseEdition)
+	public ILPPPDeterminedMatching(CourseEdition courseEdition)
 	{
 		this.agents = courseEdition.agents;
 		this.projects = courseEdition.projects;
@@ -70,10 +70,10 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 		return matchings.asList();
 	}
 
-	public FormedGroupToProjecMatchings determineMatching()
+	public FormedGroupToProjectMatching determineMatching()
 	{
 		MatchingWithMetric optimalMatchingWithMetric = ILPPPSolutionFor(projects).solution().orElseThrow();
-		StudentProjectMaxFlowMatchings resultingMatching  = optimalMatchingWithMetric.matching;
+		StudentProjectMaxFlowMatching resultingMatching  = optimalMatchingWithMetric.matching;
 
 		var result = new HashMap<Project, java.util.Collection<Group.FormedGroup>>();
 
@@ -92,10 +92,10 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 			.collect(Collectors.toList());
 
 
-		return new FormedGroupToProjecMatchings(matchingsAsList);
+		return new FormedGroupToProjectMatching(matchingsAsList);
 	}
 
-	boolean canFormValidGroupsWithoutRemainders(StudentProjectMaxFlowMatchings matching, GroupSizeConstraint groupSizeConstraint)
+	boolean canFormValidGroupsWithoutRemainders(StudentProjectMaxFlowMatching matching, GroupSizeConstraint groupSizeConstraint)
 	{
 		var groupedByProject = matching.groupedByProject();
 
@@ -146,7 +146,7 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 			return solution;
 		}
 
-		private boolean solutionIsAcceptable(StudentProjectMaxFlowMatchings m)
+		private boolean solutionIsAcceptable(StudentProjectMaxFlowMatching m)
 		{
 			boolean noProjectsWithStudentsButLessThanMinimumSize = m.groupedByProject().values().stream().allMatch(studentsAssignedToProject -> {
 					// check if the following is true for each project
@@ -158,11 +158,11 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 			return noProjectsWithStudentsButLessThanMinimumSize && m.allStudentsAreMatched() && canFormValidGroupsWithoutRemainders(m, groupSizeConstraint);
 		}
 
-		private Optional<MatchingWithMetric> solve(Predicate<StudentProjectMaxFlowMatchings> candidateSoltutionTest, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {
+		private Optional<MatchingWithMetric> solve(Predicate<StudentProjectMaxFlowMatching> candidateSoltutionTest, Projects projects, Agents agents, GroupSizeConstraint groupSizeConstraint) {
 
-			var matching = StudentProjectMaxFlowMatchings.of(agents, projects, groupSizeConstraint.maxSize());
+			var matching = StudentProjectMaxFlowMatching.of(agents, projects, groupSizeConstraint.maxSize());
 
-			SingleGroupPerProjectMatchings singleGroup = new SingleGroupPerProjectMatchings(matching);
+			SingleGroupPerProjectMatching singleGroup = new SingleGroupPerProjectMatching(matching);
 			var metric = new AUPCR.StudentAUPCR(singleGroup, projects, agents);
 
 			synchronized (bestSoFarLock) {
@@ -207,10 +207,10 @@ public class ILPPPDeterminedMatchings implements GroupProjectMatchings<Group.For
 
 	static class MatchingWithMetric
 	{
-		public final StudentProjectMaxFlowMatchings matching;
+		public final StudentProjectMaxFlowMatching matching;
 		public final AUPCR metric;
 
-		public MatchingWithMetric(StudentProjectMaxFlowMatchings matching, AUPCR metric)
+		public MatchingWithMetric(StudentProjectMaxFlowMatching matching, AUPCR metric)
 		{
 			this.matching = matching;
 			this.metric = metric;

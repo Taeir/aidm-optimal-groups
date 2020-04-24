@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ListBasedMatchings<F, T> implements Matchings<F, T>
+public class ListBasedMatching<F, T> implements Matching<F, T>
 {
 	private List<Match<F, T>> backingList;
 
-	public ListBasedMatchings()
+	public ListBasedMatching()
 	{
 		this(new ArrayList<>());
 	}
 
-	ListBasedMatchings(List<Match<F,T>> backingList)
+	ListBasedMatching(List<Match<F,T>> backingList)
 	{
 		this.backingList = backingList;
 	}

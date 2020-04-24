@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
+import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -10,7 +10,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 public abstract class AUPCR {
 
-    protected Matchings<? extends Group, Project> matchings;
+    protected Matching<? extends Group, Project> matching;
     protected Projects projects;
     protected Agents students;
 
@@ -21,8 +21,8 @@ public abstract class AUPCR {
      * An AUPCR of 1 is perfect and an AUPCR of 0 is terrible.
      * Defined on page 8 of (Diebold & Bichler, 2016)
      */
-    public AUPCR (Matchings<? extends Group, Project> matchings, Projects projects, Agents students) {
-        this.matchings = matchings;
+    public AUPCR (Matching<? extends Group, Project> matching, Projects projects, Agents students) {
+        this.matching = matching;
         this.projects = projects;
         this.students = students;
     }
@@ -41,8 +41,8 @@ public abstract class AUPCR {
     protected abstract int aupc();
 
     public static class StudentAUPCR extends AUPCR {
-        public StudentAUPCR (Matchings<? extends Group, Project> matchings, Projects projects, Agents students) {
-            super(matchings, projects, students);
+        public StudentAUPCR (Matching<? extends Group, Project> matching, Projects projects, Agents students) {
+            super(matching, projects, students);
         }
 
         @Override
@@ -68,7 +68,7 @@ public abstract class AUPCR {
         protected int aupc() {
             int result = 0;
             for (int r = 1; r <= this.projects.count(); r++) {
-                for (Match<? extends Group, Project> match : this.matchings.asList()) {
+                for (Match<? extends Group, Project> match : this.matching.asList()) {
                     AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
                     for (AssignedProjectRankStudent metric : assignedProjectRank.studentRanks()) {
 
@@ -85,8 +85,8 @@ public abstract class AUPCR {
     }
 
     public static class GroupAUPCR extends AUPCR {
-        public GroupAUPCR (Matchings<? extends Group, Project> matchings, Projects projects, Agents students) {
-            super(matchings, projects, students);
+        public GroupAUPCR (Matching<? extends Group, Project> matching, Projects projects, Agents students) {
+            super(matching, projects, students);
         }
 
         @Override
@@ -101,7 +101,7 @@ public abstract class AUPCR {
                 totalProjectCapacity += p.slots().size();
             }
 
-            float result = (projects.count() * Math.min(this.matchings.asList().size(), totalProjectCapacity));
+            float result = (projects.count() * Math.min(this.matching.asList().size(), totalProjectCapacity));
 
             // prevent division by zero
             return (result == 0) ? -1 : result;
@@ -111,7 +111,7 @@ public abstract class AUPCR {
         protected int aupc() {
             int result = 0;
             for (int r = 1; r <= projects.count(); r++) {
-                for (Match<? extends Group, Project> match : matchings.asList()) {
+                for (Match<? extends Group, Project> match : matching.asList()) {
                     AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
                     if (assignedProjectRank.groupRank() <= r) {
                         result += 1;

@@ -4,7 +4,7 @@ import louchtch.graphmatch.matching.MaxFlowMatching;
 import louchtch.graphmatch.model.*;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
-import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatchings;
+import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatching;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GroupProjectMaxFlow implements GroupProjectMatchings<Group.FormedGroup>
+public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGroup>
 {
 	private final FormedGroups groups;
 	private final Projects projects;
@@ -26,7 +26,7 @@ public class GroupProjectMaxFlow implements GroupProjectMatchings<Group.FormedGr
 		this.projects = projects;
 	}
 
-	private FormedGroupToProjectSlotMatchings result = null;
+	private FormedGroupToProjectSlotMatching result = null;
 
 	@Override
 	public List<Match<Group.FormedGroup, Project>> asList()
@@ -34,7 +34,7 @@ public class GroupProjectMaxFlow implements GroupProjectMatchings<Group.FormedGr
 		if (result != null)
 			return result.toProjectMatchings().asList();
 
-		var result = new FormedGroupToProjectSlotMatchings();
+		var result = new FormedGroupToProjectSlotMatching();
 
 		GroupVertices groupVertices = new GroupVertices(groups);
 		ProjectVertices projectVertices = new ProjectVertices(projects);

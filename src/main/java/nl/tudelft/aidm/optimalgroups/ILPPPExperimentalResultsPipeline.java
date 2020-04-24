@@ -1,11 +1,11 @@
 package nl.tudelft.aidm.optimalgroups;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatchings;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
+import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.GenericDatasource;
@@ -55,27 +55,27 @@ public class ILPPPExperimentalResultsPipeline
 //			}
 
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
-			Matchings<Group.FormedGroup, Project> matchings = new ILPPPDeterminedMatchings(courseEdition);
+			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(courseEdition);
 
-			Profile studentProfile = new Profile.StudentProjectProfile(matchings);
+			Profile studentProfile = new Profile.StudentProjectProfile(matching);
 			//studentProfile.printResult();
 
-			Profile groupProfile = new Profile.GroupProjectProfile(matchings);
+			Profile groupProfile = new Profile.GroupProjectProfile(matching);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matchings, projects, agents);
+			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, projects, agents);
 			//studentAUPCR.printResult();
 
-			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matchings, projects, agents);
+			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
 			//groupAUPCR.printResult();
 
-			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matchings, 20);
+			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matchings, projects.count());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects.count());
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matchings, projects.count());
+			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics
@@ -128,7 +128,7 @@ public class ILPPPExperimentalResultsPipeline
 		{
 			var courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
 
-			StudentProjectMaxFlowMatchings.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
+			StudentProjectMaxFlowMatching.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
 			for (var preferenceAggregatingMethod : values(/*"Copeland",*/ "Borda"))
 			{
 				Application.preferenceAggregatingMethod = preferenceAggregatingMethod;

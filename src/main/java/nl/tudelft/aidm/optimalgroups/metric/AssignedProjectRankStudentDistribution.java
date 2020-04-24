@@ -1,21 +1,21 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
+import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 public class AssignedProjectRankStudentDistribution extends Distribution{
-    private Matchings<? extends Group, Project> matchings;
+    private Matching<? extends Group, Project> matching;
 
-    public AssignedProjectRankStudentDistribution(Matchings<? extends Group, Project> matchings, int projectAmount) {
+    public AssignedProjectRankStudentDistribution(Matching<? extends Group, Project> matching, int projectAmount) {
         super(0.5f, projectAmount + 0.5f, projectAmount);
-        this.matchings = matchings;
+        this.matching = matching;
     }
 
     @Override
     protected void calculate() {
-        for (Match<? extends Group, Project> match : this.matchings.asList()) {
+        for (Match<? extends Group, Project> match : this.matching.asList()) {
 
             AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
             for (AssignedProjectRankStudent rank : assignedProjectRank.studentRanks()) {

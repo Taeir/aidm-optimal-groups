@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatchings;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.agent.SequentualAgents;
@@ -13,7 +13,7 @@ import org.sql2o.GenericDatasource;
 
 import java.util.List;
 
-public class CPDeterminedMatchings implements GroupProjectMatchings<Group.FormedGroup>
+public class CPDeterminedMatching implements GroupProjectMatching<Group.FormedGroup>
 {
 
 	private final String minizincexec = "C:\\Program Files\\MiniZinc IDE (bundled)\\";
@@ -22,7 +22,7 @@ public class CPDeterminedMatchings implements GroupProjectMatchings<Group.Formed
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
 
-	public CPDeterminedMatchings(CourseEdition courseEdition)
+	public CPDeterminedMatching(CourseEdition courseEdition)
 	{
 		this.agents = courseEdition.agents;
 		this.projects = courseEdition.projects;
@@ -53,7 +53,7 @@ public class CPDeterminedMatchings implements GroupProjectMatchings<Group.Formed
 	public static void main(String[] args)
 	{
 		var dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
-		CPDeterminedMatchings cpDeterminedMatchings = new CPDeterminedMatchings(CourseEdition.fromBepSysDatabase(dataSource, 10));
+		CPDeterminedMatching cpDeterminedMatchings = new CPDeterminedMatching(CourseEdition.fromBepSysDatabase(dataSource, 4));
 
 		cpDeterminedMatchings.doIt();
 		return;

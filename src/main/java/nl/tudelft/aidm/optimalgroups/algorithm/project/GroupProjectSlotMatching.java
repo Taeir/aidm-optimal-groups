@@ -1,9 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import nl.tudelft.aidm.optimalgroups.model.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Matchings;
+import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-public interface GroupProjectSlotMatchings<G extends Group> extends Matchings<G, Project.ProjectSlot>
+public interface GroupProjectSlotMatching<G extends Group> extends Matching<G, Project.ProjectSlot>
 {
 }
