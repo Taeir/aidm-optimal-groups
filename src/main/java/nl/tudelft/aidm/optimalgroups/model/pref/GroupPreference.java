@@ -22,11 +22,11 @@ public interface GroupPreference
 	{
 		private DataSource dataSource;
 		private Integer userId;
-		private String courseEditionId;
+		private Integer courseEditionId;
 
 		private int[] preference = null;
 
-		public fromDb(DataSource dataSource, Integer userId, String courseEditionId)
+		public fromDb(DataSource dataSource, Integer userId, Integer courseEditionId)
 		{
 			this.dataSource = dataSource;
 			this.userId = userId;

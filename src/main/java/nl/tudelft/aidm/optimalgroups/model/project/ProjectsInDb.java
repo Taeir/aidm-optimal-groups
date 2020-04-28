@@ -15,12 +15,12 @@ import java.util.Optional;
 public class ProjectsInDb extends ListBasedProjects
 {
 	private DataSource dataSource;
-	private String courseEditionId;
+	private Integer courseEditionId;
 
 	private List<Project> projectList = null;
 	private Map<Integer, Project> byId = null;
 
-	ProjectsInDb(DataSource dataSource, String courseEditionId)
+	ProjectsInDb(DataSource dataSource, Integer courseEditionId)
 	{
 		this.dataSource = dataSource;
 		this.courseEditionId = courseEditionId;
@@ -41,9 +41,10 @@ public class ProjectsInDb extends ListBasedProjects
 
 
 	@Override
-	public Optional<Project> findWithId(int projectId)
+	public synchronized Optional<Project> findWithId(int projectId)
 	{
 		if (byId == null) {
+			byId = new HashMap<>();
 			projectList().forEach(project -> {
 				byId.put(project.id(), project);
 			});
@@ -59,7 +60,7 @@ public class ProjectsInDb extends ListBasedProjects
 		try (var connection = new Sql2o(dataSource).open())
 		{
 			Query query = connection.createQuery(sql);
-			query.addParameter("courseEditionId", Integer.decode(courseEditionId));
+			query.addParameter("courseEditionId", courseEditionId);
 
 			List<Project> projectsAsList = query.executeAndFetch(
 				(ResultSetHandler<Project>) rs ->
@@ -74,9 +75,9 @@ public class ProjectsInDb extends ListBasedProjects
 	/* FACTORY METHOD / CACHE */
 
 	private static DataSource lastUsedDataSource = null;
-	private static final Map<String, ProjectsInDb> projectsCache = new HashMap<>();
+	private static final Map<Integer, ProjectsInDb> projectsCache = new HashMap<>();
 
-	public static ProjectsInDb possibleCached(DataSource dataSource, String courseEditionId)
+	public static ProjectsInDb possibleCached(DataSource dataSource, Integer courseEditionId)
 	{
 		if (lastUsedDataSource == null) {
 			lastUsedDataSource = dataSource;

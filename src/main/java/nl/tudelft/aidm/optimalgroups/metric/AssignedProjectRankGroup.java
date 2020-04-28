@@ -23,7 +23,7 @@ public class AssignedProjectRankGroup
 	public int groupRank()
 	{
 		int projectId = match.to().id();
-		int[] preferences = match.from().projectPreference().asArray();
+		Integer[] preferences = match.from().projectPreference().asArray();
 
 		RankInArray rankInArray = new RankInArray();
 		int rankNumber = rankInArray.determineRank(projectId, preferences);

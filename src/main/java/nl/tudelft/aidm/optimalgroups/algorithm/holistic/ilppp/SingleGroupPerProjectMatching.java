@@ -37,7 +37,7 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 		FormedGroups formedGroups = new FormedGroups();
 
 		studentProjectMatching.groupedByProject().forEach((project, agentsAsList) -> {
-			Agents agents = new Agents(agentsAsList);
+			Agents agents = Agents.from(agentsAsList);
 			Group.TentativeGroup group = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
 
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(group);

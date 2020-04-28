@@ -1,8 +1,11 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.Application;
+import nl.tudelft.aidm.optimalgroups.model.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.*;
 
@@ -13,24 +16,26 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 {
 	protected Agents agents;
 
-	protected int[] avgPreference;
+	protected Integer[] avgPreferenceAsArray;
 	protected Map<Integer, Integer> avgPreferenceMap;
+
+	protected CourseEdition courseEdition;
 
 	public ProjectPreferenceOfAgents(Agents agents)
 	{
 		this.agents = agents;
 	}
 
-	abstract int[] calculateAverageOfGroup();
+	abstract Integer[] calculateAverageOfGroup();
 
 	@Override
-	public int[] asArray()
+	public synchronized Integer[] asArray()
 	{
-		if (avgPreference == null) {
-			avgPreference = calculateAverageOfGroup();
+		if (avgPreferenceAsArray == null) {
+			avgPreferenceAsArray = calculateAverageOfGroup();
 		}
 
-		return avgPreference;
+		return avgPreferenceAsArray;
 	}
 
 	@Override
@@ -38,7 +43,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 		if (this.avgPreferenceMap == null) {
 			this.avgPreferenceMap = new HashMap<>();
 
-			int[] preferences = asArray();
+			Integer[] preferences = asArray();
 			for (int rank = 1; rank <= preferences.length; rank++) {
 				this.avgPreferenceMap.put(preferences[rank - 1], rank);
 			}
@@ -50,7 +55,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 	@Override
 	public void forEach(ProjectPreferenceConsumer iter)
 	{
-		int[] prefs = asArray();
+		Integer[] prefs = asArray();
 		for (int i = 0; i < prefs.length; i++)
 		{
 			iter.apply(prefs[i], i+1);
@@ -72,12 +77,12 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 		}
 
 		@Override
-		int[] calculateAverageOfGroup() {
+		Integer[] calculateAverageOfGroup() {
 			// mapping: Project --> Preference-rank
 			Map<Integer, Integer> prefs = new LinkedHashMap<>();
 
 			for (Agent agent : this.agents.asCollection()) {
-				int[] preferences = agent.getProjectPreference().asArray();
+				Integer[] preferences = agent.getProjectPreference().asArray();
 
 				for (int priority = 0; priority < preferences.length; priority++) {
 					int project = preferences[priority];
@@ -87,11 +92,10 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 			}
 
 			// obtain a list of preferences (id's of) sorted by the rank of the preference
-			int[] avgPreference = new ArrayList<>(prefs.entrySet()).stream()
+			Integer[] avgPreference = new ArrayList<>(prefs.entrySet()).stream()
 					.sorted(Map.Entry.comparingByValue())
-					.map(entry -> entry.getKey())
-					.mapToInt(Integer::intValue)
-					.toArray();
+					.map(Map.Entry::getKey)
+					.toArray(Integer[]::new);
 
 			return avgPreference;
 		}
@@ -104,20 +108,21 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 		}
 
 		@Override
-		int[] calculateAverageOfGroup() {
+		Integer[] calculateAverageOfGroup() {
 			Set<Integer> projects = null;
 
 			// Retrieve the projects
 			for (Agent agent : this.agents.asCollection()) {
-				int[] preferences = agent.getProjectPreference().asArray();
+				Integer[] preferences = agent.getProjectPreference().asArray();
 				if (preferences.length > 0) {
 					projects = agent.getProjectPreference().asMap().keySet();
 					break;
 				}
 			}
 
-			if (projects == null)
-				return new int[0];
+			if (projects == null) {
+				return new Integer[0];
+			}
 
 			// Start comparing projects
 			Map<Integer, Map<Integer, Boolean>> pairwiseComparison = new HashMap<>(projects.size());
@@ -180,11 +185,10 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 			}
 
 			// obtain a list of preferences (id's of) sorted by the rank of the preference
-			int[] avgPreference = new ArrayList<>(projectScore.entrySet()).stream()
+			Integer[] avgPreference = new ArrayList<>(projectScore.entrySet()).stream()
 					.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-					.map(entry -> entry.getKey())
-					.mapToInt(Integer::intValue)
-					.toArray();
+					.map(Map.Entry::getKey)
+					.toArray(Integer[]::new);
 
 			return avgPreference;
 		}

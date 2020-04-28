@@ -3,10 +3,10 @@ package nl.tudelft.aidm.optimalgroups.model.agent;
 import nl.tudelft.aidm.optimalgroups.model.pref.CombinedPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferencesInDb;
 import plouchtch.assertion.Assert;
 
 import javax.sql.DataSource;
-import javax.xml.crypto.Data;
 import java.util.HashMap;
 
 public abstract class Agent
@@ -65,13 +65,13 @@ public abstract class Agent
 	public static class AgentInBepSysSchemaDb extends Agent
 	{
 		private Integer userId;
-		private String courseEditionId;
+		private Integer courseEditionId;
 
-		private AgentInBepSysSchemaDb(DataSource dataSource, Integer userId, String courseEditionId)
+		private AgentInBepSysSchemaDb(DataSource dataSource, Integer userId, Integer courseEditionId)
 		{
 			super(
 				userId,
-				new ProjectPreference.fromDb(dataSource, userId, courseEditionId),
+				new ProjectPreferencesInDb(dataSource, userId, courseEditionId),
 				new GroupPreference.fromDb(dataSource, userId, courseEditionId)
 			);
 
@@ -81,7 +81,7 @@ public abstract class Agent
 
 		private static DataSource datasourceOfCache;
 		private static final HashMap<String, AgentInBepSysSchemaDb> cache = new HashMap<>();
-		public static Agent from(DataSource dataSource, Integer userId, String courseEditionId)
+		public static Agent from(DataSource dataSource, Integer userId, Integer courseEditionId)
 		{
 			if (datasourceOfCache == null) {
 				datasourceOfCache = dataSource;

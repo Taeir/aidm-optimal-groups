@@ -44,7 +44,7 @@ public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.
 
 			// Iterate the preference in order, assign as soon as possible
 			// use standard for loop here to be able to break, idk how to do it in a foreach with a consumer function
-			int[] groupPreference = group.projectPreference().asArray();
+			Integer[] groupPreference = group.projectPreference().asArray();
 			for (int i = 0; i < groupPreference.length; i++) {
 				int projectId = groupPreference[i];
 				int currentlyUsedSlots = (usedSlots.containsKey(projectId)) ? usedSlots.get(projectId) : 0;

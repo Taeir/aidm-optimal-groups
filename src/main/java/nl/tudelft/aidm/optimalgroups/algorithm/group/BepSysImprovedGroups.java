@@ -589,7 +589,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                 score
             */
 
-            int[] g1Prefs = g1.projectPreference().asArray();
+            Integer[] g1Prefs = g1.projectPreference().asArray();
 
             int score = 0;
             for (int prefRankG1 = 0; prefRankG1 < g1Prefs.length; prefRankG1++) {

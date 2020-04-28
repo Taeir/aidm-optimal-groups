@@ -4,14 +4,22 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
 import plouchtch.assertion.Assert;
 
+import java.util.List;
+
 public class SequentualProjectsPreference implements ProjectPreference
 {
-	private final int[] preferenceProfile;
+	private static ProjectPreference projectPreference;
+	private static SequentualProjects sequentualProjects;
+
+	private final Integer[] preferenceProfile;
+	private List<Project> preferenceProfileAsProjectList = null;
 
 	public static SequentualProjectsPreference fromOriginal(ProjectPreference projectPreference, SequentualProjects sequentualProjects)
 	{
+		SequentualProjectsPreference.projectPreference = projectPreference;
+		SequentualProjectsPreference.sequentualProjects = sequentualProjects;
 		var originalProfile = projectPreference.asArray();
-		var remappedProfile = new int[originalProfile.length];
+		var remappedProfile = new Integer[originalProfile.length];
 
 		projectPreference.forEach((projectId, rank) -> {
 			var origProject = new Project.withDefaultSlots(projectId);
@@ -28,13 +36,13 @@ public class SequentualProjectsPreference implements ProjectPreference
 		return new SequentualProjectsPreference(remappedProfile);
 	}
 
-	public SequentualProjectsPreference(int[] preferenceProfile)
+	public SequentualProjectsPreference(Integer[] preferenceProfile)
 	{
 		this.preferenceProfile = preferenceProfile;
 	}
 
 	@Override
-	public int[] asArray()
+	public Integer[] asArray()
 	{
 		return preferenceProfile;
 	}

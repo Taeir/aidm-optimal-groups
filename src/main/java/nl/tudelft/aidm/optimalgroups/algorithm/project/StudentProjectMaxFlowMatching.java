@@ -53,12 +53,13 @@ public class StudentProjectMaxFlowMatching implements StudentProjectMatching //i
 		}
 
 		StudentProjectMaxFlowMatching existing = existingResultsCache.get(projects.asCollection());
-		if (existing.students != students) { // reference equality suffices
+		if (existing.students.equals(students)) {
+			return existing;
+		}
+		else {
 			throw new RuntimeException("Requested a cached StudentsProjectsMaxFlow for previously computed projects, but different student set." +
 				"Cache implementation only works on projects and assumes identical studens. Decide how to handle this case first (support proj + studs or simply compute this case without caching).");
 		}
-
-		return existing;
 	}
 
 	public StudentProjectMaxFlowMatching(Agents students, Projects projects, int maxGroupSize)

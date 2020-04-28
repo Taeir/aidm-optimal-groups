@@ -36,20 +36,9 @@ public interface Projects
 	 * @param courseEditionId Course edition to look in
 	 * @return The projects that are offered in the given course edition
 	 */
-	static ProjectsInDb fromDb(DataSource dataSource, String courseEditionId)
+	static ProjectsInDb fromDb(DataSource dataSource, Integer courseEditionId)
 	{
 		return ProjectsInDb.possibleCached(dataSource, courseEditionId);
-	}
-
-	/**
-	 * Projects contained in the given (bepsys) datasource
-	 * @param dataSource A datasource that has same schema as bepsys
-	 * @param courseEditionId Course edition to look in
-	 * @return The projects that are offered in the given course edition
-	 */
-	static ProjectsInDb fromDb(DataSource dataSource, int courseEditionId)
-	{
-		return ProjectsInDb.possibleCached(dataSource, String.valueOf(courseEditionId));
 	}
 
 	/**

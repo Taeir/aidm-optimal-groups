@@ -1,7 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
+import nl.tudelft.aidm.optimalgroups.model.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.*;
 
@@ -14,7 +17,8 @@ public class CombinedPreference implements ProjectPreference {
     private final ProjectPreference projectPreference;
     private final Agents agents;
 
-    private int[] combinedPreference = null;
+    private Integer[] combinedPreference = null;
+    private List<Project> combinedPreferenceAsProjectList = null;
     private Map<Integer, Integer> combinedPreferenceMap = null;
 
     // The combined preference is a ranking of projects, based on both
@@ -27,7 +31,7 @@ public class CombinedPreference implements ProjectPreference {
     }
 
     @Override
-    public int[] asArray() {
+    public Integer[] asArray() {
         if (this.combinedPreference == null) {
             this.combinedPreference = this.computeCombinedPreference();
         }
@@ -38,7 +42,7 @@ public class CombinedPreference implements ProjectPreference {
     @Override
     public Map<Integer, Integer> asMap() {
         if (this.combinedPreferenceMap == null) {
-            int[] preferences = this.asArray();
+            Integer[] preferences = this.asArray();
             this.combinedPreferenceMap = new HashMap<>(preferences.length);
 
             for (int rank = 1; rank <= preferences.length; rank++) {
@@ -50,13 +54,13 @@ public class CombinedPreference implements ProjectPreference {
         return this.combinedPreferenceMap;
     }
 
-    private int[] computeCombinedPreference() {
+    private Integer[] computeCombinedPreference() {
         // If no group preference is given, there is nothing to combine so just return the raw project preferences
         if (this.groupPreference == null ||  this.groupPreference.asArray().length == 0)
             return this.projectPreference.asArray();
 
         // The result will rank all the projects so create an array with length of the project amount
-        int[] result = new int[this.projectPreference.asArray().length];
+        Integer[] result = new Integer[this.projectPreference.asArray().length];
 
         // Keep the scores of the project in a map where the key is the project id and the value is the score
         Map<Integer, Float> scores = new HashMap<>();
@@ -69,7 +73,7 @@ public class CombinedPreference implements ProjectPreference {
 
             // Get the agent object belonging to the peer and its project preferences (or throw exception if it is not in collection)
             Agent peer = this.agents.findByAgentId(String.valueOf(peerId)).get();
-            int[] peerProjectPreferences = peer.projectPreference.asArray();
+            Integer[] peerProjectPreferences = peer.projectPreference.asArray();
 
             for (int rank = 0; rank < peerProjectPreferences.length; rank++) {
                 int project = peerProjectPreferences[rank];
@@ -86,7 +90,7 @@ public class CombinedPreference implements ProjectPreference {
         }
 
         // Add the students own project preference to the scores
-        int[] ownProjectPreferences = this.projectPreference.asArray();
+        Integer[] ownProjectPreferences = this.projectPreference.asArray();
 
         for (int rank = 0; rank < ownProjectPreferences.length; rank++) {
             int project = ownProjectPreferences[rank];
@@ -121,7 +125,7 @@ public class CombinedPreference implements ProjectPreference {
 
     public void forEach(CombinedPreference.CombinedPreferenceConsumer iter)
     {
-        int[] prefArray = asArray();
+        Integer[] prefArray = asArray();
         for (int i = 0; i < prefArray.length; i++)
         {
             iter.apply(prefArray[i], i+1);

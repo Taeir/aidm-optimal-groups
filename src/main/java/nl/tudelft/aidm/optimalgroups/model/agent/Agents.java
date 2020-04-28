@@ -20,7 +20,7 @@ public class Agents
 
 	private String courseEditionId;
 
-	public Agents(List<Agent> agents)
+	Agents(List<Agent> agents)
 	{
 		this.agents = agents;
 
@@ -117,7 +117,7 @@ public class Agents
 
 	public static Agents from(Agent... agents)
 	{
-		return new Agents(List.of(agents));
+		return Agents.from(List.of(agents));
 	}
 
 	public static Agents from(List<Agent> agents)
@@ -143,10 +143,26 @@ public class Agents
 
 			List<Integer> userIds = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("user_id"));
 			List<Agent> agents = userIds.stream().map(id ->
-					Agent.AgentInBepSysSchemaDb.from(dataSource, id, String.valueOf(courseEditionId)))
+					Agent.AgentInBepSysSchemaDb.from(dataSource, id, courseEditionId))
 					.collect(Collectors.toList());
 
 			return new Agents(agents);
 		}
+	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o) return true;
+		if (!(o instanceof Agents)) return false;
+		Agents other = (Agents) o;
+		return courseEditionId.equals(other.courseEditionId) &&
+			agents.equals(other.agents);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(agents, courseEditionId);
 	}
 }

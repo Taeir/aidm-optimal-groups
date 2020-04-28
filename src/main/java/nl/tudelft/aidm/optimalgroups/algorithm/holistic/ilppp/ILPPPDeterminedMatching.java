@@ -78,7 +78,7 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 		var result = new HashMap<Project, java.util.Collection<Group.FormedGroup>>();
 
 		resultingMatching.groupedByProject().forEach((proj, agentList) -> {
-			Agents agentsWithProject = new Agents(agentList);
+			Agents agentsWithProject = Agents.from(agentList);
 			BepSysImprovedGroups bepSysImprovedGroups = new BepSysImprovedGroups(agentsWithProject, groupSizeConstraint, true);
 			var groups = bepSysImprovedGroups.asCollection();
 
@@ -102,7 +102,7 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 		// using exceptions for control flow, bepsys group forming is not as flexible yet to do otherwise...
 		try {
 			groupedByProject.forEach((proj, agentList) -> {
-				Agents agentsWithProject = new Agents(agentList);
+				Agents agentsWithProject = Agents.from(agentList);
 				BepSysImprovedGroups bepSysImprovedGroups = new BepSysImprovedGroups(agentsWithProject, groupSizeConstraint, true);
 				var groups = bepSysImprovedGroups.asCollection();
 			});
