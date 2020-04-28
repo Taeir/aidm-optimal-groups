@@ -40,6 +40,25 @@ public class CombinedPreference implements ProjectPreference {
     }
 
     @Override
+    public synchronized List<Project> asListOfProjects()
+    {
+        if (combinedPreferenceAsProjectList == null) {
+            var projectIdsInOrder = asArray();
+
+            Projects projects = Projects.from(projectPreference.asListOfProjects());
+            List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
+
+            for (var projId : projectIdsInOrder) {
+                projectList.add(projects.findWithId(projId).get());
+            }
+
+            combinedPreferenceAsProjectList = Collections.unmodifiableList(projectList);
+        }
+
+        return combinedPreferenceAsProjectList;
+    }
+
+    @Override
     public Map<Integer, Integer> asMap() {
         if (this.combinedPreferenceMap == null) {
             Integer[] preferences = this.asArray();

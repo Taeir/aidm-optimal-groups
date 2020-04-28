@@ -21,6 +21,7 @@ public class ProjectPreferencesInDb implements ProjectPreference
 	private final Integer courseEditionId;
 
 	private Integer[] preferences = null;
+	private List<Project> preferencesAsProjectList = null;
 	private Map<Integer, Integer> preferencesMap = null;
 
 	public ProjectPreferencesInDb(DataSource dataSource, Integer userId, Integer courseEditionId)
@@ -61,6 +62,26 @@ public class ProjectPreferencesInDb implements ProjectPreference
 		}
 
 		return preferences;
+	}
+
+	@Override
+	public synchronized List<Project> asListOfProjects()
+	{
+		if (preferencesAsProjectList == null) {
+			var projectIdsInOrder = asArray();
+
+			Projects allProjects = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId).projects;
+			List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
+
+			for (var projId : projectIdsInOrder) {
+				projectList.add(allProjects.findWithId(projId).get());
+			}
+
+			preferencesAsProjectList = Collections.unmodifiableList(projectList);
+
+		}
+
+		return preferencesAsProjectList;
 	}
 
 	@Override

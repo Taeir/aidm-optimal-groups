@@ -12,6 +12,7 @@ public interface ProjectPreference
 	// TODO: determine representation (let algo guide this choice)
 	Integer[] asArray();
 
+	List<Project> asListOfProjects();
 
 	default void forEach(ProjectPreferenceConsumer iter)
 	{
@@ -49,6 +50,11 @@ public interface ProjectPreference
 		}
 
 		return difference;
+	}
+
+	default int rankOf(Project project)
+	{
+		return new RankInArray().determineRank(project.id(), this.asArray());
 	}
 
 	/**

@@ -46,4 +46,10 @@ public class SequentualProjectsPreference implements ProjectPreference
 	{
 		return preferenceProfile;
 	}
+
+	@Override
+	public List<Project> asListOfProjects()
+	{
+		throw new RuntimeException("IMPL ME");
+	}
 }

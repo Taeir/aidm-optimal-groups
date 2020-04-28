@@ -17,6 +17,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 	protected Agents agents;
 
 	protected Integer[] avgPreferenceAsArray;
+	protected List<Project> avgPreferenceAsProjectList;
 	protected Map<Integer, Integer> avgPreferenceMap;
 
 	protected CourseEdition courseEdition;
@@ -36,6 +37,26 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 		}
 
 		return avgPreferenceAsArray;
+	}
+
+	@Override
+	public synchronized List<Project> asListOfProjects()
+	{
+		if (avgPreferenceAsProjectList == null) {
+			var projectIdsInOrder = asArray();
+
+			Projects allProjects = courseEdition.projects;
+			List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
+
+			for (var projId : projectIdsInOrder) {
+				projectList.add(allProjects.findWithId(projId).get());
+			}
+
+			avgPreferenceAsProjectList = Collections.unmodifiableList(projectList);
+
+		}
+
+		return avgPreferenceAsProjectList;
 	}
 
 	@Override
