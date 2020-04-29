@@ -4,13 +4,14 @@ import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 public class AssignedProjectRankGroupDistribution extends Distribution {
 
     private Matching<? extends Group, Project> matching;
 
-    public AssignedProjectRankGroupDistribution(Matching<? extends Group, Project> matching, int projectAmount) {
-        super(0.5f, projectAmount + 0.5f, projectAmount);
+    public AssignedProjectRankGroupDistribution(Matching<? extends Group, Project> matching, Projects projects) {
+        super(0.5f, projects.count() + 0.5f, projects.count());
         this.matching = matching;
     }
 

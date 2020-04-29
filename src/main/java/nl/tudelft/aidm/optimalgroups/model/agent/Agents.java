@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
@@ -20,7 +21,12 @@ public class Agents
 
 	private String courseEditionId;
 
-	Agents(List<Agent> agents)
+	public Agents(Agent... agents)
+	{
+		this(List.of(agents));
+	}
+
+	public Agents(List<Agent> agents)
 	{
 		this.agents = agents;
 
@@ -36,9 +42,9 @@ public class Agents
 		return agents.size();
 	}
 
-	public Optional<Agent> findByAgentId(String name)
+	public Optional<Agent> findByAgentId(Integer agentId)
 	{
-		return Optional.ofNullable(idToAgentsMap.get(name));
+		return Optional.ofNullable(idToAgentsMap.get(agentId));
 	}
 
 	public Collection<Agent> asCollection()
@@ -123,31 +129,6 @@ public class Agents
 	public static Agents from(List<Agent> agents)
 	{
 		return new Agents(agents);
-	}
-
-	/**
-	 * Fetches Agents and their preferences from the given DataSource
-	 * <br />
-	 * Assumes the datasource is the bepsys database dump. Refactor when more datasource types are present</p>
-	 * @param dataSource
-	 * @return
-	 */
-	public static Agents fromBepSysDb(DataSource dataSource, int courseEditionId)
-	{
-		var sql2o = new Sql2o(dataSource);
-		try (var connection = sql2o.open()) {
-			var query = connection.createQuery("SELECT distinct cp.user_id as user_id\n" +
-				"FROM course_participations cp \n" +
-				"WHERE cp.course_edition_id = :courseEditionId")
-				.addParameter("courseEditionId", courseEditionId);
-
-			List<Integer> userIds = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("user_id"));
-			List<Agent> agents = userIds.stream().map(id ->
-					Agent.AgentInBepSysSchemaDb.from(dataSource, id, courseEditionId))
-					.collect(Collectors.toList());
-
-			return new Agents(agents);
-		}
 	}
 
 	@Override

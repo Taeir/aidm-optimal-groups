@@ -1,9 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.model.agent;
 
-import nl.tudelft.aidm.optimalgroups.model.pref.CombinedPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferencesInDb;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import plouchtch.assertion.Assert;
 
 import javax.sql.DataSource;
@@ -15,14 +14,26 @@ public abstract class Agent
 	public final ProjectPreference projectPreference;
 	public final GroupPreference groupPreference;
 
-	private CombinedPreference combinedPreference;
-	private boolean usingCombinedPreference = false;
+	protected final DatasetContext context;
 
-	protected Agent(Integer id, ProjectPreference projectPreference, GroupPreference groupPreference)
+	// TODO: extract to own type?
+	private boolean usingCombinedPreference = false;
+	private CombinedPreference combinedPreference = null;
+
+	protected Agent(Agent agent)
+	{
+		this(agent.id, agent.projectPreference, agent.groupPreference, agent.context);
+
+		usingCombinedPreference = agent.usingCombinedPreference;
+		combinedPreference = agent.combinedPreference;
+	}
+
+	protected Agent(Integer id, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
 	{
 		this.id = id;
 		this.projectPreference = projectPreference;
 		this.groupPreference = groupPreference;
+		this.context = context;
 	}
 
 	public void replaceProjectPreferenceWithCombined(Agents agents) {
@@ -46,7 +57,7 @@ public abstract class Agent
 		if ((obj instanceof Agent) == false) return false;
 
 		Agent that = (Agent) obj;
-		return this.id.equals(that.id);
+		return this.context.equals(that.context) && this.id.equals(that.id);
 	}
 
 	@Override
@@ -65,34 +76,33 @@ public abstract class Agent
 	public static class AgentInBepSysSchemaDb extends Agent
 	{
 		private Integer userId;
-		private Integer courseEditionId;
 
-		private AgentInBepSysSchemaDb(DataSource dataSource, Integer userId, Integer courseEditionId)
+		public AgentInBepSysSchemaDb(DataSource dataSource, Integer userId, CourseEdition courseEdition)
 		{
 			super(
 				userId,
-				new ProjectPreferencesInDb(dataSource, userId, courseEditionId),
-				new GroupPreference.fromDb(dataSource, userId, courseEditionId)
+				new ProjectPreferencesInDb(dataSource, userId, courseEdition),
+				new GroupPreferenceInDb(dataSource, userId, courseEdition),
+				courseEdition
 			);
 
 			this.userId = userId;
-			this.courseEditionId = courseEditionId;
 		}
 
-		private static DataSource datasourceOfCache;
-		private static final HashMap<String, AgentInBepSysSchemaDb> cache = new HashMap<>();
-		public static Agent from(DataSource dataSource, Integer userId, Integer courseEditionId)
-		{
-			if (datasourceOfCache == null) {
-				datasourceOfCache = dataSource;
-			}
-
-			Assert.that(datasourceOfCache == dataSource)
-				.orThrow(RuntimeException.class, "Agents are cached for a different datasource! Please fix the cache impl to support this use case.");
-
-			return cache.computeIfAbsent(String.format("%s_%s", courseEditionId, userId),
-				(__) -> new AgentInBepSysSchemaDb(dataSource, userId, courseEditionId)
-			);
-		}
+//		private static DataSource datasourceOfCache;
+//		private static final HashMap<String, AgentInBepSysSchemaDb> cache = new HashMap<>();
+//		public static Agent from(DataSource dataSource, Integer userId, Integer courseEditionId)
+//		{
+//			if (datasourceOfCache == null) {
+//				datasourceOfCache = dataSource;
+//			}
+//
+//			Assert.that(datasourceOfCache == dataSource)
+//				.orThrow(RuntimeException.class, "Agents are cached for a different datasource! Please fix the cache impl to support this use case.");
+//
+//			return cache.computeIfAbsent(String.format("%s_%s", courseEditionId, userId),
+//				(__) -> new AgentInBepSysSchemaDb(dataSource, userId, courseEditionId)
+//			);
+//		}
 	}
 }

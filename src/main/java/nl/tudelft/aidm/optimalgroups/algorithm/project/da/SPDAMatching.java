@@ -2,7 +2,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project.da;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
 import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRankStudent;
-import nl.tudelft.aidm.optimalgroups.model.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
@@ -57,8 +57,8 @@ public class SPDAMatching implements StudentProjectMatching
 	public SPDAMatching(CourseEdition courseEdition)
 	{
 		this.courseEdition = courseEdition;
-		this.agents = courseEdition.agents;
-		this.projects = courseEdition.projects;
+		this.agents = courseEdition.allAgents();
+		this.projects = courseEdition.allProjects();
 
 		// todo: sanity check (capacity)
 	}

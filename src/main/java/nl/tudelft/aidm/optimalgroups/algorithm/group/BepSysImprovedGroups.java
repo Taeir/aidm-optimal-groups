@@ -3,6 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.group;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 
@@ -28,8 +29,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
     private boolean done = false;
 
     // Pass the list of students to make groups from
-    public BepSysImprovedGroups(Agents students, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
-        this.students = students;
+    public BepSysImprovedGroups(Agents agents, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
+        this.students = agents;
 
         this.availableStudents = new HashSet<>();
         this.unavailableStudents = new HashSet<>();
@@ -188,8 +189,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             if (students.hasEqualFriendLists(student))
             {
                 int[] friends = student.groupPreference.asArray();
-                List<Agent> clique = Arrays.stream(friends).mapToObj(String::valueOf)
-                    .map(name -> students.findByAgentId(name))
+                List<Agent> clique = Arrays.stream(friends)
+                    .mapToObj(name -> students.findByAgentId(name))
                     .filter(Optional::isPresent).map(Optional::get)
                     .collect(Collectors.toList());
 

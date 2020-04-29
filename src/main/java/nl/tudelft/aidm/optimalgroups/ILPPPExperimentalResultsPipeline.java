@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatc
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -27,9 +28,9 @@ public class ILPPPExperimentalResultsPipeline
 		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
 
-		Agents agents = courseEdition.agents;
-		Projects projects = courseEdition.projects;
-		GroupSizeConstraint groupSizeConstraint = courseEdition.groupSizeConstraint;
+		Agents agents = courseEdition.allAgents();
+		Projects projects = courseEdition.allProjects();
+		GroupSizeConstraint groupSizeConstraint = courseEdition.groupSizeConstraint();
 
 		System.out.println("Amount of projects: " + projects.count());
 		System.out.println("Amount of students: " + agents.count());
@@ -72,10 +73,10 @@ public class ILPPPExperimentalResultsPipeline
 			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects.count());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects);
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());
+			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects);
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics
@@ -99,15 +100,15 @@ public class ILPPPExperimentalResultsPipeline
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
 //		groupPreferenceSatisfactionDistribution.printResult();
-		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.id, groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
 //		groupProjectRankDistribution.printResult();
-		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.id, groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
 //		studentProjectRankDistribution.printResult();
-		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.id, groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		System.out.printf("\n\tstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("\tgroup AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
@@ -133,9 +134,9 @@ public class ILPPPExperimentalResultsPipeline
 			{
 				Application.preferenceAggregatingMethod = preferenceAggregatingMethod;
 
-				System.out.printf("ILPPP %s CE %s, start: %d\n", preferenceAggregatingMethod, courseEdition.id, Instant.now().getEpochSecond());
+				System.out.printf("ILPPP %s CE %s, start: %d\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
 				henk(courseEdition, 1);
-				System.out.printf("ILPPP %s CE %s, end: %d\n\n\n", preferenceAggregatingMethod, courseEdition.id, Instant.now().getEpochSecond());
+				System.out.printf("ILPPP %s CE %s, end: %d\n\n\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
 			}
 		}
 	}

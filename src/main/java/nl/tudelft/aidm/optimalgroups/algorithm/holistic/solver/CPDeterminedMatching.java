@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.agent.SequentualAgents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.StudToGroupTopicMatchingInstanceData;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -24,9 +25,9 @@ public class CPDeterminedMatching implements GroupProjectMatching<Group.FormedGr
 
 	public CPDeterminedMatching(CourseEdition courseEdition)
 	{
-		this.agents = courseEdition.agents;
-		this.projects = courseEdition.projects;
-		this.groupSizeConstraint = courseEdition.groupSizeConstraint;
+		this.agents = courseEdition.allAgents();
+		this.projects = courseEdition.allProjects();
+		this.groupSizeConstraint = courseEdition.groupSizeConstraint();
 	}
 
 	public void doIt()

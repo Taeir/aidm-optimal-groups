@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.Application;
-import nl.tudelft.aidm.optimalgroups.model.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -40,12 +40,13 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 	}
 
 	@Override
+
 	public synchronized List<Project> asListOfProjects()
 	{
 		if (avgPreferenceAsProjectList == null) {
 			var projectIdsInOrder = asArray();
 
-			Projects allProjects = courseEdition.projects;
+			Projects allProjects = courseEdition.allProjects();
 			List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
 
 			for (var projId : projectIdsInOrder) {

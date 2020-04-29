@@ -15,7 +15,7 @@ public class ProposingAgent extends Agent
 
 	protected ProposingAgent(Agent agent)
 	{
-		super(agent.id, agent.getProjectPreference(), agent.groupPreference);
+		super(agent);
 
 		this.agent = agent;
 

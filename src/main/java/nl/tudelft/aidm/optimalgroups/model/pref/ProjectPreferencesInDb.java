@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
-import nl.tudelft.aidm.optimalgroups.model.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.Query;
@@ -12,23 +12,34 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.tudelft.aidm.optimalgroups.Application.courseEdition;
-
 public class ProjectPreferencesInDb implements ProjectPreference
 {
 	private final DataSource dataSource;
 	private final Integer userId;
-	private final Integer courseEditionId;
+	private final CourseEdition courseEdition;
 
 	private Integer[] preferences = null;
 	private List<Project> preferencesAsProjectList = null;
 	private Map<Integer, Integer> preferencesMap = null;
 
-	public ProjectPreferencesInDb(DataSource dataSource, Integer userId, Integer courseEditionId)
+	private Boolean isIndifferent = null;
+
+	public ProjectPreferencesInDb(DataSource dataSource, Integer userId, CourseEdition courseEdition)
 	{
 		this.dataSource = dataSource;
 		this.userId = userId;
-		this.courseEditionId = courseEditionId;
+		this.courseEdition = courseEdition;
+	}
+
+	@Override
+	public boolean isCompletelyIndifferent()
+	{
+		if (isIndifferent == null) {
+			// force retrieval
+			asArray();
+		}
+
+		return isIndifferent;
 	}
 
 	@Override
@@ -36,29 +47,30 @@ public class ProjectPreferencesInDb implements ProjectPreference
 	{
 		if (preferences == null)
 		{
-			var preferencesOfAgent = fetchFromDb().stream()
+			var submittedPreferencesOfAgentAsProjectIds = fetchFromDb().stream()
 				.mapToInt(Integer::intValue)
 				.toArray();
 
-			var projectsInPreferences = Projects.from(
-				Arrays.stream(preferencesOfAgent).boxed()
+			var projectsInSubmittedPreferences = Projects.from(
+				Arrays.stream(submittedPreferencesOfAgentAsProjectIds).boxed()
 					.map(Project.withDefaultSlots::new).collect(Collectors.toList())
 			);
 
-			var allProjects = Projects.fromDb(dataSource, courseEditionId);
-
-			var projectsNotInPreferences = allProjects.without(projectsInPreferences);
+			var allProjects = courseEdition.allProjects();
+			var projectsNotInPreferences = allProjects.without(projectsInSubmittedPreferences);
 
 			ArrayList<Project> shuffledMissingProjects = new ArrayList<>(projectsNotInPreferences.asCollection());
 			Collections.shuffle(shuffledMissingProjects);
 
-			// Join the two lists/arrays with streams into a single array - Java has not native Array.join
+			// Join the two lists/arrays using streams into a single array - Java has no native Array.join
 			preferences = Stream.concat(
-					Arrays.stream(preferencesOfAgent).boxed(),
+					Arrays.stream(submittedPreferencesOfAgentAsProjectIds).boxed(),
 					shuffledMissingProjects.stream().map(Project::id)
 				)
 				.toArray(Integer[]::new);
 
+			// Set indifference flag by inspecting its submitted preferences
+			isIndifferent = submittedPreferencesOfAgentAsProjectIds.length == 0;
 		}
 
 		return preferences;
@@ -70,8 +82,8 @@ public class ProjectPreferencesInDb implements ProjectPreference
 		if (preferencesAsProjectList == null) {
 			var projectIdsInOrder = asArray();
 
-			Projects allProjects = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId).projects;
-			List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
+			var allProjects = courseEdition.allProjects();
+			var projectList = new ArrayList<Project>(projectIdsInOrder.length);
 
 			for (var projId : projectIdsInOrder) {
 				projectList.add(allProjects.findWithId(projId).get());
@@ -117,7 +129,7 @@ public class ProjectPreferencesInDb implements ProjectPreference
 
 			Query query = conn.createQuery(sql)
 				.addParameter("userId", userId)
-				.addParameter("courseEditionId", courseEditionId);
+				.addParameter("courseEditionId", courseEdition.bepSysId());
 
 			List<Integer> prefs = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("project_id"));
 			return prefs;

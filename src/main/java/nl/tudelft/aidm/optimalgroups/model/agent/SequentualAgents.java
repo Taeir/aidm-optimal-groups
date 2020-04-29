@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.agent;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.dataset.RelabledCourseEditionContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;
@@ -47,9 +49,9 @@ public class SequentualAgents extends Agents
 	{
 		private final Agent original;
 
-		protected SequentualAgent(Integer id, Agent original, ProjectPreference projectPreference, GroupPreference groupPreference)
+		protected SequentualAgent(Integer id, Agent original, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
 		{
-			super(id, projectPreference, groupPreference);
+			super(id, projectPreference, groupPreference, context);
 			this.original = original;
 		}
 
@@ -57,7 +59,8 @@ public class SequentualAgents extends Agents
 		{
 			var sequentualProjectsPreference = SequentualProjectsPreference.fromOriginal(agent.projectPreference, sequentualProjects);
 
-			return new SequentualAgent(newId, agent, sequentualProjectsPreference, agent.groupPreference);
+			// fixme
+			return new SequentualAgent(newId, agent, sequentualProjectsPreference, agent.groupPreference, new RelabledCourseEditionContext());
 		}
 
 		@Override

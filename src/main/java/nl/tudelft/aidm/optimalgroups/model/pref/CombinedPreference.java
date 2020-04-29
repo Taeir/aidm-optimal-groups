@@ -1,6 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
-import nl.tudelft.aidm.optimalgroups.model.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -91,7 +90,7 @@ public class CombinedPreference implements ProjectPreference {
         for (int peerId : this.groupPreference.asArray()) {
 
             // Get the agent object belonging to the peer and its project preferences (or throw exception if it is not in collection)
-            Agent peer = this.agents.findByAgentId(String.valueOf(peerId)).get();
+            Agent peer = this.agents.findByAgentId(peerId).get();
             Integer[] peerProjectPreferences = peer.projectPreference.asArray();
 
             for (int rank = 0; rank < peerProjectPreferences.length; rank++) {

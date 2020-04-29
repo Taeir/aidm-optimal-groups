@@ -251,8 +251,8 @@ public class SOSM implements GroupFormingAlgorithm
             if (students.hasEqualFriendLists(student))
             {
                 int[] friends = student.groupPreference.asArray();
-                List<Agent> clique = Arrays.stream(friends).mapToObj(String::valueOf)
-                        .map(name -> students.findByAgentId(name))
+                List<Agent> clique = Arrays.stream(friends)
+                        .mapToObj(name -> students.findByAgentId(name))
                         .filter(Optional::isPresent).map(Optional::get)
                         .collect(Collectors.toList());
 

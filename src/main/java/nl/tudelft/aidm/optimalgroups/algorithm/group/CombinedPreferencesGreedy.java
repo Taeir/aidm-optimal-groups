@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
@@ -24,9 +25,9 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
     private boolean done = false;
 
-    public CombinedPreferencesGreedy(Agents students, GroupSizeConstraint groupSizeConstraint) {
-        this.students = students;
-        this.groupSizeConstraint = groupSizeConstraint;
+    public CombinedPreferencesGreedy(CourseEdition courseEdition) {
+        this.students = courseEdition.allAgents();
+        this.groupSizeConstraint = courseEdition.groupSizeConstraint();
 
         this.initializeObjects(students);
     }

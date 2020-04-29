@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.project;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
+
 import javax.sql.DataSource;
 import java.util.*;
 import java.util.function.Consumer;
@@ -28,17 +30,6 @@ public interface Projects
 		toFilter.removeAll(other.asCollection());
 
 		return Projects.from(toFilter);
-	}
-
-	/**
-	 * Projects contained in the given (bepsys) datasource
-	 * @param dataSource A datasource that has same schema as bepsys
-	 * @param courseEditionId Course edition to look in
-	 * @return The projects that are offered in the given course edition
-	 */
-	static ProjectsInDb fromDb(DataSource dataSource, Integer courseEditionId)
-	{
-		return ProjectsInDb.possibleCached(dataSource, courseEditionId);
 	}
 
 	/**

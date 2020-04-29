@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -16,8 +17,8 @@ import java.io.FileWriter;
 
 public class Application
 {
+	public static final int courseEditionId = 10;
 	public static final int iterations = 10;
-	public static final int courseEdition = 10;
 	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
 	public static String preferenceAggregatingMethod = "Copeland";
 	public static final String projectAssignmentAlgorithm = "MaxFlow";
@@ -30,7 +31,9 @@ public class Application
 		else
 			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
 
-		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, courseEdition);
+
+
+//		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, courseEdition);
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -39,11 +42,10 @@ public class Application
 		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
 
-		// Fetch agents and from DB before loop; they don't change for another iteration
-		Agents agents = Agents.fromBepSysDb(dataSource, courseEdition);
-		Projects projects = Projects.fromDb(dataSource, courseEdition);
-		System.out.println("Amount of projects: " + projects.count());
-		System.out.println("Amount of students: " + agents.count());
+		// "Fetch" agents and from DB before loop; they don't change for another iteration
+		CourseEdition courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
+		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
+		System.out.println("Amount of students: " + courseEdition.allAgents().count());
 
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
@@ -52,19 +54,21 @@ public class Application
 
 			GroupFormingAlgorithm formedGroups;
 			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
-				formedGroups = new CombinedPreferencesGreedy(agents, groupSizeConstraint);
-			} else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
-				formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint, true);
-			} else {
-				formedGroups = new BepSysImprovedGroups(agents, groupSizeConstraint, false);
+				formedGroups = new CombinedPreferencesGreedy(courseEdition);
+			}
+			else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
+				formedGroups = new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), true);
+			}
+			else {
+				formedGroups = new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), false);
 			}
 
 			GroupProjectMatching groupProjectMatching = null;
 
 			if (projectAssignmentAlgorithm.equals("RSD")) {
-				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), projects);
+				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), courseEdition.allProjects());
 			} else {
-				groupProjectMatching = new GroupProjectMaxFlow(formedGroups.asFormedGroups(), projects);
+				groupProjectMatching = new GroupProjectMaxFlow(formedGroups.asFormedGroups(), courseEdition.allProjects());
 			}
 
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
@@ -76,19 +80,19 @@ public class Application
 			Profile groupProfile = new Profile.GroupProjectProfile(matching);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, projects, agents);
+			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, courseEdition.allProjects(), courseEdition.allAgents());
 			//studentAUPCR.printResult();
 
-			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
+			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, courseEdition.allProjects(), courseEdition.allAgents());
 			//groupAUPCR.printResult();
 
 			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects.count());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, courseEdition.allProjects());
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects.count());
+			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, courseEdition.allProjects());
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics
