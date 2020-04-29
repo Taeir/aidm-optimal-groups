@@ -108,8 +108,10 @@ public class SPDAMatching implements StudentProjectMatching
 			var projToProposeTo = proposableProjects.stream().filter(proposableProject -> proposableProject.id() == proposal.projectProposingFor().id())
 				.findAny().get();
 
-			projToProposeTo.receiveProposal(proposal);
-			// If exception (stack is empty, no projects to propose to)
+			// note: exception (stack is empty or an npe) --> there are no projects to propose to
+			if (projToProposeTo.receiveProposal(proposal) == ProposableProject.ProposalAnswer.REJECT) {
+				unmatched.add(unmatchedAgent);
+			}
 		}
 
 		List<Match<Agent, Project>> matching = new ArrayList<>();
