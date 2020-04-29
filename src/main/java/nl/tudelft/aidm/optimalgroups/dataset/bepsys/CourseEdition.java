@@ -94,7 +94,7 @@ public class CourseEdition implements DatasetContext
 	@Override
 	public GroupSizeConstraint groupSizeConstraint()
 	{
-		return null;
+		return groupSizeConstraint;
 	}
 
 
