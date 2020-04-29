@@ -1,11 +1,12 @@
-package nl.tudelft.aidm.optimalgroups.model.dataset;
+package nl.tudelft.aidm.optimalgroups.dataset.bepsys;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import nl.tudelft.aidm.optimalgroups.model.project.ProjectsInDb;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.project.ProjectsInDb;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
@@ -34,7 +35,7 @@ public class CourseEdition implements DatasetContext
 		this.dataSource = dataSource;
 		this.courseEditionId = courseEditionId;
 
-		this.groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, this);
+		this.groupSizeConstraint = new GroupSizeConstraintBepSys(dataSource, this);
 
 		this.agents = fetchAgents(dataSource, this);
 		this.projects = fetchProjects(dataSource, this);

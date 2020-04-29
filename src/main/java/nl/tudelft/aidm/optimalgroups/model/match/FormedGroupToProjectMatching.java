@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.match;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.Group.FormedGroup;
+import nl.tudelft.aidm.optimalgroups.model.group.Group.FormedGroup;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.List;

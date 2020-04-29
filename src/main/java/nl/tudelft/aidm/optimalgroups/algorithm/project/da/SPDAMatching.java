@@ -2,7 +2,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project.da;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
 import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRankStudent;
-import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
@@ -44,8 +44,7 @@ public class SPDAMatching implements StudentProjectMatching
 //			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");
 
 //			assignedProjectRank.studentRanks().forEach(metric -> {
-				System.out.printf("Student %s", assignedProjectRank.student().id);
-				System.out.printf("\trank: %s\n", assignedProjectRank.studentsRank());
+			System.out.printf("Student %s\trank: %s\n", assignedProjectRank.student().id, assignedProjectRank.studentsRank());
 
 //				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, assignedProjectRank.student()).asFraction());
 //			});

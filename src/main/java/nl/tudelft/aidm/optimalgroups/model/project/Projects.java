@@ -1,8 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.model.project;
 
-import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
-
-import javax.sql.DataSource;
 import java.util.*;
 import java.util.function.Consumer;
 

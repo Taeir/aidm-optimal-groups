@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model;
+package nl.tudelft.aidm.optimalgroups.model.group;
 
 import java.util.ArrayList;
 import java.util.Collection;

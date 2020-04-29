@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.agent;
 
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.RelabledCourseEditionContext;
+import nl.tudelft.aidm.optimalgroups.dataset.RelabledCourseEditionContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;

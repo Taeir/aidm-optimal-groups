@@ -2,13 +2,6 @@ package nl.tudelft.aidm.optimalgroups.model.agent;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
-import org.sql2o.ResultSetHandler;
-import org.sql2o.Sql2o;
-
-import javax.sql.DataSource;
 
 /**
  * Collection class for Agent

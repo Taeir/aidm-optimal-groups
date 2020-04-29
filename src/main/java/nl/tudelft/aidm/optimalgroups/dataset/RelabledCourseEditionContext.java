@@ -1,7 +1,8 @@
-package nl.tudelft.aidm.optimalgroups.model.dataset;
+package nl.tudelft.aidm.optimalgroups.dataset;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
 

@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.match;
 
-import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 public class GroupToProjectMatch<G extends Group> implements Match<G, Project>

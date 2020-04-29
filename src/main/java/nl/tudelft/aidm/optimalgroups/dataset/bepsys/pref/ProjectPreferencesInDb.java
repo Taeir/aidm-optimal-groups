@@ -1,6 +1,7 @@
-package nl.tudelft.aidm.optimalgroups.model.pref;
+package nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref;
 
-import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.Query;

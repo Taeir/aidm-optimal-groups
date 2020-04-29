@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.match;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectSlotMatching;
-import nl.tudelft.aidm.optimalgroups.model.Group;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 

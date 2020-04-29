@@ -3,9 +3,9 @@ package nl.tudelft.aidm.optimalgroups.algorithm.group;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.FormedGroups;
-import nl.tudelft.aidm.optimalgroups.model.Group;
-import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 

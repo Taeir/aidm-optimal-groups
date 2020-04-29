@@ -1,12 +1,12 @@
 package nl.tudelft.aidm.optimalgroups.model.agent;
 
-import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.GroupPreferenceInDb;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.ProjectPreferencesInDb;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
-import plouchtch.assertion.Assert;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
 
 public abstract class Agent
 {

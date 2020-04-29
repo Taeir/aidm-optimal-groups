@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model;
+package nl.tudelft.aidm.optimalgroups.model.group;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;

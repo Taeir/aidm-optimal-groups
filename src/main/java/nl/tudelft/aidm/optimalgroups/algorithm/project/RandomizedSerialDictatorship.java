@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
-import nl.tudelft.aidm.optimalgroups.model.*;
+import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatching;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;

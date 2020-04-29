@@ -1,12 +1,9 @@
-package nl.tudelft.aidm.optimalgroups.model.project;
+package nl.tudelft.aidm.optimalgroups.dataset.bepsys.project;
 
-import nl.tudelft.aidm.optimalgroups.model.dataset.CourseEdition;
-import org.sql2o.Query;
-import org.sql2o.ResultSetHandler;
-import org.sql2o.Sql2o;
-import plouchtch.assertion.Assert;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
