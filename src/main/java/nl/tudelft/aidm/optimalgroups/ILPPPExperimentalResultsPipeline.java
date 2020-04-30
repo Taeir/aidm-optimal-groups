@@ -20,6 +20,33 @@ public class ILPPPExperimentalResultsPipeline
 	public static String groupMatchingAlgorithm = "";
 	public static String projectAssignmentAlgorithm = "";
 
+	public static void main(String[] args) {
+		DataSource dataSource;
+
+		if (true)
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
+		else
+			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
+
+		groupMatchingAlgorithm = "BEPSysFixed";
+		projectAssignmentAlgorithm = "ILPPP";
+
+		for (int courseEditionId : values(/*3, 4,*/ 10))
+		{
+			var courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
+
+			StudentProjectMaxFlowMatching.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
+			for (var preferenceAggregatingMethod : values(/*"Copeland",*/ "Borda"))
+			{
+				Application.preferenceAggregatingMethod = preferenceAggregatingMethod;
+
+				System.out.printf("ILPPP %s CE %s, start: %d\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
+				henk(courseEdition, 1);
+				System.out.printf("ILPPP %s CE %s, end: %d\n\n\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
+			}
+		}
+	}
+
 	public static void henk(CourseEdition courseEdition, int iterations)
 	{
 		float[] studentAUPCRs = new float[iterations];
@@ -113,33 +140,6 @@ public class ILPPPExperimentalResultsPipeline
 
 		System.out.printf("\n\tstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("\tgroup AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
-	}
-
-	public static void main(String[] args) {
-		DataSource dataSource;
-
-		if (true)
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
-		else
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
-
-		groupMatchingAlgorithm = "BEPSysFixed";
-		projectAssignmentAlgorithm = "ILPPP";
-
-		for (int courseEditionId : values(/*3, 4,*/ 10))
-		{
-			var courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
-
-			StudentProjectMaxFlowMatching.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
-			for (var preferenceAggregatingMethod : values(/*"Copeland",*/ "Borda"))
-			{
-				Application.preferenceAggregatingMethod = preferenceAggregatingMethod;
-
-				System.out.printf("ILPPP %s CE %s, start: %d\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
-				henk(courseEdition, 1);
-				System.out.printf("ILPPP %s CE %s, end: %d\n\n\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
-			}
-		}
 	}
 
 	public static int[] values(int... args)

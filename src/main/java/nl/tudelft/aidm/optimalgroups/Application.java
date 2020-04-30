@@ -12,6 +12,7 @@ import org.sql2o.GenericDatasource;
 import javax.sql.DataSource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.PrintStream;
 
 public class Application
 {
@@ -21,17 +22,14 @@ public class Application
 	public static String preferenceAggregatingMethod = "Copeland";
 	public static final String projectAssignmentAlgorithm = "MaxFlow";
 
-	public static void main(String[] args) {
-		DataSource dataSource;
+	public static void main(String[] args)
+	{
+		DataSource dataSource = dataSourceForCurrentMachine();
 
-		if (false)
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
-		else
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
-
-
-
-//		GroupSizeConstraint.fromDb groupSizeConstraint = new GroupSizeConstraint.fromDb(dataSource, courseEdition);
+		// "Fetch" agents and from DB before loop; they don't change for another iteration
+		CourseEdition courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
+		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
+		System.out.println("Amount of students: " + courseEdition.allAgents().count());
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -40,34 +38,13 @@ public class Application
 		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
 
-		// "Fetch" agents and from DB before loop; they don't change for another iteration
-		CourseEdition courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
-		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
-		System.out.println("Amount of students: " + courseEdition.allAgents().count());
-
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
 
-			System.out.printf("Iteration %d\n", iteration+1);
+			printIterationNumber(iteration);
 
-			GroupFormingAlgorithm formedGroups;
-			if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
-				formedGroups = new CombinedPreferencesGreedy(courseEdition);
-			}
-			else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
-				formedGroups = new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), true);
-			}
-			else {
-				formedGroups = new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), false);
-			}
-
-			GroupProjectMatching groupProjectMatching = null;
-
-			if (projectAssignmentAlgorithm.equals("RSD")) {
-				groupProjectMatching = new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), courseEdition.allProjects());
-			} else {
-				groupProjectMatching = new GroupProjectMaxFlow(formedGroups.asFormedGroups(), courseEdition.allProjects());
-			}
+			GroupFormingAlgorithm formedGroups = formGroups(courseEdition);
+			GroupProjectMatching<Group.FormedGroup> groupProjectMatching = assignGroupsToProjects(courseEdition, formedGroups);
 
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
@@ -105,31 +82,59 @@ public class Application
 		float studentAUPCRAverage = 0;
 		float groupAUPCRAverage = 0;
 		for (int iteration = 0; iteration < iterations; iteration++) {
-			studentAUPCRAverage += studentAUPCRs[iteration];
-			groupAUPCRAverage += groupAUPCRs[iteration];
+			studentAUPCRAverage += studentAUPCRs[iteration] / studentAUPCRs.length;
+			groupAUPCRAverage += groupAUPCRs[iteration] / groupAUPCRs.length;
 		}
 
-		studentAUPCRAverage = studentAUPCRAverage / studentAUPCRs.length;
-		groupAUPCRAverage = groupAUPCRAverage / groupAUPCRs.length;
-
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
-		//groupPreferenceSatisfactionDistribution.printResult();
 		groupPreferenceSatisfactionDistribution.printToTxtFile("outputtxt/groupPreferenceSatisfaction.txt");
-		System.out.println("Average group preference satisfaction: " + groupPreferenceSatisfactionDistribution.average());
+		//groupPreferenceSatisfactionDistribution.printResult();
+
+		printAveragePeerSatisfaction(groupPreferenceSatisfactionDistribution);
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
-		//groupProjectRankDistribution.printResult();
 		groupProjectRankDistribution.printToTxtFile("outputtxt/groupProjectRank.txt");
+		//groupProjectRankDistribution.printResult();
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
-		//studentProjectRankDistribution.printResult();
 		studentProjectRankDistribution.printToTxtFile("outputtxt/studentProjectRank.txt");
+		//studentProjectRankDistribution.printResult();
 
-		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
+		printStudentAupcrAverage(studentAUPCRAverage);
 		writeToFile("outputtxt/studentAUPCR.txt", String.valueOf(studentAUPCRAverage));
 
-		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
+		printGroupAupcrAverage(groupAUPCRAverage);
 		writeToFile("outputtxt/groupAUPCR.txt", String.valueOf(groupAUPCRAverage));
+	}
+
+	private static DataSource dataSourceForCurrentMachine()
+	{
+		if (false)
+			return new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
+		else
+			return new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
+	}
+
+	private static GroupProjectMatching<Group.FormedGroup> assignGroupsToProjects(CourseEdition courseEdition, GroupFormingAlgorithm formedGroups)
+	{
+		if (projectAssignmentAlgorithm.equals("RSD")) {
+			return new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), courseEdition.allProjects());
+		} else {
+			return new GroupProjectMaxFlow(formedGroups.asFormedGroups(), courseEdition.allProjects());
+		}
+	}
+
+	private static GroupFormingAlgorithm formGroups(CourseEdition courseEdition)
+	{
+		if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
+			return new CombinedPreferencesGreedy(courseEdition);
+		}
+		else if (groupMatchingAlgorithm.equals("BEPSysFixed")) {
+			return new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), true);
+		}
+		else {
+			return new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), false);
+		}
 	}
 
 	public static void writeToFile(String fileName, String content) {
@@ -140,5 +145,25 @@ public class Application
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	private static void printIterationNumber(int iteration)
+	{
+		System.out.printf("Iteration %d\n", iteration+1);
+	}
+
+	private static void printAveragePeerSatisfaction(Distribution.AverageDistribution groupPreferenceSatisfactionDistribution)
+	{
+		System.out.println("Average group preference satisfaction: " + groupPreferenceSatisfactionDistribution.average());
+	}
+
+	private static void printGroupAupcrAverage(float groupAUPCRAverage)
+	{
+		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
+	}
+
+	private static PrintStream printStudentAupcrAverage(float studentAUPCRAverage)
+	{
+		return System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 	}
 }
