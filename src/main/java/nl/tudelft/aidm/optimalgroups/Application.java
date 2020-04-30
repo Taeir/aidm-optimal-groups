@@ -7,9 +7,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import org.sql2o.GenericDatasource;
 
-import javax.sql.DataSource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintStream;
@@ -24,12 +22,9 @@ public class Application
 
 	public static void main(String[] args)
 	{
-		DataSource dataSource = dataSourceForCurrentMachine();
-
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
-		CourseEdition courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
-		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
-		System.out.println("Amount of students: " + courseEdition.allAgents().count());
+		CourseEdition courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+		printCourseEditionInfo(courseEdition);
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -107,12 +102,10 @@ public class Application
 		writeToFile("outputtxt/groupAUPCR.txt", String.valueOf(groupAUPCRAverage));
 	}
 
-	private static DataSource dataSourceForCurrentMachine()
+	private static void printCourseEditionInfo(CourseEdition courseEdition)
 	{
-		if (false)
-			return new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
-		else
-			return new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
+		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
+		System.out.println("Amount of students: " + courseEdition.allAgents().count());
 	}
 
 	private static GroupProjectMatching<Group.FormedGroup> assignGroupsToProjects(CourseEdition courseEdition, GroupFormingAlgorithm formedGroups)
@@ -162,8 +155,8 @@ public class Application
 		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
 	}
 
-	private static PrintStream printStudentAupcrAverage(float studentAUPCRAverage)
+	private static void printStudentAupcrAverage(float studentAUPCRAverage)
 	{
-		return System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
+		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 	}
 }

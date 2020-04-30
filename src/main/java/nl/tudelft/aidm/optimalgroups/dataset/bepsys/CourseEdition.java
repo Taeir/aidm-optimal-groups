@@ -7,6 +7,8 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.project.ProjectsInDb;
+import nl.tudelft.aidm.optimalgroups.support.Hostname;
+import org.sql2o.GenericDatasource;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
@@ -39,6 +41,11 @@ public class CourseEdition implements DatasetContext
 
 		this.agents = fetchAgents(dataSource, this);
 		this.projects = fetchProjects(dataSource, this);
+	}
+
+	public static CourseEdition fromLocalBepSysDbSnapshot(int courseEditionId)
+	{
+		return CourseEdition.fromBepSysDatabase(dataSourceToLocalDb(), courseEditionId);
 	}
 
 	public static CourseEdition fromBepSysDatabase(DataSource dataSource, int courseEditionId)
@@ -132,6 +139,19 @@ public class CourseEdition implements DatasetContext
 			);
 
 			return new ProjectsInDb(projectsAsList, courseEdition);
+		}
+	}
+
+	private static DataSource dataSourceToLocalDb()
+	{
+		switch (Hostname.ofThisMachine().toString())
+		{
+			case "COOLICER-DESK":
+				return new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
+			case "philipe-laptop":
+				return new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
+			default:
+				throw new RuntimeException("Unknown machine, don't know connection string to DB");
 		}
 	}
 }

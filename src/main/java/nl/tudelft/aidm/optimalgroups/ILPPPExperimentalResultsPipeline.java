@@ -21,19 +21,13 @@ public class ILPPPExperimentalResultsPipeline
 	public static String projectAssignmentAlgorithm = "";
 
 	public static void main(String[] args) {
-		DataSource dataSource;
-
-		if (true)
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
-		else
-			dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/bepsys?serverTimezone=UTC", "root", "");
 
 		groupMatchingAlgorithm = "BEPSysFixed";
 		projectAssignmentAlgorithm = "ILPPP";
 
 		for (int courseEditionId : values(/*3, 4,*/ 10))
 		{
-			var courseEdition = CourseEdition.fromBepSysDatabase(dataSource, courseEditionId);
+			var courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
 
 			StudentProjectMaxFlowMatching.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
 			for (var preferenceAggregatingMethod : values(/*"Copeland",*/ "Borda"))
@@ -128,15 +122,15 @@ public class ILPPPExperimentalResultsPipeline
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
 //		groupPreferenceSatisfactionDistribution.printResult();
-		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_%s_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
 //		groupProjectRankDistribution.printResult();
-		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_%s_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
 //		studentProjectRankDistribution.printResult();
-		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_CE%d_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_%s_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		System.out.printf("\n\tstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("\tgroup AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
