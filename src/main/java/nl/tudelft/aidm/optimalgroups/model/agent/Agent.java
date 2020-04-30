@@ -105,4 +105,12 @@ public abstract class Agent
 //			);
 //		}
 	}
+
+	public static class AgentInDatacontext extends Agent
+	{
+		public AgentInDatacontext(Integer id, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
+		{
+			super(id, projectPreference, groupPreference, context);
+		}
+	}
 }

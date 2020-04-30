@@ -27,6 +27,9 @@ dependencies {
     implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c06314770ed'
     implementation 'com.github.PhilipeLouchtch:plouchtch-lib-java:d1fd8c41d'
 
+    implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+
+
     compile 'com.google.protobuf:protobuf-java:3.0.0'
     compile files('lib/jniortools.dll')
     compile files('lib/ortools.lib')

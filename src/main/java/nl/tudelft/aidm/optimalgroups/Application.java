@@ -2,15 +2,17 @@ package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.PrintStream;
 
 public class Application
 {
@@ -23,8 +25,9 @@ public class Application
 	public static void main(String[] args)
 	{
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
-		CourseEdition courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-		printCourseEditionInfo(courseEdition);
+//		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+		DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.basic(4,5));
+		printDatasetInfo(datasetContext);
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -38,8 +41,8 @@ public class Application
 
 			printIterationNumber(iteration);
 
-			GroupFormingAlgorithm formedGroups = formGroups(courseEdition);
-			GroupProjectMatching<Group.FormedGroup> groupProjectMatching = assignGroupsToProjects(courseEdition, formedGroups);
+			GroupFormingAlgorithm formedGroups = formGroups(datasetContext);
+			GroupProjectMatching<Group.FormedGroup> groupProjectMatching = assignGroupsToProjects(datasetContext, formedGroups);
 
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
@@ -50,19 +53,19 @@ public class Application
 			Profile groupProfile = new Profile.GroupProjectProfile(matching);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, courseEdition.allProjects(), courseEdition.allAgents());
+			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//studentAUPCR.printResult();
 
-			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, courseEdition.allProjects(), courseEdition.allAgents());
+			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//groupAUPCR.printResult();
 
 			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, courseEdition.allProjects());
+			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, datasetContext.allProjects());
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, courseEdition.allProjects());
+			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, datasetContext.allProjects());
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics
@@ -102,22 +105,22 @@ public class Application
 		writeToFile("outputtxt/groupAUPCR.txt", String.valueOf(groupAUPCRAverage));
 	}
 
-	private static void printCourseEditionInfo(CourseEdition courseEdition)
+	private static void printDatasetInfo(DatasetContext courseEdition)
 	{
 		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
 		System.out.println("Amount of students: " + courseEdition.allAgents().count());
 	}
 
-	private static GroupProjectMatching<Group.FormedGroup> assignGroupsToProjects(CourseEdition courseEdition, GroupFormingAlgorithm formedGroups)
+	private static GroupProjectMatching<Group.FormedGroup> assignGroupsToProjects(DatasetContext datasetContext, GroupFormingAlgorithm formedGroups)
 	{
 		if (projectAssignmentAlgorithm.equals("RSD")) {
-			return new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), courseEdition.allProjects());
+			return new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), datasetContext.allProjects());
 		} else {
-			return new GroupProjectMaxFlow(formedGroups.asFormedGroups(), courseEdition.allProjects());
+			return new GroupProjectMaxFlow(formedGroups.asFormedGroups(), datasetContext.allProjects());
 		}
 	}
 
-	private static GroupFormingAlgorithm formGroups(CourseEdition courseEdition)
+	private static GroupFormingAlgorithm formGroups(DatasetContext courseEdition)
 	{
 		if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
 			return new CombinedPreferencesGreedy(courseEdition);
