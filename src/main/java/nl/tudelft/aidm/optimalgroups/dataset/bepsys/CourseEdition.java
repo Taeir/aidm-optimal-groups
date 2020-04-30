@@ -103,9 +103,10 @@ public class CourseEdition implements DatasetContext
 		var sql2o = new Sql2o(dataSource);
 		try (var connection = sql2o.open())
 		{
-			var query = connection.createQuery("SELECT distinct cp.user_id as user_id\n" +
-				"FROM course_participations cp \n" +
-				"WHERE cp.course_edition_id = :courseEditionId")
+			var query = connection.createQuery("SELECT distinct user_id as user_id " +
+				"FROM course_participations " +
+				"WHERE course_edition_id = :courseEditionId"
+			)
 				.addParameter("courseEditionId", courseEdition.bepSysId());
 
 			List<Integer> userIds = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("user_id"));
