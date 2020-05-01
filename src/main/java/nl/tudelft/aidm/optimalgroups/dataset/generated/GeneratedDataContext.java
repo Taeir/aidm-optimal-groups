@@ -9,6 +9,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
@@ -24,7 +25,8 @@ public class GeneratedDataContext implements DatasetContext
 	{
 		this.groupSizeConstraint = groupSizeConstraint;
 
-		id = String.format("DC[RND_a%s_p%s_%s]_GSC%s", numAgents, numProjects, Instant.now().getEpochSecond(), groupSizeConstraint);
+		var hexEpochSeconds = Long.toHexString(Instant.now().getEpochSecond());
+		id = String.format("DC[RND_a%s_p%s_%s]_%s", numAgents, numProjects, hexEpochSeconds, groupSizeConstraint);
 
 		projects = Projects.from(
 			IntStream.rangeClosed(1, numProjects)

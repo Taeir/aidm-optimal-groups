@@ -43,7 +43,7 @@ public class GroupSizeConstraintBepSys implements GroupSizeConstraint
 	@Override
 	public String toString()
 	{
-		return String.format("gsc [%s,%s]", minSize(), maxSize());
+		return String.format("GSC[%s,%s]", minSize(), maxSize());
 	}
 
 	private void fetchValuesFromDb()

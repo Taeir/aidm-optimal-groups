@@ -28,6 +28,7 @@ dependencies {
     implementation 'com.github.PhilipeLouchtch:plouchtch-lib-java:d1fd8c41d'
 
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
 
 
     compile 'com.google.protobuf:protobuf-java:3.0.0'

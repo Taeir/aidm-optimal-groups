@@ -87,7 +87,7 @@ public interface Project
 		@Override
 		public String toString()
 		{
-			return "Project: " + id();
+			return "proj(" + id() + ")";
 		}
 
 		@Override
