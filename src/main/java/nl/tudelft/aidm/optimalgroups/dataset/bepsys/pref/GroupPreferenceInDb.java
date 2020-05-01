@@ -71,7 +71,7 @@ public class GroupPreferenceInDb implements GroupPreference
 		{
 			Query query = conn.createQuery(sql)
 				.addParameter("userId", userId)
-				.addParameter("courseEditionId", courseEdition);
+				.addParameter("courseEditionId", courseEdition.bepSysId());
 
 			List<Integer> preferredStudents = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("student_id"));
 			return preferredStudents;
