@@ -2,10 +2,12 @@ package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -27,21 +29,22 @@ public class ILPPPExperimentalResultsPipeline
 
 		for (int courseEditionId : values(/*3, 4,*/ 10))
 		{
-			var courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+//			var courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+			DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.basic(4,5));
 
 			StudentProjectMaxFlowMatching.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
 			for (var preferenceAggregatingMethod : values(/*"Copeland",*/ "Borda"))
 			{
 				Application.preferenceAggregatingMethod = preferenceAggregatingMethod;
 
-				System.out.printf("ILPPP %s CE %s, start: %d\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
-				henk(courseEdition, 1);
-				System.out.printf("ILPPP %s CE %s, end: %d\n\n\n", preferenceAggregatingMethod, courseEdition.identifier(), Instant.now().getEpochSecond());
+				System.out.printf("ILPPP %s CE %s, start: %d\n", preferenceAggregatingMethod, datasetContext.identifier(), Instant.now().getEpochSecond());
+				henk(datasetContext, 1);
+				System.out.printf("ILPPP %s CE %s, end: %d\n\n\n", preferenceAggregatingMethod, datasetContext.identifier(), Instant.now().getEpochSecond());
 			}
 		}
 	}
 
-	public static void henk(CourseEdition courseEdition, int iterations)
+	public static void henk(DatasetContext datasetContext, int iterations)
 	{
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -50,9 +53,9 @@ public class ILPPPExperimentalResultsPipeline
 		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
 
-		Agents agents = courseEdition.allAgents();
-		Projects projects = courseEdition.allProjects();
-		GroupSizeConstraint groupSizeConstraint = courseEdition.groupSizeConstraint();
+		Agents agents = datasetContext.allAgents();
+		Projects projects = datasetContext.allProjects();
+		GroupSizeConstraint groupSizeConstraint = datasetContext.groupSizeConstraint();
 
 		System.out.println("Amount of projects: " + projects.count());
 		System.out.println("Amount of students: " + agents.count());
@@ -78,7 +81,7 @@ public class ILPPPExperimentalResultsPipeline
 //			}
 
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
-			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(courseEdition);
+			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
 			Profile studentProfile = new Profile.StudentProjectProfile(matching);
 			//studentProfile.printResult();
@@ -122,15 +125,15 @@ public class ILPPPExperimentalResultsPipeline
 
 		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
 //		groupPreferenceSatisfactionDistribution.printResult();
-		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_%s_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_%s_Group%s_Preference%s_Project%s.txt", datasetContext.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
 //		groupProjectRankDistribution.printResult();
-		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_%s_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_%s_Group%s_Preference%s_Project%s.txt", datasetContext.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
 //		studentProjectRankDistribution.printResult();
-		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_%s_Group%s_Preference%s_Project%s.txt", courseEdition.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
+		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_%s_Group%s_Preference%s_Project%s.txt", datasetContext.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
 		System.out.printf("\n\tstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
 		System.out.printf("\tgroup AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);

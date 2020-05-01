@@ -9,6 +9,7 @@ import nl.tudelft.aidm.optimalgroups.metric.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.match.GroupToProjectMatch;
@@ -55,11 +56,11 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 		return;
 	}
 
-	public ILPPPDeterminedMatching(CourseEdition courseEdition)
+	public ILPPPDeterminedMatching(DatasetContext datasetContext)
 	{
-		this.agents = courseEdition.allAgents();
-		this.projects = courseEdition.allProjects();
-		this.groupSizeConstraint = courseEdition.groupSizeConstraint();
+		this.agents = datasetContext.allAgents();
+		this.projects = datasetContext.allProjects();
+		this.groupSizeConstraint = datasetContext.groupSizeConstraint();
 	}
 
 	@Override
