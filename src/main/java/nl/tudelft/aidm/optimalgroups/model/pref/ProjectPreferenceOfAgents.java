@@ -75,7 +75,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 	}
 
 	@Override
-	public void forEach(ProjectPreferenceConsumer iter)
+	public void forEach(ProjectPreferenceIdRankConsumer iter)
 	{
 		Integer[] prefs = asArray();
 		for (int i = 0; i < prefs.length; i++)

@@ -21,7 +21,7 @@ public class SequentualProjectsPreference implements ProjectPreference
 		var originalProfile = projectPreference.asArray();
 		var remappedProfile = new Integer[originalProfile.length];
 
-		projectPreference.forEach((projectId, rank) -> {
+		projectPreference.forEach((int projectId, int rank) -> {
 			var origProject = new Project.withDefaultSlots(projectId);
 			var remapped = sequentualProjects.correspondingSequentualProject(origProject);
 

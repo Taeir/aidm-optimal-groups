@@ -5,17 +5,19 @@ public interface GroupSizeConstraint
 	int minSize();
 	int maxSize();
 
-	static GroupSizeConstraint basic(int min, int max)
+	String toString();
+
+	static GroupSizeConstraint manual(int min, int max)
 	{
-		return new GroupSizeConstraint.Basic(min, max);
+		return new Manual(min, max);
 	}
 
-	class Basic implements GroupSizeConstraint
+	class Manual implements GroupSizeConstraint
 	{
 		private final int min;
 		private final int max;
 
-		public Basic(int min, int max)
+		public Manual(int min, int max)
 		{
 			this.min = min;
 			this.max = max;
@@ -31,6 +33,12 @@ public interface GroupSizeConstraint
 		public int maxSize()
 		{
 			return max;
+		}
+
+		@Override
+		public String toString()
+		{
+			return String.format("GSC[%s,%s]", minSize(), maxSize());
 		}
 	}
 }

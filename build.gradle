@@ -30,7 +30,9 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
 
+    implementation 'org.jfree:jfreechart:1.5.0'
 
+    /* GOOGLE-OR TOOLS Stuff */
     compile 'com.google.protobuf:protobuf-java:3.0.0'
     compile files('lib/jniortools.dll')
     compile files('lib/ortools.lib')
@@ -40,6 +42,7 @@ dependencies {
 //    runtime files('lib/')
 
     implementation 'edu.princeton.cs:algs4:1.0.4'
+
     implementation 'org.sql2o:sql2o:1.6.0'
     implementation 'mysql:mysql-connector-java:8.0.16'
 }

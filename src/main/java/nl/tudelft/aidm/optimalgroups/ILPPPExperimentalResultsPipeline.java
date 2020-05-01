@@ -6,15 +6,12 @@ import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import org.sql2o.GenericDatasource;
 
-import javax.sql.DataSource;
 import java.time.Instant;
 
 public class ILPPPExperimentalResultsPipeline
@@ -30,7 +27,7 @@ public class ILPPPExperimentalResultsPipeline
 		for (int courseEditionId : values(/*3, 4,*/ 10))
 		{
 //			var courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-			DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.basic(4,5));
+			DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.manual(4,5));
 
 			StudentProjectMaxFlowMatching.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
 			for (var preferenceAggregatingMethod : values(/*"Copeland",*/ "Borda"))

@@ -109,7 +109,7 @@ public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGro
 			groups.forEach(group -> {
 
 				ProjectPreference projectPreference = group.content().projectPreference();
-				projectPreference.forEach((projectId, rank) -> {
+				projectPreference.forEach((int projectId, int rank) -> {
 					List<Vertex<ProjectVertexContent>> projectSlotVertices = projects.slotVerticesForProject(projectId);
 
 					projectSlotVertices.forEach(projectSlotVertex -> {

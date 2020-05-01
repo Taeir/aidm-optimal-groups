@@ -204,7 +204,7 @@ public class StudentProjectMaxFlowMatching implements StudentProjectMatching //i
 				else {
 					// Note: if student is missing projects from the profile, no edge will be created
 					// therefore projects that are missing from the pref profile are counted as "do not want"
-					student.projectPreference.forEach((projectId, rank) -> {
+					student.projectPreference.forEach((int projectId, int rank) -> {
 						projectVertices.findForProject(projectId)
 							.ifPresent(projectVertex -> {
 								var edge = DirectedWeightedEdge.between(studentVertex, projectVertex, rank);

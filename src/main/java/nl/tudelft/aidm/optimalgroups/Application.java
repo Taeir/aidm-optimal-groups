@@ -2,9 +2,9 @@ package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
@@ -25,9 +25,12 @@ public class Application
 	public static void main(String[] args)
 	{
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
-//		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-		DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.basic(4,5));
+		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+//		DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.manual(4,5));
 		printDatasetInfo(datasetContext);
+
+		var pairwiseVictoriesOverAllAgents = ProjectPreferencePairwiseVictories.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
+		pairwiseVictoriesOverAllAgents.drawAsChart();
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
