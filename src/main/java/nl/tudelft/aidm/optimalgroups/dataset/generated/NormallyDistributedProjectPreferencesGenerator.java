@@ -5,17 +5,27 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.random.RandomDataGenerator;
 import org.apache.commons.math3.util.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NormallyDistributedProjectPreferencesGenerator implements PreferenceGenerator
 {
 	private final Projects projects;
 	private final List<Pair<Project, Double>> pmf;
 
-	public NormallyDistributedProjectPreferencesGenerator(Projects projects)
+	/**
+	 * Creates a new Normally Distributed ProjectPreferences Generator. It generates ProjectPreferences
+	 * where in the projects rank is related to the probability of that project.
+	 * @param projects The projects for which the preferences are generated
+	 * @param curveSteepness Used to calculate the stdDev, high values result in steep and narrow bells.
+	 *                       In other words, narrows the projects that have high change of ending up top picks
+	 *                       while the rest becomes "noise" or relatively uniform
+	 */
+	public NormallyDistributedProjectPreferencesGenerator(Projects projects, double curveSteepness)
 	{
 		this.projects = projects;
 
@@ -24,7 +34,7 @@ public class NormallyDistributedProjectPreferencesGenerator implements Preferenc
 		//     - map projects from 0 to mean along the x-axis, but in an anonymous way
 		// Make EnumeratedDistribution with the <Project,probability[0,1]> pairs
 
-		var distrib = new NormalDistribution(projects.count(), projects.count() / 4.0);
+		var distrib = new NormalDistribution(projects.count(), projects.count() / curveSteepness);
 
 
 		var data = new ArrayList<>(projects.asCollection());

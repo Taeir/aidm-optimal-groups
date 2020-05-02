@@ -44,16 +44,25 @@ public interface Project
 		}
 	}
 
+	class ProjectsWithDefaultSlotAmount extends ProjectWithStaticSlotAmount
+	{
+		private final static int DEFAULT_NUM_SLOTS_VALUE = 5;
+
+		public ProjectsWithDefaultSlotAmount(int id)
+		{
+			super(id, DEFAULT_NUM_SLOTS_VALUE);
+		}
+	}
+
 	/**
 	 * Project with a default / hardcoded amount of slots
 	 */
-	class withDefaultSlots implements Project
+	class ProjectWithStaticSlotAmount implements Project
 	{
-		private final static int numSlots = 5;
 		private int id;
 		private List<ProjectSlot> slots;
 
-		public withDefaultSlots(int id)
+		public ProjectWithStaticSlotAmount(int id, int numSlots)
 		{
 			this.id = id;
 

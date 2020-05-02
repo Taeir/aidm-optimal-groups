@@ -36,7 +36,7 @@ public class ILPPPExperimentalResultsPipeline
 		for (int courseEditionId : values(/*3, 4,*/ 10))
 		{
 //			var courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-			DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.manual(4,5));
+			DatasetContext datasetContext = GeneratedDataContext.withNormallyDistributedProjectPreferences(150, 40, GroupSizeConstraint.manual(4,5), 4.0);
 
 			StudentProjectMaxFlowMatching.flushCache(); // it's ok to reuse cache between aggregating methods - they don't impact maxflow! but dp flush between course editions just in case
 			for (var preferenceAggregatingMethod : values(/*"Copeland",*/ "Borda"))

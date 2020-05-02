@@ -1,17 +1,13 @@
 package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientStudentRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProfileCurveOfMatching;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
@@ -37,12 +33,12 @@ public class Application
 	public static void main(String[] args)
 	{
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
-		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-//		DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.manual(4,5));
+//		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+		DatasetContext datasetContext = GeneratedDataContext.withNormallyDistributedProjectPreferences(150, 40, GroupSizeConstraint.manual(4,5), 8);
 		printDatasetInfo(datasetContext);
 
 		var pairwiseVictoriesOverAllAgents = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
-//		pairwiseVictoriesOverAllAgents.displayChart();
+		pairwiseVictoriesOverAllAgents.displayChart();
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];

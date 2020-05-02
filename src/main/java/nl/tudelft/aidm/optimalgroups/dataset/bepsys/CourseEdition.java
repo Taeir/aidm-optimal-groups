@@ -135,7 +135,7 @@ public class CourseEdition implements DatasetContext
 
 			List<Project> projectsAsList = query.executeAndFetch(
 				(ResultSetHandler<Project>) rs ->
-					new Project.withDefaultSlots(rs.getInt("id"))
+					new Project.ProjectsWithDefaultSlotAmount(rs.getInt("id"))
 			);
 
 			return new ProjectsInDb(projectsAsList, courseEdition);

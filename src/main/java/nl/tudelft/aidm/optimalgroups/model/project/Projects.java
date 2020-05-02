@@ -2,6 +2,8 @@ package nl.tudelft.aidm.optimalgroups.model.project;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public interface Projects
 {
@@ -37,6 +39,17 @@ public interface Projects
 	static Projects from(Collection<Project> projects)
 	{
 		return new ListBasedProjects.ListBasedProjectsImpl(new ArrayList<>(projects));
+	}
+
+	static Projects generated(int numProjects, int numSlots)
+	{
+		var projects = Projects.from(
+			IntStream.rangeClosed(1, numProjects)
+				.mapToObj(i -> new Project.ProjectWithStaticSlotAmount(i, numSlots))
+				.collect(Collectors.toList())
+		);
+
+		return projects;
 	}
 
 

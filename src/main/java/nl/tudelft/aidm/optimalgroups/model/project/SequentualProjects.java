@@ -61,7 +61,7 @@ public class SequentualProjects extends ListBasedProjects
 		return projectsInMonotonicSequence;
 	}
 
-	public static class SequencedProject extends Project.withDefaultSlots
+	public static class SequencedProject extends Project.ProjectsWithDefaultSlotAmount
 	{
 		private final Project originalProject;
 

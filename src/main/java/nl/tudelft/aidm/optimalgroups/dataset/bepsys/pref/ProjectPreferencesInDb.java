@@ -54,7 +54,7 @@ public class ProjectPreferencesInDb implements ProjectPreference
 
 			var projectsInSubmittedPreferences = Projects.from(
 				Arrays.stream(submittedPreferencesOfAgentAsProjectIds).boxed()
-					.map(Project.withDefaultSlots::new).collect(Collectors.toList())
+					.map(Project.ProjectsWithDefaultSlotAmount::new).collect(Collectors.toList())
 			);
 
 			var allProjects = courseEdition.allProjects();
