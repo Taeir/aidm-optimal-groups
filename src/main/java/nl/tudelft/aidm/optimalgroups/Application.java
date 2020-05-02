@@ -61,8 +61,8 @@ public class Application
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
 
-//			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matching);
-//			studentProfileCurve.printResult(System.out);
+			var studentProfileCurve = new ProjectProfileCurveStudents(matching);
+			studentProfileCurve.displayChart();
 
 //			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
 //			groupProfile.printResult();
