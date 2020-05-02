@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
@@ -34,8 +35,8 @@ public class Application
 	public static void main(String[] args)
 	{
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
-//		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-		DatasetContext datasetContext = new GeneratedDataContext(1000, 40, GroupSizeConstraint.manual(4,5));
+		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+//		DatasetContext datasetContext = new GeneratedDataContext(1000, 40, GroupSizeConstraint.manual(4,5));
 		printDatasetInfo(datasetContext);
 
 		var pairwiseVictoriesOverAllAgents = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
@@ -59,11 +60,11 @@ public class Application
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
 
-			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matching);
-			studentProfileCurve.printResult(System.out);
+//			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matching);
+//			studentProfileCurve.printResult(System.out);
 
-			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
-			//groupProfile.printResult();
+//			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
+//			groupProfile.printResult();
 
 			AUPCR studentAUPCR = new AUPCRStudent(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//studentAUPCR.printResult();
