@@ -3,10 +3,12 @@ package nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned;
 import nl.tudelft.aidm.optimalgroups.metric.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AssignedProjectRankGroup
 {
@@ -37,5 +39,11 @@ public class AssignedProjectRankGroup
 		return match.from().members().asCollection().stream()
 			.map(student -> new AssignedProjectRankStudent(student, match.to()))
 			.collect(Collectors.toList());
+	}
+
+	public static Stream<AssignedProjectRankGroup> ranksOf(Matching<Group.FormedGroup, Project> matching)
+	{
+		return matching.asList().stream()
+			.map(AssignedProjectRankGroup::new);
 	}
 }

@@ -2,8 +2,12 @@ package nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned;
 
 import nl.tudelft.aidm.optimalgroups.metric.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
+import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+
+import java.util.stream.Stream;
 
 public class AssignedProjectRankStudent
 {
@@ -35,5 +39,12 @@ public class AssignedProjectRankStudent
 
 		int rank = new RankInArray().determineRank(projectId, student.projectPreference.asArray());
 		return rank;
+	}
+
+	public static Stream<AssignedProjectRankStudent> ranksOf(Matching<Group.FormedGroup, Project> matching)
+	{
+		return matching.asList().stream()
+			.flatMap(match -> match.from().members().asCollection().stream().map(member -> new AgentToProjectMatch(member, match.to())))
+			.map(AssignedProjectRankStudent::new);
 	}
 }

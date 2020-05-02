@@ -1,15 +1,17 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching;
 
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-public class WorstRankOfGroup
+public class WorstAssignedProjectRankOfStudents
 {
 	private final Matching<Group.FormedGroup, Project> matching;
 	private Integer asInt = null;
 
-	public WorstRankOfGroup(Matching<Group.FormedGroup, Project> matching)
+	public WorstAssignedProjectRankOfStudents(Matching<Group.FormedGroup, Project> matching)
 	{
 		this.matching = matching;
 	}
@@ -25,10 +27,9 @@ public class WorstRankOfGroup
 
 	private Integer calculate()
 	{
-		var worst = matching.asList().stream()
-			.mapToInt(formedGroupProjectMatch -> formedGroupProjectMatch.from().projectPreference().rankOf(formedGroupProjectMatch.to()))
-			.max()
-			.getAsInt();
+		var worst = AssignedProjectRankStudent.ranksOf(matching)
+			.mapToInt(AssignedProjectRankStudent::studentsRank)
+			.max().getAsInt();
 
 		return worst;
 	}

@@ -6,33 +6,37 @@ import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-public class WorstRankOfStudent
+public class AvgGroupProjectRankings
 {
 	private final Matching<Group.FormedGroup, Project> matching;
-	private Integer asInt = null;
+	private Double asDouble = null;
 
-	public WorstRankOfStudent(Matching<Group.FormedGroup, Project> matching)
+	public AvgGroupProjectRankings(Matching<Group.FormedGroup, Project> matching)
 	{
 		this.matching = matching;
 	}
 
-	public Integer asInt()
+	public Double asDouble()
 	{
-		if (asInt == null) {
-			asInt = calculate();
+		if (asDouble == null) {
+			asDouble = calculate();
 		}
 
-		return asInt;
+		return asDouble;
 	}
 
-	private Integer calculate()
+	private Double calculate()
 	{
-		var worst = matching.asList().stream()
+		var sum = matching.asList().stream()
 			.flatMap(match -> match.from().members().asCollection().stream().map(member -> new AgentToProjectMatch(member, match.to())))
 			.map(AssignedProjectRankStudent::new)
 			.mapToInt(AssignedProjectRankStudent::studentsRank)
-			.max().getAsInt();
+			.sum() * 1.0;
 
-		return worst;
+		var numStudents = matching.asList().stream()
+			.mapToInt(match -> match.from().members().count())
+			.sum() * 1.0;
+
+		return sum / numStudents;
 	}
 }
