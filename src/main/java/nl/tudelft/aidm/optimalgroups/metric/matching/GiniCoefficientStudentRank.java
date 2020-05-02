@@ -1,7 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching;
 
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
@@ -18,25 +17,25 @@ public class GiniCoefficientStudentRank
 
 	public GiniCoefficientStudentRank(Matching<Group.FormedGroup, Project> matching)
 	{
-		int maxRank = matching.asList().get(0).from().members().asCollection().toArray(Agent[]::new)[0].projectPreference.asArray().length + 1;
+		int worstRank = new WorstRankOfStudent(matching).asInt();
 
-		var ranks = matching.asList().stream()
+		var welfare = matching.asList().stream()
 			.flatMap(match -> match.from().members().asCollection().stream().map(member -> new AgentToProjectMatch(member, match.to())))
 			.map(AssignedProjectRankStudent::new)
 			.map(AssignedProjectRankStudent::studentsRank)
-//			.map(rank -> maxRank - rank)
+			.map(rank -> worstRank - rank)
 			.collect(Collectors.toList());
 
-		var sumAbsDiff = ranks.stream().flatMap(i ->
-				ranks.stream().map(j ->
+		var sumAbsDiff = welfare.stream().flatMap(i ->
+				welfare.stream().map(j ->
 					Math.abs(i - j)
 			))
 			.mapToInt(Integer::intValue) // for sum method of IntStream
 			.sum();
 
-		int n = ranks.size();
-		int sum = ranks.stream().mapToInt(Integer::intValue).sum();
-		this.giniCoefficient = sumAbsDiff / (2.0 * n * sum);
+		int n = welfare.size();
+		int sum = welfare.stream().mapToInt(Integer::intValue).sum();
+		this.giniCoefficient = 1 - sumAbsDiff / (2.0 * n * sum);
 	}
 
 	public Double asDouble()

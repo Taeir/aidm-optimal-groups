@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
@@ -37,11 +38,11 @@ public class Application
 	{
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
 		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-//		DatasetContext datasetContext = new GeneratedDataContext(1000, 40, GroupSizeConstraint.manual(4,5));
+//		DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.manual(4,5));
 		printDatasetInfo(datasetContext);
 
 		var pairwiseVictoriesOverAllAgents = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
-		pairwiseVictoriesOverAllAgents.displayChart();
+//		pairwiseVictoriesOverAllAgents.displayChart();
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -56,10 +57,11 @@ public class Application
 			printIterationNumber(iteration);
 
 			GroupFormingAlgorithm formedGroups = formGroups(datasetContext);
-			GroupProjectMatching<Group.FormedGroup> groupProjectMatching = assignGroupsToProjects(datasetContext, formedGroups);
+			GroupProjectMatching<Group.FormedGroup> groupProjectMatching =  assignGroupsToProjects(datasetContext, formedGroups);
 
-			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
+
+//			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
 			var studentProfileCurve = new ProjectProfileCurveStudents(matching);
 			studentProfileCurve.displayChart();
