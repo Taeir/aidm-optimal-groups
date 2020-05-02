@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project.da;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
-import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;

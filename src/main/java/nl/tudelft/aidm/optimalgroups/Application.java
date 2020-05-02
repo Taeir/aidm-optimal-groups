@@ -2,9 +2,18 @@ package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
+import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
+import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProfileCurveOfMatching;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroupDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudentDistribution;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
@@ -17,7 +26,7 @@ import java.io.FileWriter;
 public class Application
 {
 	public static final int courseEditionId = 10;
-	public static final int iterations = 10;
+	public static final int iterations = 1;
 	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
 	public static String preferenceAggregatingMethod = "Copeland";
 	public static final String projectAssignmentAlgorithm = "MaxFlow";
@@ -25,12 +34,12 @@ public class Application
 	public static void main(String[] args)
 	{
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
-		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-//		DatasetContext datasetContext = new GeneratedDataContext(150, 40, GroupSizeConstraint.manual(4,5));
+//		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
+		DatasetContext datasetContext = new GeneratedDataContext(1000, 40, GroupSizeConstraint.manual(4,5));
 		printDatasetInfo(datasetContext);
 
-		var pairwiseVictoriesOverAllAgents = ProjectPreferencePairwiseVictories.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
-		pairwiseVictoriesOverAllAgents.drawAsChart();
+		var pairwiseVictoriesOverAllAgents = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
+		pairwiseVictoriesOverAllAgents.displayChart();
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -50,16 +59,16 @@ public class Application
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
 
-			Profile studentProfile = new Profile.StudentProjectProfile(matching);
-			//studentProfile.printResult();
+			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matching);
+			studentProfileCurve.printResult(System.out);
 
-			Profile groupProfile = new Profile.GroupProjectProfile(matching);
+			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, datasetContext.allProjects(), datasetContext.allAgents());
+			AUPCR studentAUPCR = new AUPCRStudent(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//studentAUPCR.printResult();
 
-			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, datasetContext.allProjects(), datasetContext.allAgents());
+			AUPCR groupAUPCR = new AUPCRGroup(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//groupAUPCR.printResult();
 
 			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
@@ -158,11 +167,11 @@ public class Application
 
 	private static void printGroupAupcrAverage(float groupAUPCRAverage)
 	{
-		System.out.printf("group AUPCR average over %d iterations: %f\n", iterations, groupAUPCRAverage);
+		System.out.printf("AUPCR - Group aggregate pref (average over %d iterations: %f)\n", iterations, groupAUPCRAverage);
 	}
 
 	private static void printStudentAupcrAverage(float studentAUPCRAverage)
 	{
-		System.out.printf("\n\nstudent AUPCR average over %d iterations: %f\n", iterations, studentAUPCRAverage);
+		System.out.printf("AUPCR - Individual student   (average over %d iterations: %f)\n", iterations, studentAUPCRAverage);
 	}
 }

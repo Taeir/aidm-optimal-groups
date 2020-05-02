@@ -1,5 +1,6 @@
-package nl.tudelft.aidm.optimalgroups.metric;
+package nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned;
 
+import nl.tudelft.aidm.optimalgroups.metric.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 

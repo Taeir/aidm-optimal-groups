@@ -9,10 +9,8 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.time.Instant;
-import java.util.Base64;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
 
 public class GeneratedDataContext implements DatasetContext
 {
@@ -34,7 +32,7 @@ public class GeneratedDataContext implements DatasetContext
 				.collect(Collectors.toList())
 		);
 
-		var generator = new SimpleSinglePeakedGenerator(projects);
+		var generator = new NormallyDistributedProjectPreferencesGenerator(projects);
 		agents = Agents.from(
 			IntStream.rangeClosed(1, numAgents)
 				.mapToObj(i -> new Agent.AgentInDatacontext(i, generator.generateNew(), GroupPreference.none(), this))

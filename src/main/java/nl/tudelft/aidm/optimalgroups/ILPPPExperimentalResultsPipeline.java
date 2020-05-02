@@ -4,6 +4,15 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMat
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
+import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProfileCurveOfMatching;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroupDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudentDistribution;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -80,16 +89,16 @@ public class ILPPPExperimentalResultsPipeline
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
-			Profile studentProfile = new Profile.StudentProjectProfile(matching);
+			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matching);
 			//studentProfile.printResult();
 
-			Profile groupProfile = new Profile.GroupProjectProfile(matching);
+			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCR.StudentAUPCR(matching, projects, agents);
+			AUPCR studentAUPCR = new AUPCRStudent(matching, projects, agents);
 			//studentAUPCR.printResult();
 
-			AUPCR groupAUPCR = new AUPCR.GroupAUPCR(matching, projects, agents);
+			AUPCR groupAUPCR = new AUPCRGroup(matching, projects, agents);
 			//groupAUPCR.printResult();
 
 			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);

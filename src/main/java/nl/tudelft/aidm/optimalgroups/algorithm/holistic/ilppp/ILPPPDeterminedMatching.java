@@ -3,9 +3,10 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
-import nl.tudelft.aidm.optimalgroups.metric.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.AssignedProjectRankGroup;
-import nl.tudelft.aidm.optimalgroups.metric.GroupPreferenceSatisfaction;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
@@ -166,7 +167,7 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 			var matching = StudentProjectMaxFlowMatching.of(agents, projects, groupSizeConstraint.maxSize());
 
 			SingleGroupPerProjectMatching singleGroup = new SingleGroupPerProjectMatching(matching);
-			var metric = new AUPCR.StudentAUPCR(singleGroup, projects, agents);
+			var metric = new AUPCRStudent(singleGroup, projects, agents);
 
 			synchronized (bestSoFarLock) {
 				if (metric.result() <= bestSoFar) {
