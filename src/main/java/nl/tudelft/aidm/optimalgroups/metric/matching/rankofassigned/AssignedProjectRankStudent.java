@@ -2,12 +2,18 @@ package nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned;
 
 import nl.tudelft.aidm.optimalgroups.metric.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 public class AssignedProjectRankStudent
 {
 	private Agent student;
 	private Project projectSlot;
+
+	public AssignedProjectRankStudent(AgentToProjectMatch match)
+	{
+		this(match.from(), match.to());
+	}
 
 	public AssignedProjectRankStudent(Agent student, Project projectSlot)
 	{

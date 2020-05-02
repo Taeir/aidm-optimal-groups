@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
+import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientStudentRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
@@ -65,6 +66,9 @@ public class Application
 
 //			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
 //			groupProfile.printResult();
+
+			GiniCoefficientStudentRank giniStudentRank = new GiniCoefficientStudentRank(matching);
+			giniStudentRank.printResult(System.out);
 
 			AUPCR studentAUPCR = new AUPCRStudent(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//studentAUPCR.printResult();

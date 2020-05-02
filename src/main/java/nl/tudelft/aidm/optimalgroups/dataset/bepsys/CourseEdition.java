@@ -148,7 +148,7 @@ public class CourseEdition implements DatasetContext
 		{
 			case "COOLICER-DESK":
 				return new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
-			case "philipe-laptop":
+			case "PHILIPE-LAPTOP":
 				return new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
 			default:
 				throw new RuntimeException("Unknown machine, don't know connection string to DB");
