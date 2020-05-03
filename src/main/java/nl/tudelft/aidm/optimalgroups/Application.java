@@ -5,8 +5,10 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
+import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientGroupRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientStudentRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
@@ -34,11 +36,11 @@ public class Application
 	{
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
 //		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-		DatasetContext datasetContext = GeneratedDataContext.withNormallyDistributedProjectPreferences(150, 40, GroupSizeConstraint.manual(4,5), 8);
+		DatasetContext datasetContext = GeneratedDataContext.withNormallyDistributedProjectPreferences(150, 40, GroupSizeConstraint.manual(4,5), 4);
 		printDatasetInfo(datasetContext);
 
-		var pairwiseVictoriesOverAllAgents = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
-		pairwiseVictoriesOverAllAgents.displayChart();
+		var avgPreferenceRankOfProjects = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
+		avgPreferenceRankOfProjects.displayChart();
 
 		float[] studentAUPCRs = new float[iterations];
 		float[] groupAUPCRs = new float[iterations];
@@ -71,6 +73,9 @@ public class Application
 
 			GiniCoefficientStudentRank giniStudentRank = new GiniCoefficientStudentRank(matching);
 			giniStudentRank.printResult(System.out);
+
+			GiniCoefficientGroupRank giniGroupRank = new GiniCoefficientGroupRank(matching);
+			giniGroupRank.printResult(System.out);
 
 			AUPCR studentAUPCR = new AUPCRStudent(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//studentAUPCR.printResult();
