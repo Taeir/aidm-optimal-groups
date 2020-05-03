@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.time.Instant;
@@ -38,6 +39,13 @@ public class GeneratedDataContext implements DatasetContext
 	{
 		var projects = Projects.generated(numProjects, 5);
 		var generator = new NormallyDistributedProjectPreferencesGenerator(projects, curveSteepness);
+		return new GeneratedDataContext(numAgents, projects, groupSizeConstraint, generator);
+	}
+
+	public static GeneratedDataContext withLinearlyDistributedProjectPreferences(int numAgents, int numProjects, GroupSizeConstraint groupSizeConstraint, double slopeSteepness)
+	{
+		var projects = Projects.generated(numProjects, 5);
+		var generator = new LinearlyDistributedProjectPreferencesGenerator(projects, slopeSteepness);
 		return new GeneratedDataContext(numAgents, projects, groupSizeConstraint, generator);
 	}
 
