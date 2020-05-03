@@ -62,6 +62,10 @@ public class Application
 			var studentProfileCurve = new ProjectProfileCurveStudents(matching);
 			studentProfileCurve.displayChart();
 
+
+			var groupAggRankProfile = new ProjectProfileCurveGroup(matching);
+			groupAggRankProfile.displayChart();
+
 //			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
 //			groupProfile.printResult();
 

@@ -55,7 +55,6 @@ public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
     {
         calculate();
 
-
         XYSeries series = new XYSeries("Profile curve - student");
         this.profile.forEach(series::add);
 
