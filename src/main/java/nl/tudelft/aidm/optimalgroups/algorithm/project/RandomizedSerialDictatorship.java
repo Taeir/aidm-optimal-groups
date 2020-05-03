@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
@@ -12,11 +13,13 @@ import java.util.*;
 
 public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.FormedGroup>
 {
+	private final DatasetContext datasetContext;
 	private final FormedGroups groups;
 	private final Projects projects;
 
-	public RandomizedSerialDictatorship(FormedGroups groups, Projects projects)
+	public RandomizedSerialDictatorship(DatasetContext datasetContext, FormedGroups groups, Projects projects)
 	{
+		this.datasetContext = datasetContext;
 		this.groups = groups;
 		this.projects = projects;
 	}
@@ -32,7 +35,7 @@ public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.
 		if (this.projects.countAllSlots() < this.groups.count())
 			throw new RuntimeException("Too little project slots to assign all groups");
 
-		FormedGroupToProjectSlotMatching result = new FormedGroupToProjectSlotMatching();
+		FormedGroupToProjectSlotMatching result = new FormedGroupToProjectSlotMatching(datasetContext());
 
 		// Map from projectIds to amount of used slots
 		Map<Integer, Integer> usedSlots = new HashMap<>();
@@ -64,5 +67,11 @@ public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.
 		}
 
 		return result;
+	}
+
+	@Override
+	public DatasetContext datasetContext()
+	{
+		return datasetContext;
 	}
 }

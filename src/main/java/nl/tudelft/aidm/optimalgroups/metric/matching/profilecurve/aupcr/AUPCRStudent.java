@@ -11,6 +11,11 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 public class AUPCRStudent extends AUPCR {
+
+    public AUPCRStudent(Matching<? extends Group, Project> matching) {
+        this(matching, matching.datasetContext().allProjects(), matching.datasetContext().allAgents());
+    }
+
     public AUPCRStudent(Matching<? extends Group, Project> matching, Projects projects, Agents students) {
         super(matching, projects, students);
     }

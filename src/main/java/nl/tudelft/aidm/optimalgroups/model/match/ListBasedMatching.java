@@ -1,20 +1,24 @@
 package nl.tudelft.aidm.optimalgroups.model.match;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class ListBasedMatching<F, T> implements Matching<F, T>
 {
+	private final DatasetContext datasetContext;
 	private List<Match<F, T>> backingList;
 
-	public ListBasedMatching()
+	public ListBasedMatching(DatasetContext datasetContext)
 	{
-		this(new ArrayList<>());
+		this(datasetContext, new ArrayList<>());
 	}
 
-	ListBasedMatching(List<Match<F,T>> backingList)
+	ListBasedMatching(DatasetContext datasetContext, List<Match<F,T>> backingList)
 	{
+		this.datasetContext = datasetContext;
 		this.backingList = backingList;
 	}
 
@@ -27,5 +31,11 @@ public class ListBasedMatching<F, T> implements Matching<F, T>
 	public List<Match<F, T>> asList()
 	{
 		return Collections.unmodifiableList(backingList);
+	}
+
+	@Override
+	public DatasetContext datasetContext()
+	{
+		return datasetContext;
 	}
 }

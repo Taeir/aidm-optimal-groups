@@ -5,12 +5,14 @@ import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.agent.SequentualAgents;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.StudToGroupTopicMatchingInstanceData;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
+import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
 import org.sql2o.GenericDatasource;
 
 import java.util.List;
@@ -20,6 +22,7 @@ public class CPDeterminedMatching implements GroupProjectMatching<Group.FormedGr
 
 	private final String minizincexec = "C:\\Program Files\\MiniZinc IDE (bundled)\\";
 
+	private final CourseEdition courseEdition;
 	private final Agents agents;
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
@@ -29,6 +32,7 @@ public class CPDeterminedMatching implements GroupProjectMatching<Group.FormedGr
 		this.agents = courseEdition.allAgents();
 		this.projects = courseEdition.allProjects();
 		this.groupSizeConstraint = courseEdition.groupSizeConstraint();
+		this.courseEdition = courseEdition;
 	}
 
 	public void doIt()
@@ -45,9 +49,15 @@ public class CPDeterminedMatching implements GroupProjectMatching<Group.FormedGr
 	}
 
 	@Override
+	public DatasetContext datasetContext()
+	{
+		return courseEdition;
+	}
+
+	@Override
 	public List<Match<Group.FormedGroup, Project>> asList()
 	{
-		return null;
+		throw new ImplementMe();
 	}
 
 

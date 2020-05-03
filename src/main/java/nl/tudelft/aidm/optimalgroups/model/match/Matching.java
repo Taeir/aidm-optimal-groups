@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.match;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+
 import java.util.*;
 
 /**
@@ -12,4 +14,10 @@ public interface Matching<FROM, TO>
 	 * @return An unmodifiable list
 	 */
 	List<Match<FROM, TO>> asList();
+
+	/**
+	 * The dataset the matching was created from
+	 * @return The source dataset
+	 */
+	DatasetContext datasetContext();
 }

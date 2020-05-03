@@ -3,6 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -48,8 +49,13 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 		return result;
 	}
 
+	@Override
+	public DatasetContext datasetContext()
+	{
+		return studentProjectMatching.datasetContext();
+	}
 
-//	public Matchings<Group, Project> result()
+	//	public Matchings<Group, Project> result()
 //	{
 //		if (theMatching != null)
 //			return theMatching;

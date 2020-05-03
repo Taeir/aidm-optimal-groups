@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.match;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectSlotMatching;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -16,9 +17,9 @@ public class FormedGroupToProjectSlotMatching extends ListBasedMatching<Group.Fo
 	private Set<Project.ProjectSlot> assignedSlots;
 	private Set<Agent> assignedStudents;
 
-	public FormedGroupToProjectSlotMatching()
+	public FormedGroupToProjectSlotMatching(DatasetContext datasetContext)
 	{
-		super();
+		super(datasetContext);
 		assignedSlots = new HashSet<>();
 		assignedStudents = new HashSet<>();
 	}
@@ -69,7 +70,7 @@ public class FormedGroupToProjectSlotMatching extends ListBasedMatching<Group.Fo
 			return new GroupToProjectMatch<>(group, project);
 		}).collect(Collectors.toList());
 
-		FormedGroupToProjectMatching formedGroupToProjectMatchings = new FormedGroupToProjectMatching(result);
+		FormedGroupToProjectMatching formedGroupToProjectMatchings = new FormedGroupToProjectMatching(this.datasetContext(), result);
 
 		toProjectMatchingsResult = new WeakReference<>(formedGroupToProjectMatchings);
 		return formedGroupToProjectMatchings;

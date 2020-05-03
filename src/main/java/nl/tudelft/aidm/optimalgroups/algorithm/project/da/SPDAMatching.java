@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProj
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -81,6 +82,12 @@ public class SPDAMatching implements StudentProjectMatching
 		}
 
 		return matchingOutcome;
+	}
+
+	@Override
+	public DatasetContext datasetContext()
+	{
+		return courseEdition;
 	}
 
 	private List<Match<Agent, Project>> determine()

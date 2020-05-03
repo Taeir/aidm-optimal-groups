@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.metric.dataset;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -30,6 +31,11 @@ public class AvgPreferenceRankOfProjects
 		var preferencesOfAll = agents.asCollection().stream().map(Agent::getProjectPreference).collect(Collectors.toList());
 
 		return new AvgPreferenceRankOfProjects(preferencesOfAll, allProjects);
+	}
+
+	public static AvgPreferenceRankOfProjects ofAgentsInDatasetContext(DatasetContext datasetContext)
+	{
+		return AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
 	}
 
 	public void displayChart()

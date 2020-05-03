@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import louchtch.graphmatch.matching.MaxFlowMatching;
 import louchtch.graphmatch.model.*;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
@@ -18,16 +19,18 @@ import java.util.Map;
 
 public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGroup>
 {
+	private final DatasetContext datasetContext;
 	private final FormedGroups groups;
 	private final Projects projects;
 
-	public GroupProjectMaxFlow(FormedGroups groups, Projects projects)
+	private FormedGroupToProjectSlotMatching result = null;
+
+	public GroupProjectMaxFlow(DatasetContext datasetContext, FormedGroups groups, Projects projects)
 	{
+		this.datasetContext = datasetContext;
 		this.groups = groups;
 		this.projects = projects;
 	}
-
-	private FormedGroupToProjectSlotMatching result = null;
 
 	@Override
 	public List<Match<Group.FormedGroup, Project>> asList()
@@ -35,7 +38,7 @@ public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGro
 		if (result != null)
 			return result.toProjectMatchings().asList();
 
-		var result = new FormedGroupToProjectSlotMatching();
+		var result = new FormedGroupToProjectSlotMatching(datasetContext);
 
 		GroupVertices groupVertices = new GroupVertices(groups);
 		ProjectVertices projectVertices = new ProjectVertices(projects);
@@ -62,6 +65,12 @@ public class GroupProjectMaxFlow implements GroupProjectMatching<Group.FormedGro
 		this.result = result;
 
 		return result.toProjectMatchings().asList();
+	}
+
+	@Override
+	public DatasetContext datasetContext()
+	{
+		return datasetContext;
 	}
 
 	private static class GroupVertices extends Vertices<GroupVertexContent>

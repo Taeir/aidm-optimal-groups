@@ -4,10 +4,12 @@ import com.google.ortools.graph.MinCostFlow;
 import louchtch.graphmatch.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,9 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings({"Duplicates"})
 public class StudentProjectMaxFlowMatching implements StudentProjectMatching //implements GroupProjectMatchings
 {
-	// MAKE CONFIGURABLE WITH GROUP SIZE CONSTRAINTS
-//	private static final int MAX_GROUP_SIZE = 6;
-
 	static {
 		System.loadLibrary("jniortools");
 	}
@@ -67,6 +66,14 @@ public class StudentProjectMaxFlowMatching implements StudentProjectMatching //i
 		this.students = students;
 		this.projects = projects;
 		this.maxGroupSize = maxGroupSize;
+	}
+
+	@Override
+	public DatasetContext datasetContext()
+	{
+		// FIXME later
+		throw new ImplementMe();
+//		return this.datasetContext;
 	}
 
 	@Override

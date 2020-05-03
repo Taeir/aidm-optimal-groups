@@ -138,9 +138,9 @@ public class Application
 	private static GroupProjectMatching<Group.FormedGroup> assignGroupsToProjects(DatasetContext datasetContext, GroupFormingAlgorithm formedGroups)
 	{
 		if (projectAssignmentAlgorithm.equals("RSD")) {
-			return new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), datasetContext.allProjects());
+			return new RandomizedSerialDictatorship(datasetContext, formedGroups.asFormedGroups(), datasetContext.allProjects());
 		} else {
-			return new GroupProjectMaxFlow(formedGroups.asFormedGroups(), datasetContext.allProjects());
+			return new GroupProjectMaxFlow(datasetContext, formedGroups.asFormedGroups(), datasetContext.allProjects());
 		}
 	}
 

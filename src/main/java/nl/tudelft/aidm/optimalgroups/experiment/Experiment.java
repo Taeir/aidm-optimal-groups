@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.experiment;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.TopicGroupAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.GroupFormingAlgorithm;
@@ -7,6 +8,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
 import nl.tudelft.aidm.optimalgroups.metric.Distribution;
+import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientGroupRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientStudentRank;
@@ -24,7 +26,9 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.PrintStream;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static nl.tudelft.aidm.optimalgroups.Application.groupMatchingAlgorithm;
 import static nl.tudelft.aidm.optimalgroups.Application.projectAssignmentAlgorithm;
@@ -32,41 +36,62 @@ import static nl.tudelft.aidm.optimalgroups.Application.projectAssignmentAlgorit
 public class Experiment
 {
 	private DatasetContext datasetContext;
-	private List<MatchingAlgorithm> matchingAlgorithm;
-	private int numIterations;
+	private List<TopicGroupAlgorithm> matchingAlgorithm;
 
-	@FunctionalInterface
-	interface MatchingAlgorithm
+	// unsupported for now
+	private final int numIterations = 1;
+
+	static class ExperimentResult
 	{
-		GroupProjectMatching<Group.FormedGroup> run(DatasetContext datasetContext);
-	}
+		private final Experiment experiment;
 
-	static class ExperimentAlgorithmResult
-	{
-
-		DatasetContext datasetContext;
+		List<ExperimentAlgorithmResult> results;
+		PopularityMatrix popularityMatrix;
 		AvgPreferenceRankOfProjects projectRankingDistribution;
 
-		List<ExperimentAlgorithmIterationResult> iterationResults;
+		public ExperimentResult(Experiment experiment, List<ExperimentAlgorithmResult> results)
+		{
+			this.experiment = experiment;
+			this.results = results;
 
+			this.popularityMatrix = new PopularityMatrixFromExperimentResults(results);
+			projectRankingDistribution = AvgPreferenceRankOfProjects.ofAgentsInDatasetContext(experiment.datasetContext);
+		}
 	}
 
-	static class ExperimentAlgorithmIterationResult
-	{
-		MatchingAlgorithm algorithm;
+//	static class ExperimentAlgorithmResult
+//	{
+//
+//		DatasetContext datasetContext;
+//		AvgPreferenceRankOfProjects projectRankingDistribution;
+//
+//		List<ExperimentAlgorithmIterationResult> iterationResults;
+//
+//	}
 
+	static class ExperimentAlgorithmResult extends TopicGroupAlgorithm.Result
+	{
 		GiniCoefficientStudentRank giniStudentRanking;
 		GiniCoefficientGroupRank giniGroupAggregateRanking;
 
 		AUPCRStudent aupcrStudent;
 		AUPCRGroup aupcrGroup;
 
+		public ExperimentAlgorithmResult(TopicGroupAlgorithm algo, Matching<Group.FormedGroup, Project> result)
+		{
+			super(algo, result);
 
+			giniGroupAggregateRanking = new GiniCoefficientGroupRank(result);
+			giniStudentRanking = new GiniCoefficientStudentRank(result);
+
+			aupcrStudent = new AUPCRStudent(result);
+			aupcrGroup = new AUPCRGroup(result);
+		}
 	}
 
 	public void run()
 	{
-		printDatasetInfo(datasetContext);
+		printDatasetInfo(System.out);
 
 		var avgPreferenceRankOfProjects = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
 		avgPreferenceRankOfProjects.displayChart();
@@ -78,7 +103,7 @@ public class Experiment
 		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[numIterations];
 		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[numIterations];
 
-		for (MatchingAlgorithm algorithm : matchingAlgorithm)
+		for (TopicGroupAlgorithm algorithm : matchingAlgorithm)
 		{
 			// Perform the group making, project assignment and metric calculation inside the loop
 			for (int iteration = 0; iteration < numIterations; iteration++)
@@ -118,7 +143,7 @@ public class Experiment
 
 	}
 
-	public void runIteration(int iteration, MatchingAlgorithm algorithm)
+	public void runIteration(int iteration, TopicGroupAlgorithm algorithm)
 	{
 			printIterationNumber(iteration);
 
@@ -127,7 +152,7 @@ public class Experiment
 
 //			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
-			Matching<Group.FormedGroup, Project> matching = algorithm.run(datasetContext);
+			Matching<Group.FormedGroup, Project> matching = algorithm.determineMatching(datasetContext);
 
 			var studentProfileCurve = new ProjectProfileCurveStudents(matching);
 			studentProfileCurve.displayChart();
@@ -161,18 +186,18 @@ public class Experiment
 //			studentProjectRankDistributions[iteration] = studentProjectRankDistribution;
 	}
 
-	private static void printDatasetInfo(DatasetContext courseEdition)
+	private void printDatasetInfo(PrintStream printStream)
 	{
-		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
-		System.out.println("Amount of students: " + courseEdition.allAgents().count());
+		printStream.println("Amount of projects: " + datasetContext.allProjects().count());
+		printStream.println("Amount of students: " + datasetContext.allAgents().count());
 	}
 
 	private static GroupProjectMatching<Group.FormedGroup> assignGroupsToProjects(DatasetContext datasetContext, GroupFormingAlgorithm formedGroups)
 	{
 		if (projectAssignmentAlgorithm.equals("RSD")) {
-			return new RandomizedSerialDictatorship(formedGroups.asFormedGroups(), datasetContext.allProjects());
+			return new RandomizedSerialDictatorship(datasetContext, formedGroups.asFormedGroups(), datasetContext.allProjects());
 		} else {
-			return new GroupProjectMaxFlow(formedGroups.asFormedGroups(), datasetContext.allProjects());
+			return new GroupProjectMaxFlow(datasetContext, formedGroups.asFormedGroups(), datasetContext.allProjects());
 		}
 	}
 
