@@ -15,7 +15,7 @@ public abstract class AUPCR {
     protected Projects projects;
     protected Agents students;
 
-    protected float aupcr = -1;
+    protected double aupcr = -1;
 
     /**
      * Area Under Profile Curve Ratio (AUPCR) metric.
@@ -28,9 +28,9 @@ public abstract class AUPCR {
         this.students = students;
     }
 
-    public float result() {
+    public double asDouble() {
         if (this.aupcr == -1) {
-            this.aupcr = ((float) this.aupc()) / this.totalArea();
+            this.aupcr = ((double) this.aupc()) / this.totalArea();
         }
         return this.aupcr;
     }

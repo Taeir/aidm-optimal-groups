@@ -7,6 +7,7 @@ import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYDataset;
@@ -51,7 +52,7 @@ public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
         }
     }
 
-    public void displayChart()
+    public JFreeChart asChart()
     {
         calculate();
 
@@ -59,6 +60,12 @@ public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
         this.profile.forEach(series::add);
 
         var chart = ChartFactory.createXYStepAreaChart("Profile curve - students", "Rank", "#Students", new XYSeriesCollection(series));
+        return chart;
+    }
+
+    public void displayChart()
+    {
+        var chart = this.asChart();
 
         /* Output stuff */
         ChartPanel chartPanel = new ChartPanel(chart);

@@ -7,6 +7,7 @@ import nl.tudelft.aidm.optimalgroups.model.match.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -53,14 +54,20 @@ public class ProjectProfileCurveGroup extends ProfileCurveOfMatching
         printStream.printf("\t- Cumulative rank of groups: %d\n\n", this.cumulativeRanks());
     }
 
-	public void displayChart()
-	{
-	    this.calculate();
+    public JFreeChart asChart()
+    {
+        this.calculate();
 
         XYSeries series = new XYSeries("Profile curve - group aggregate preference");
         this.profile.forEach(series::add);
 
         var chart = ChartFactory.createXYStepAreaChart("Profile curve - group aggregate preference", "Rank", "#Groups", new XYSeriesCollection(series));
+        return chart;
+    }
+
+	public void displayChart()
+	{
+        var chart = this.asChart();
 
         /* Output stuff */
         ChartPanel chartPanel = new ChartPanel(chart);

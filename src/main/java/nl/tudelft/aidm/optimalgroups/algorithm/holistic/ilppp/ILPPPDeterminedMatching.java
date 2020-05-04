@@ -129,7 +129,7 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 	}
 
 	final Object bestSoFarLock = new Object();
-	float bestSoFar = 0;
+	double bestSoFar = 0;
 
 	private final ConcurrentHashMap<Projects, ILPPPSolution> solutionsCache = new ConcurrentHashMap<>();
 
@@ -180,14 +180,14 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 			var metric = new AUPCRStudent(singleGroup, projects, agents);
 
 			synchronized (bestSoFarLock) {
-				if (metric.result() <= bestSoFar) {
+				if (metric.asDouble() <= bestSoFar) {
 					// We don't have to explore solution further, it's less good
 					return Optional.empty();
 				}
 
 				// this solution is >= bestSoFar, but is it a candidate solution?
 				if (candidateSoltutionTest.test(matching) && canFormValidGroupsWithoutRemainders(matching, groupSizeConstraint)) {
-					bestSoFar = metric.result();
+					bestSoFar = metric.asDouble();
 
 					var matchingWithProperDatasetContext = new StudentProjectILPPPPMatching(matching);
 					return Optional.of(new MatchingWithMetric(matchingWithProperDatasetContext, metric));
@@ -213,7 +213,7 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 
 				// take best
 				.max(Comparator.comparing(matchingWithMetric ->
-					matchingWithMetric.metric.result()
+					matchingWithMetric.metric.asDouble()
 				));
 
 			return result;

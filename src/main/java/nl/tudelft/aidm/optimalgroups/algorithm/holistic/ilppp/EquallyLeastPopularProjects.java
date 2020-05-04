@@ -53,7 +53,7 @@ public class EquallyLeastPopularProjects implements Projects
 			// calc effect
 			var metric = new AUPCRStudent(matching, projectsWithoutOne, students);
 
-			float result = metric.result();
+			var result = metric.asDouble();
 			results.put(project, metric);
 		});
 
@@ -61,7 +61,7 @@ public class EquallyLeastPopularProjects implements Projects
 		// now we just need to determine which project that is, to do so we need to sort the tuples computed above by the value (AUPCR result)
 		// by sorting descending, the least popular project (key) is the top most (0th) element
 		ArrayList<Map.Entry<Project, AUPCR>> entries = new ArrayList<>(results.entrySet());
-		entries.sort(Comparator.comparing((Map.Entry<Project, AUPCR> entry) -> entry.getValue().result()).reversed());
+		entries.sort(Comparator.comparing((Map.Entry<Project, AUPCR> entry) -> entry.getValue().asDouble()).reversed());
 
 		// some dbg / progess report
 //		for (Map.Entry<Project, AUPCR> entry : entries)
@@ -71,12 +71,12 @@ public class EquallyLeastPopularProjects implements Projects
 
 		// We want to get all Projects that share same, highest AUPCR-after-removal. Use streams to collect into a map with the AUPCR-as-float as key
 		// note: not very efficient implementation, but as easy to write and should read easier
-		Map<Float, List<Map.Entry<Project, AUPCR>>> groupedByAUPCR = entries.stream()
-			.collect(Collectors.groupingBy(entry -> entry.getValue().result()));
+		Map<Double, List<Map.Entry<Project, AUPCR>>> groupedByAUPCR = entries.stream()
+			.collect(Collectors.groupingBy(entry -> entry.getValue().asDouble()));
 
 		var leastPopular = entries.get(0);
 
-		var equallyLeastPopularAsList = groupedByAUPCR.get(leastPopular.getValue().result());
+		var equallyLeastPopularAsList = groupedByAUPCR.get(leastPopular.getValue().asDouble());
 //		equallyLeastPopularAsList.forEach(entry -> {
 //			System.out.printf("Removing project '%s' has least effect on AUPCR (resulting in: %s)\n", entry.getKey(), entry.getValue().result());
 //		});

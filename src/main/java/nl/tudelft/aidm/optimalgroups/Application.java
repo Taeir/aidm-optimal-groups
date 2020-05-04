@@ -42,8 +42,8 @@ public class Application
 		var avgPreferenceRankOfProjects = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
 		avgPreferenceRankOfProjects.displayChart();
 
-		float[] studentAUPCRs = new float[iterations];
-		float[] groupAUPCRs = new float[iterations];
+		double[] studentAUPCRs = new double[iterations];
+		double[] groupAUPCRs = new double[iterations];
 
 		GroupPreferenceSatisfactionDistribution[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionDistribution[iterations];
 		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
@@ -93,8 +93,8 @@ public class Application
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics
-			studentAUPCRs[iteration] = studentAUPCR.result();
-			groupAUPCRs[iteration] = groupAUPCR.result();
+			studentAUPCRs[iteration] = studentAUPCR.asDouble();
+			groupAUPCRs[iteration] = groupAUPCR.asDouble();
 			groupPreferenceSatisfactionDistributions[iteration] = groupPreferenceDistribution;
 			groupProjectRankDistributions[iteration] = groupProjectRankDistribution;
 			studentProjectRankDistributions[iteration] = studentProjectRankDistribution;

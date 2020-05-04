@@ -21,7 +21,7 @@ public class AUPCRGroup extends AUPCR {
 
     @Override
     public void printResult() {
-        System.out.printf("Groups AUPCR: %f (Area Under Profile Curve Ratio)\n", this.result());
+        System.out.printf("Groups AUPCR: %f (Area Under Profile Curve Ratio)\n", this.asDouble());
     }
 
     @Override

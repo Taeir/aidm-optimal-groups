@@ -20,7 +20,7 @@ public class GiniCoefficientStudentRank
 
 		var welfare = AssignedProjectRankStudent.ranksOf(matching)
 			.map(AssignedProjectRankStudent::studentsRank)
-			.map(rank -> worstRank - rank)
+			.map(rank -> worstRank - rank +1)
 			.collect(Collectors.toList());
 
 		var sumAbsDiff = welfare.stream().flatMap(i ->
@@ -32,7 +32,7 @@ public class GiniCoefficientStudentRank
 
 		int n = welfare.size();
 		int sum = welfare.stream().mapToInt(Integer::intValue).sum();
-		this.giniCoefficient = 1 - sumAbsDiff / (2.0 * n * sum);
+		this.giniCoefficient = sumAbsDiff / (2.0 * n * sum);
 	}
 
 	public Double asDouble()

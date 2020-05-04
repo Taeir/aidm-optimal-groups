@@ -8,6 +8,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.Statistics;
@@ -40,6 +41,28 @@ public class AvgPreferenceRankOfProjects
 
 	public void displayChart()
 	{
+		var chart = this.asChart();
+
+		/* Output stuff */
+		ChartPanel chartPanel = new ChartPanel(chart);
+		chartPanel.setPreferredSize(new java.awt.Dimension(1000, 800));
+
+		ApplicationFrame chartFrame = new ApplicationFrame(chart.getTitle().getText());
+		chartFrame.setContentPane(chartPanel);
+		chartFrame.pack();
+		chartFrame.setVisible(true);
+	}
+
+//	public void chartAsImage()
+//	{
+//		var chart = this.asChart();
+//		var bufferedImage = chart.createBufferedImage(1000, 800);
+//
+//		bufferedImage.
+//	}
+
+	public JFreeChart asChart()
+	{
 		// Project -> List of ranks in profiles of students
 		var projectToRanksMap = new HashMap<Project, List<Integer>>(allProjects.count(), 1);
 
@@ -65,14 +88,6 @@ public class AvgPreferenceRankOfProjects
 			);
 
 		var chart = ChartFactory.createBoxAndWhiskerChart("Avg rank of Project in preferences", "Project", "Avg rank", chartDataset, true);
-
-		/* Output stuff */
-		ChartPanel chartPanel = new ChartPanel(chart);
-		chartPanel.setPreferredSize(new java.awt.Dimension(1000, 800));
-
-		ApplicationFrame chartFrame = new ApplicationFrame("Chart");
-		chartFrame.setContentPane(chartPanel);
-		chartFrame.pack();
-		chartFrame.setVisible(true);
+		return chart;
 	}
 }

@@ -4,8 +4,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.TopicGroupAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
 import plouchtch.assertion.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,13 +41,18 @@ public class PopularityMatrix
 		}
 	}
 
+	public Set<MatchingPopularityComparison> asSet()
+	{
+		return new HashSet<>(algoPopularityComparisons);
+	}
+
 	static class MatchingPopularityComparison
 	{
 		final TopicGroupAlgorithm.Result a;
 		final TopicGroupAlgorithm.Result b;
 
-		final Integer numAgentsPreferingA;
-		final Integer numAgentsPreferingB;
+		final int numAgentsPreferingA;
+		final int numAgentsPreferingB;
 
 		public MatchingPopularityComparison(TopicGroupAlgorithm.Result a, TopicGroupAlgorithm.Result b)
 		{
@@ -58,21 +62,50 @@ public class PopularityMatrix
 			var allAgents = a.result.datasetContext().allAgents();
 
 			// Ranking of assigned project by Agents in matching A
-			var agentToRankMapA = AssignedProjectRankStudent.ranksOf(a.result)
+			var rankInMatchingA = AssignedProjectRankStudent.ranksOf(a.result)
 				.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::studentsRank));
 
 			// Ranking of assigned project by Agents in matching B
-			var agentToRankMapB = AssignedProjectRankStudent.ranksOf(b.result)
+			var rankInMatchingB = AssignedProjectRankStudent.ranksOf(b.result)
 				.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::studentsRank));
 
 
 			numAgentsPreferingA = (int) allAgents.asCollection().stream()
-				.filter(agent -> agentToRankMapA.get(agent) > agentToRankMapB.get(agent))
+				.filter(agent -> rankInMatchingA.get(agent) < rankInMatchingB.get(agent))
 				.count();
 
 			numAgentsPreferingB = (int) allAgents.asCollection().stream()
-				.filter(agent -> agentToRankMapB.get(agent) > agentToRankMapA.get(agent))
+				.filter(agent -> rankInMatchingB.get(agent) < rankInMatchingA.get(agent))
 				.count();
+		}
+
+		@Override
+		public String toString()
+		{
+			String winner = "?";
+			if (numAgentsPreferingA > numAgentsPreferingB) winner = " > ";
+			else if (numAgentsPreferingA < numAgentsPreferingB) winner = " < ";
+			else if (numAgentsPreferingA == numAgentsPreferingB) winner = " = ";
+
+			return String.format("%s (%s) %s (%s) %s ", a.algo.name(), numAgentsPreferingA, winner, numAgentsPreferingB, b.algo.name());
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o) return true;
+			if (!(o instanceof MatchingPopularityComparison)) return false;
+			MatchingPopularityComparison that = (MatchingPopularityComparison) o;
+			return numAgentsPreferingA == that.numAgentsPreferingA &&
+				numAgentsPreferingB == that.numAgentsPreferingB &&
+				a.equals(that.a) &&
+				b.equals(that.b);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(a, b, numAgentsPreferingA, numAgentsPreferingB);
 		}
 	}
 

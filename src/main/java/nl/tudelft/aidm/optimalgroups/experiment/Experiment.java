@@ -12,13 +12,11 @@ import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientGroupRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientStudentRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.WorstAssignedProjectRankOfStudents;
+import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroupDistribution;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudentDistribution;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.match.Matching;
@@ -27,35 +25,41 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static nl.tudelft.aidm.optimalgroups.Application.groupMatchingAlgorithm;
-import static nl.tudelft.aidm.optimalgroups.Application.projectAssignmentAlgorithm;
+import static nl.tudelft.aidm.optimalgroups.Application.*;
 
 public class Experiment
 {
 	private DatasetContext datasetContext;
 	private List<TopicGroupAlgorithm> matchingAlgorithm;
+	public final AvgPreferenceRankOfProjects projectRankingDistribution;
 
 	// unsupported for now
 	private final int numIterations = 1;
 
-	static class ExperimentResult
+	public Experiment(DatasetContext datasetContext, List<TopicGroupAlgorithm> matchingAlgorithm)
+	{
+		this.datasetContext = datasetContext;
+		this.matchingAlgorithm = matchingAlgorithm;
+		projectRankingDistribution = AvgPreferenceRankOfProjects.ofAgentsInDatasetContext(datasetContext);
+	}
+
+	public static class ExperimentResult
 	{
 		private final Experiment experiment;
 
-		List<ExperimentAlgorithmResult> results;
-		PopularityMatrix popularityMatrix;
-		AvgPreferenceRankOfProjects projectRankingDistribution;
+		public final List<ExperimentAlgorithmResult> results;
+		public final PopularityMatrix popularityMatrix;
 
 		public ExperimentResult(Experiment experiment, List<ExperimentAlgorithmResult> results)
 		{
 			this.experiment = experiment;
-			this.results = results;
+			this.results = Collections.unmodifiableList(results);
 
 			this.popularityMatrix = new PopularityMatrixFromExperimentResults(results);
-			projectRankingDistribution = AvgPreferenceRankOfProjects.ofAgentsInDatasetContext(experiment.datasetContext);
 		}
 	}
 
@@ -69,13 +73,18 @@ public class Experiment
 //
 //	}
 
-	static class ExperimentAlgorithmResult extends TopicGroupAlgorithm.Result
+	public static class ExperimentAlgorithmResult extends TopicGroupAlgorithm.Result
 	{
-		GiniCoefficientStudentRank giniStudentRanking;
-		GiniCoefficientGroupRank giniGroupAggregateRanking;
+		public final GiniCoefficientStudentRank giniStudentRanking;
+		public final GiniCoefficientGroupRank giniGroupAggregateRanking;
 
-		AUPCRStudent aupcrStudent;
-		AUPCRGroup aupcrGroup;
+		public final AUPCRStudent aupcrStudent;
+		public final AUPCRGroup aupcrGroup;
+
+		public final ProjectProfileCurveStudents projectProfileCurveStudents;
+		public final ProjectProfileCurveGroup projectProfileCurveGroup;
+
+		public final WorstAssignedProjectRankOfStudents worstAssignedProjectRankOfStudents;
 
 		public ExperimentAlgorithmResult(TopicGroupAlgorithm algo, Matching<Group.FormedGroup, Project> result)
 		{
@@ -86,104 +95,26 @@ public class Experiment
 
 			aupcrStudent = new AUPCRStudent(result);
 			aupcrGroup = new AUPCRGroup(result);
+
+			projectProfileCurveStudents = new ProjectProfileCurveStudents(result);
+			projectProfileCurveGroup = new ProjectProfileCurveGroup(result);
+
+			worstAssignedProjectRankOfStudents = new WorstAssignedProjectRankOfStudents(result);
 		}
 	}
 
-	public void run()
+	public ExperimentResult result()
 	{
-		printDatasetInfo(System.out);
 
-		var avgPreferenceRankOfProjects = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
-		avgPreferenceRankOfProjects.displayChart();
-
-		float[] studentAUPCRs = new float[numIterations];
-		float[] groupAUPCRs = new float[numIterations];
-
-		GroupPreferenceSatisfactionDistribution[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionDistribution[numIterations];
-		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[numIterations];
-		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[numIterations];
+		var results = new ArrayList<ExperimentAlgorithmResult>();
 
 		for (TopicGroupAlgorithm algorithm : matchingAlgorithm)
 		{
-			// Perform the group making, project assignment and metric calculation inside the loop
-			for (int iteration = 0; iteration < numIterations; iteration++)
-			{
-				runIteration(iteration, algorithm);
-			}
-
-			// Calculate all the averages and print them to the console
-			float studentAUPCRAverage = 0;
-			float groupAUPCRAverage = 0;
-			for (int iteration = 0; iteration < numIterations; iteration++) {
-				studentAUPCRAverage += studentAUPCRs[iteration] / studentAUPCRs.length;
-				groupAUPCRAverage += groupAUPCRs[iteration] / groupAUPCRs.length;
-			}
-
-//			Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
-//			groupPreferenceSatisfactionDistribution.printToTxtFile("outputtxt/groupPreferenceSatisfaction.txt");
-//			//groupPreferenceSatisfactionDistribution.printResult();
-//
-//			printAveragePeerSatisfaction(groupPreferenceSatisfactionDistribution);
-//
-//			Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
-//			groupProjectRankDistribution.printToTxtFile("outputtxt/groupProjectRank.txt");
-//			//groupProjectRankDistribution.printResult();
-//
-//			Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
-//			studentProjectRankDistribution.printToTxtFile("outputtxt/studentProjectRank.txt");
-//			//studentProjectRankDistribution.printResult();
-
-			printStudentAupcrAverage(studentAUPCRAverage);
-			writeToFile("outputtxt/studentAUPCR.txt", String.valueOf(studentAUPCRAverage));
-
-			printGroupAupcrAverage(groupAUPCRAverage);
-			writeToFile("outputtxt/groupAUPCR.txt", String.valueOf(groupAUPCRAverage));
+			var resultingMatching = algorithm.determineMatching(datasetContext);
+			results.add(new ExperimentAlgorithmResult(algorithm, resultingMatching));
 		}
 
-
-	}
-
-	public void runIteration(int iteration, TopicGroupAlgorithm algorithm)
-	{
-			printIterationNumber(iteration);
-
-			GroupFormingAlgorithm formedGroups = formGroups(datasetContext);
-			GroupProjectMatching<Group.FormedGroup> groupProjectMatching =  assignGroupsToProjects(datasetContext, formedGroups);
-
-//			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
-
-			Matching<Group.FormedGroup, Project> matching = algorithm.determineMatching(datasetContext);
-
-			var studentProfileCurve = new ProjectProfileCurveStudents(matching);
-			studentProfileCurve.displayChart();
-
-//			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
-//			groupProfile.printResult();
-
-			GiniCoefficientStudentRank giniStudentRank = new GiniCoefficientStudentRank(matching);
-			giniStudentRank.printResult(System.out);
-
-			AUPCR studentAUPCR = new AUPCRStudent(matching, datasetContext.allProjects(), datasetContext.allAgents());
-			//studentAUPCR.printResult();
-
-			AUPCR groupAUPCR = new AUPCRGroup(matching, datasetContext.allProjects(), datasetContext.allAgents());
-			//groupAUPCR.printResult();
-
-			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
-			//groupPreferenceDistribution.printResult();
-
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, datasetContext.allProjects());
-			//groupProjectRankDistribution.printResult();
-
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, datasetContext.allProjects());
-			//studentProjectRankDistribution.printResult();
-
-			// Remember metrics
-//			studentAUPCRs[iteration] = studentAUPCR.result();
-//			groupAUPCRs[iteration] = groupAUPCR.result();
-//			groupPreferenceSatisfactionDistributions[iteration] = groupPreferenceDistribution;
-//			groupProjectRankDistributions[iteration] = groupProjectRankDistribution;
-//			studentProjectRankDistributions[iteration] = studentProjectRankDistribution;
+		return new ExperimentResult(this, results);
 	}
 
 	private void printDatasetInfo(PrintStream printStream)

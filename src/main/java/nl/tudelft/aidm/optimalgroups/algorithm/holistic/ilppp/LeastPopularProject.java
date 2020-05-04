@@ -78,7 +78,7 @@ public class LeastPopularProject implements Project
 			// calc effect
 			var metric = new AUPCRStudent(matching, projectsWithoutOne, students);
 
-			float result = metric.result();
+			double result = metric.asDouble();
 			results.put(project, metric);
 		});
 
@@ -86,7 +86,7 @@ public class LeastPopularProject implements Project
 		// now we just need to determine which project that is, to do so we need to sort the tuples computed above by the value (AUPCR result)
 		// by sorting descending, the least popular project (key) is the top most (0th) element
 		ArrayList<Map.Entry<Project, AUPCR>> entries = new ArrayList<>(results.entrySet());
-		entries.sort(Comparator.comparing((Map.Entry<Project, AUPCR> entry) -> entry.getValue().result()).reversed());
+		entries.sort(Comparator.comparing((Map.Entry<Project, AUPCR> entry) -> entry.getValue().asDouble()).reversed());
 
 		// some dbg / progess report
 //		for (Map.Entry<Project, AUPCR> entry : entries)
