@@ -12,8 +12,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.StudToGr
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
-import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
 import org.sql2o.GenericDatasource;
+import plouchtch.lang.exception.ImplementMe;
 
 import java.util.List;
 

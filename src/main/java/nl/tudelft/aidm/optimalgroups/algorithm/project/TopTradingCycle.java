@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatching;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
+import plouchtch.lang.exception.ImplementMe;
 
 import java.util.List;
 

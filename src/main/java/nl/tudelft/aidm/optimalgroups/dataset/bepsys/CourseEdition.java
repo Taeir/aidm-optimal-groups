@@ -7,11 +7,11 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.project.ProjectsInDb;
-import nl.tudelft.aidm.optimalgroups.support.Hostname;
 import org.sql2o.GenericDatasource;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
+import plouchtch.util.ComputerName;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -144,7 +144,7 @@ public class CourseEdition implements DatasetContext
 
 	private static DataSource dataSourceToLocalDb()
 	{
-		switch (Hostname.ofThisMachine().toString())
+		switch (ComputerName.ofThisMachine().toString())
 		{
 			case "COOLICER-DESK":
 				return new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");

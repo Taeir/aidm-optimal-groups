@@ -9,7 +9,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
+import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

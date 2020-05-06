@@ -25,8 +25,8 @@ applicationDefaultJvmArgs = ["-Djava.library.path=lib"]
 
 dependencies {
 
-    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c06314770ed'
-    implementation 'com.github.PhilipeLouchtch:plouchtch-lib-java:d1fd8c41d'
+    implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c063147'
+    implementation 'com.github.PhilipeLouchtch:plouchtch-lib-java:14987f7'
 
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'

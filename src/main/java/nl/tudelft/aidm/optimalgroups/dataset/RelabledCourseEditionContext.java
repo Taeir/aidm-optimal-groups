@@ -4,7 +4,7 @@ import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import nl.tudelft.aidm.optimalgroups.support.ImplementMe;
+import plouchtch.lang.exception.ImplementMe;
 
 public class RelabledCourseEditionContext implements DatasetContext
 {
