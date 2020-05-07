@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  */
 public class PopularityMatrixFromExperimentResults extends PopularityMatrix
 {
-	public PopularityMatrixFromExperimentResults(List<Experiment.ExperimentAlgorithmResult> results)
+	public PopularityMatrixFromExperimentResults(List<ExperimentAlgorithmSubresult> results)
 	{
 		super(results.stream().map(a -> new TopicGroupAlgorithm.Result(a.algo, a.result)).collect(Collectors.toList()));
 	}
