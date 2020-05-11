@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ public class ProposableProject implements Project
 		// Find all agents that are better off being rejected than the currently proposing agent
 		var rejectableProposals = tentativelyAccepted.stream()
 			.filter(tentativelyAcceptedProposal ->
-				tentativelyAcceptedProposal.proposal.utilityIfRejected() > proposal.utilityIfRejected())
+				tentativelyAcceptedProposal.utilityIfRejected() > proposal.utilityIfRejected())
 			.collect(Collectors.toList());
 
 		if (rejectableProposals.isEmpty()) {
@@ -57,14 +58,16 @@ public class ProposableProject implements Project
 			return ProposalAnswer.REJECT;
 		}
 
-
 		// Fairness IDEA: keep track of num demotions and demote the agent with least amount of demotions
+		// Now reject least-impacted agent
+		var proposalToReject = rejectableProposals.stream().sorted(
+			Comparator.comparing(Proposal::utilityIfRejected).reversed()
+		).findFirst().get();
 
-		// For now: kick top (propably the oldest)
-		var toReject = rejectableProposals.remove(0);
-		rejectedAgentConsumer.accept(toReject.proposal.proposingAgent);
 
-		tentativelyAccepted.remove(toReject);
+		rejectedAgentConsumer.accept(proposalToReject.proposingAgent);
+
+		tentativelyAccepted.remove(proposalToReject);
 		tentativelyAccepted.add(new TentativelyAcceptedProposal(proposal));
 
 		return ProposalAnswer.ACCEPT;
@@ -72,7 +75,7 @@ public class ProposableProject implements Project
 
 	public Collection<Agent> acceptedAgents()
 	{
-		return tentativelyAccepted.stream().map(tentativelyAcceptedProposal -> tentativelyAcceptedProposal.proposal.proposingAgent.agent)
+		return tentativelyAccepted.stream().map(tentativelyAcceptedProposal -> tentativelyAcceptedProposal.proposingAgent.agent)
 			.collect(Collectors.toUnmodifiableList());
 	}
 
@@ -101,13 +104,11 @@ public class ProposableProject implements Project
 		REJECT
 	}
 
-	class TentativelyAcceptedProposal
+	class TentativelyAcceptedProposal extends Proposal
 	{
-		public final Proposal proposal;
-
 		public TentativelyAcceptedProposal(Proposal proposal)
 		{
-			this.proposal = proposal;
+			super(proposal);
 		}
 	}
 

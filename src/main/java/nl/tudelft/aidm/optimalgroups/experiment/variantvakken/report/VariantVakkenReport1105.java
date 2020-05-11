@@ -22,10 +22,12 @@ public class VariantVakkenReport1105
 	{
 		var experimentsForInReport = new ArrayList<Experiment>();
 
-//		experimentsForInReport.add(capacityBasedPopularityExperiment());
-//		experimentsForInReport.add(emph220Experiment());
-//		experimentsForInReport.add(emph110Experiment());
-//		experimentsForInReport.add(emph88Experiment());
+		experimentsForInReport.add(capacityBasedPopularityExperiment());
+		experimentsForInReport.add(emph220Experiment());
+		experimentsForInReport.add(emph110Experiment());
+		experimentsForInReport.add(emph88Experiment());
+		experimentsForInReport.add(flipPopExperiment());
+		experimentsForInReport.add(flipPopExperiment());
 		experimentsForInReport.add(flipPopExperiment());
 
 		new ExperimentReportInHtml(experimentsForInReport)

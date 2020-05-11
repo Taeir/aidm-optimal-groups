@@ -108,7 +108,7 @@ public class SPDAMatching implements AgentToProjectMatching
 			// propose to
 			var proposal = unmatchedAgent.makeNextProposal();
 
-			System.out.printf("Student %s,\tproposing to: %s\n", unmatchedAgent.agent, proposal.projectProposingFor().id());
+//			System.out.printf("Student %s,\tproposing to: %s\n", unmatchedAgent.agent, proposal.projectProposingFor().id());
 
 			// UGLY and inefficient: FIXME!
 			var projToProposeTo = proposableProjects.stream().filter(proposableProject -> proposableProject.id() == proposal.projectProposingFor().id())
