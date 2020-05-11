@@ -64,6 +64,7 @@ public class ProposableProject implements Project
 		var toReject = rejectableProposals.remove(0);
 		rejectedAgentConsumer.accept(toReject.proposal.proposingAgent);
 
+		tentativelyAccepted.remove(toReject);
 		tentativelyAccepted.add(new TentativelyAcceptedProposal(proposal));
 
 		return ProposalAnswer.ACCEPT;
