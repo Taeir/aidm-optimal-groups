@@ -1,12 +1,15 @@
 package nl.tudelft.aidm.optimalgroups.model.group;
 
+import nl.tudelft.aidm.optimalgroups.model.HasProjectPrefs;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
-public interface Group
+public interface Group extends HasProjectPrefs
 {
 	Agents members();
+
+	@Override
 	ProjectPreference projectPreference();
 
 	abstract class AbstractGroup implements Group

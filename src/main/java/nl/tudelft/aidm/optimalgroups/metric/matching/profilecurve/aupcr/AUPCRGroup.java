@@ -3,12 +3,16 @@ package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr;
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 public class AUPCRGroup extends AUPCR {
+
+    private final Matching<? extends Group, Project> matching;
+    private final Projects projects;
+    private final Agents students;
 
     public AUPCRGroup(Matching<? extends Group, Project> matching) {
         this(matching, matching.datasetContext().allProjects(), matching.datasetContext().allAgents());
@@ -16,7 +20,9 @@ public class AUPCRGroup extends AUPCR {
 
 
     public AUPCRGroup(Matching<? extends Group, Project> matching, Projects projects, Agents students) {
-        super(matching, projects, students);
+        this.matching = matching;
+        this.projects = projects;
+        this.students = students;
     }
 
     @Override

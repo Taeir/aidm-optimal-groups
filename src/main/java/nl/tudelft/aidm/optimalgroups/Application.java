@@ -18,7 +18,9 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProj
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.io.BufferedWriter;
@@ -55,13 +57,14 @@ public class Application
 			printIterationNumber(iteration);
 
 			GroupFormingAlgorithm formedGroups = formGroups(datasetContext);
-			GroupProjectMatching<Group.FormedGroup> groupProjectMatching =  assignGroupsToProjects(datasetContext, formedGroups);
+			GroupToProjectMatching<Group.FormedGroup> groupProjectMatching =  assignGroupsToProjects(datasetContext, formedGroups);
 
 			Matching<Group.FormedGroup, Project> matching = groupProjectMatching;
+			var matchingFromStudentPerspective = AgentToProjectMatching.from(matching);
 
 //			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
-			var studentProfileCurve = new ProjectProfileCurveStudents(matching);
+			var studentProfileCurve = new ProjectProfileCurveStudents(matchingFromStudentPerspective);
 			studentProfileCurve.displayChart();
 
 
@@ -71,13 +74,13 @@ public class Application
 //			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
 //			groupProfile.printResult();
 
-			GiniCoefficientStudentRank giniStudentRank = new GiniCoefficientStudentRank(matching);
+			GiniCoefficientStudentRank giniStudentRank = new GiniCoefficientStudentRank(matchingFromStudentPerspective);
 			giniStudentRank.printResult(System.out);
 
 			GiniCoefficientGroupRank giniGroupRank = new GiniCoefficientGroupRank(matching);
 			giniGroupRank.printResult(System.out);
 
-			AUPCR studentAUPCR = new AUPCRStudent(matching, datasetContext.allProjects(), datasetContext.allAgents());
+			AUPCR studentAUPCR = new AUPCRStudent(matchingFromStudentPerspective, datasetContext.allProjects(), datasetContext.allAgents());
 			//studentAUPCR.printResult();
 
 			AUPCR groupAUPCR = new AUPCRGroup(matching, datasetContext.allProjects(), datasetContext.allAgents());
@@ -135,7 +138,7 @@ public class Application
 		System.out.println("Amount of students: " + courseEdition.allAgents().count());
 	}
 
-	private static GroupProjectMatching<Group.FormedGroup> assignGroupsToProjects(DatasetContext datasetContext, GroupFormingAlgorithm formedGroups)
+	private static GroupToProjectMatching<Group.FormedGroup> assignGroupsToProjects(DatasetContext datasetContext, GroupFormingAlgorithm formedGroups)
 	{
 		if (projectAssignmentAlgorithm.equals("RSD")) {
 			return new RandomizedSerialDictatorship(datasetContext, formedGroups.asFormedGroups(), datasetContext.allProjects());

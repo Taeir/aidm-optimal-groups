@@ -19,11 +19,8 @@ import java.util.List;
  * 	The probability is determined by the given distribution. More precisely, the projects correspond to [0,mean]
  * 	line of the PDF of the distribution. Mean = #number of projects.
  */
-abstract class ProjectPreferencesFromDistributionGenerator implements PreferenceGenerator
+public class ProjectPreferencesFromDistributionGenerator extends ProjectPreferencesFromPmfGenerator
 {
-	private final Projects projects;
-	private final List<Pair<Project, Double>> pmf;
-
 	/**
 	 * Base constructor, given a RealDistribution the PMF of projects is constructed.
 	 * @param projects The projects for which the preferences are generated
@@ -31,8 +28,11 @@ abstract class ProjectPreferencesFromDistributionGenerator implements Preference
 	 */
 	public ProjectPreferencesFromDistributionGenerator(Projects projects, RealDistribution distribution)
 	{
-		this.projects = projects;
+		super(projects, toPmf(projects, distribution));
+	}
 
+	private static List<Pair<Project, Double>> toPmf(Projects projects, RealDistribution distribution)
+	{
 		// Assign each project a prob from the distrib
 		//     - map projects from 0 to mean along the x-axis, but in an anonymous way
 		// Make EnumeratedDistribution with the <Project,probability[0,1]> pairs
@@ -47,7 +47,7 @@ abstract class ProjectPreferencesFromDistributionGenerator implements Preference
 			pmf.add(new Pair<>(project, distribution.density(i)));
 		}
 
-		this.pmf = pmf;
+		return pmf;
 	}
 
 	@Override

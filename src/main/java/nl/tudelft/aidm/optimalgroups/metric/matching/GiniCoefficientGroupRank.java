@@ -1,24 +1,25 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching;
 
+import nl.tudelft.aidm.optimalgroups.metric.bla.GiniCoefficient;
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.io.PrintStream;
 import java.util.stream.Collectors;
 
-public class GiniCoefficientGroupRank
+public class GiniCoefficientGroupRank implements GiniCoefficient
 {
 	private Match<Group.FormedGroup, Project> match;
 	private final double giniCoefficient;
 
-	public GiniCoefficientGroupRank(Matching<Group.FormedGroup, Project> matching)
+	public GiniCoefficientGroupRank(Matching<? extends Group, Project> matching)
 	{
-		int worstRank = new WorstAssignedProjectRankOfGroups(matching).asInt();
+		int worstRank = new WorstRankAssignedProjectToGroup(matching).asInt();
 
-		var welfare = AssignedProjectRankGroup.ranksOf(matching)
+		var welfare = AssignedProjectRankGroup.groupRanks(matching)
 			.map(AssignedProjectRankGroup::groupRank)
 			.map(rank -> worstRank - rank +1)
 			.collect(Collectors.toList());
@@ -35,6 +36,7 @@ public class GiniCoefficientGroupRank
 		this.giniCoefficient = sumAbsDiff / (2.0 * n * sum);
 	}
 
+	@Override
 	public Double asDouble()
 	{
 		return this.giniCoefficient;

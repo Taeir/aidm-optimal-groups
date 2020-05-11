@@ -1,8 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
@@ -14,9 +13,6 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.match.GroupToProjectMatch;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.GenericDatasource;
@@ -26,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.FormedGroup>
+public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.FormedGroup>
 {
 	private final Agents agents;
 	private final Projects projects;
@@ -51,7 +47,7 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 
 			assignedProjectRank.studentRanks().forEach(metric -> {
 				System.out.printf("\t\t-Student %s", metric.student().id);
-				System.out.printf(", rank: %s", metric.studentsRank());
+				System.out.printf(", rank: %s", metric.asInt());
 
 				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, metric.student()).asFraction());
 			});
@@ -174,10 +170,10 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 
 		private Optional<MatchingWithMetric> solve(Predicate<StudentProjectMaxFlowMatching> candidateSoltutionTest, GroupSizeConstraint groupSizeConstraint) {
 
-			var matching = StudentProjectMaxFlowMatching.of(agents, projects, groupSizeConstraint.maxSize());
+			var matching = StudentProjectMaxFlowMatching.of(datasetContext, agents, projects);
 
-			SingleGroupPerProjectMatching singleGroup = new SingleGroupPerProjectMatching(matching);
-			var metric = new AUPCRStudent(singleGroup, projects, agents);
+//			SingleGroupPerProjectMatching singleGroup = new SingleGroupPerProjectMatching(matching);
+			var metric = new AUPCRStudent(matching, projects, agents);
 
 			synchronized (bestSoFarLock) {
 				if (metric.asDouble() <= bestSoFar) {
@@ -196,7 +192,7 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 
 
 			var matchingGroupedByProject = matching.groupedByProject();
-			var equallyLeastPopularProjects = new EquallyLeastPopularProjects(matchingGroupedByProject, groupSizeConstraint.maxSize());
+			var equallyLeastPopularProjects = new EquallyLeastPopularProjects(datasetContext, matchingGroupedByProject);
 
 			var result = equallyLeastPopularProjects.asCollection()
 				.parallelStream()
@@ -232,11 +228,11 @@ public class ILPPPDeterminedMatching implements GroupProjectMatching<Group.Forme
 		}
 	}
 
-	class StudentProjectILPPPPMatching implements StudentProjectMatching
+	class StudentProjectILPPPPMatching implements AgentToProjectMatching
 	{
-		private final StudentProjectMatching underlying;
+		private final AgentToProjectMatching underlying;
 
-		public StudentProjectILPPPPMatching(StudentProjectMatching underlying)
+		public StudentProjectILPPPPMatching(AgentToProjectMatching underlying)
 		{
 			this.underlying = underlying;
 		}

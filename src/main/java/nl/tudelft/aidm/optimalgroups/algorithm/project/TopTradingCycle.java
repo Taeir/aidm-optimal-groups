@@ -1,13 +1,14 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatching;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectSlotMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import plouchtch.lang.exception.ImplementMe;
 
 import java.util.List;
 
-public class TopTradingCycle implements GroupProjectMatching
+public class TopTradingCycle implements GroupToProjectMatching
 {
 	public FormedGroupToProjectSlotMatching result()
 	{

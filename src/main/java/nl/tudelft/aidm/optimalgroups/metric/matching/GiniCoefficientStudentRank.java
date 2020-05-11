@@ -1,25 +1,27 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching;
 
+import nl.tudelft.aidm.optimalgroups.metric.bla.GiniCoefficient;
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.io.PrintStream;
 import java.util.stream.Collectors;
 
-public class GiniCoefficientStudentRank
+public class GiniCoefficientStudentRank implements GiniCoefficient
 {
 	private Match<Group.FormedGroup, Project> match;
 	private final double giniCoefficient;
 
-	public GiniCoefficientStudentRank(Matching<Group.FormedGroup, Project> matching)
+	public GiniCoefficientStudentRank(Matching<Agent, Project> matching)
 	{
-		int worstRank = new WorstAssignedProjectRankOfStudents(matching).asInt();
+		int worstRank = new WorstRankAssignedProjectToStudents(matching).asInt();
 
-		var welfare = AssignedProjectRankStudent.ranksOf(matching)
-			.map(AssignedProjectRankStudent::studentsRank)
+		var welfare = AssignedProjectRankStudent.inStudentMatching(matching)
+			.map(AssignedProjectRankStudent::asInt)
 			.map(rank -> worstRank - rank +1)
 			.collect(Collectors.toList());
 

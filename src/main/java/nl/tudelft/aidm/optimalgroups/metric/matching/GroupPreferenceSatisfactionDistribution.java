@@ -1,8 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching;
 
 import nl.tudelft.aidm.optimalgroups.metric.Distribution;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 

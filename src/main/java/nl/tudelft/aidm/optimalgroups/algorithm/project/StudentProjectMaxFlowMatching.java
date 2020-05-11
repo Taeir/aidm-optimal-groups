@@ -5,17 +5,18 @@ import louchtch.graphmatch.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings({"Duplicates"})
-public class StudentProjectMaxFlowMatching implements StudentProjectMatching //implements GroupProjectMatchings
+public class StudentProjectMaxFlowMatching implements AgentToProjectMatching
 {
 	static {
 		System.loadLibrary("jniortools");
@@ -28,9 +29,9 @@ public class StudentProjectMaxFlowMatching implements StudentProjectMatching //i
 	private static Vertex<Object> sink = new Vertex<>(null);
 
 
+	private final DatasetContext datasetContext;
 	public final Agents students;
 	public final Projects projects;
-	public final int maxGroupSize;
 
 	//	private Map<Project.ProjectSlot, List<Agent>> groupedBySlot = null;
 	private Map<Project, List<Agent>> groupedByProject = null;
@@ -42,10 +43,10 @@ public class StudentProjectMaxFlowMatching implements StudentProjectMatching //i
 		existingResultsCache = new ConcurrentHashMap<>();
 	}
 
-	public static StudentProjectMaxFlowMatching of(Agents students, Projects projects, int maxGroupSize)
+	public static StudentProjectMaxFlowMatching of(DatasetContext datasetContext, Agents students, Projects projects)
 	{
 		if (existingResultsCache.containsKey(projects.asCollection()) == false) {
-			StudentProjectMaxFlowMatching maxflow = new StudentProjectMaxFlowMatching(students, projects, maxGroupSize);
+			StudentProjectMaxFlowMatching maxflow = new StudentProjectMaxFlowMatching(datasetContext, students, projects);
 			existingResultsCache.put(projects.asCollection(), maxflow);
 
 			return maxflow;
@@ -61,19 +62,30 @@ public class StudentProjectMaxFlowMatching implements StudentProjectMatching //i
 		}
 	}
 
-	public StudentProjectMaxFlowMatching(Agents students, Projects projects, int maxGroupSize)
+	/**
+	 * When not all agents or projects must be used in the matching, but the context is still one given by DatasetContext
+	 * @param datasetContext
+	 * @param students A (subset) of students in datasetContext
+	 * @param projects A (subset) of projects in datasetContext
+	 */
+	public StudentProjectMaxFlowMatching(DatasetContext datasetContext, Agents students, Projects projects)
 	{
+		this.datasetContext = datasetContext;
 		this.students = students;
 		this.projects = projects;
-		this.maxGroupSize = maxGroupSize;
+	}
+
+	public StudentProjectMaxFlowMatching(DatasetContext datasetContext)
+	{
+		this(datasetContext, datasetContext.allAgents(), datasetContext.allProjects());
 	}
 
 	@Override
 	public DatasetContext datasetContext()
 	{
 		// FIXME later
-		throw new ImplementMe();
-//		return this.datasetContext;
+//		throw new ImplementMe();
+		return this.datasetContext;
 	}
 
 	@Override
@@ -144,7 +156,7 @@ public class StudentProjectMaxFlowMatching implements StudentProjectMatching //i
 
 		projectVertices.forEach(projectVertex -> {
 			Project project = projectVertex.content().theProject;
-			int capacity = project.slots().size() * maxGroupSize;
+			int capacity = project.slots().size() * datasetContext.groupSizeConstraint().maxSize();
 			minCostFlow.addArcWithCapacityAndUnitCost(projectVertex.id, sink, capacity, 1);
 		});
 

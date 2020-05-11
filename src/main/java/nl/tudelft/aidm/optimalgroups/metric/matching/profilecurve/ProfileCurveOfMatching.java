@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve;
 
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
@@ -21,17 +21,11 @@ import java.util.Map;
  */
 public abstract class ProfileCurveOfMatching
 {
-    // Data PC is calculated on
-    protected Matching<Group.FormedGroup, Project> matching;
-
     // Mapping of Rank -> |Agents with Rank|
     protected Map<Integer, Integer> profile = null;
 
     protected int worstRank = 1;
 
-    public ProfileCurveOfMatching(Matching<Group.FormedGroup, Project> matching) {
-        this.matching = matching;
-    }
 
     public Map<Integer, Integer> asMap() {
         if (this.profile == null) {

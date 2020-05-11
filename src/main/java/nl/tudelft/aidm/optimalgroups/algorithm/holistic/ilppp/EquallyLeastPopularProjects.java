@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
@@ -15,15 +16,14 @@ import java.util.stream.Collectors;
 
 public class EquallyLeastPopularProjects implements Projects
 {
-	private final int maxGroupSize;
-
+	private final DatasetContext datasetContext;
 	private final Map<Project, List<Agent>> grouping;
 	private Projects equallyLeastPopularProjects = null;
 
-	public EquallyLeastPopularProjects(Map<Project, List<Agent>> grouping, int maxGroupSize)
+	public EquallyLeastPopularProjects(DatasetContext datasetContext, Map<Project, List<Agent>> grouping)
 	{
+		this.datasetContext = datasetContext;
 		this.grouping = grouping;
-		this.maxGroupSize = maxGroupSize;
 	}
 
 	// most naive implementation: just maxflow it and
@@ -46,14 +46,13 @@ public class EquallyLeastPopularProjects implements Projects
 			var projectsWithoutOne = projects.without(project);
 
 			// TODO: include this maxflow result?
-			var maxflowResultWithoutCurrentProject = new StudentProjectMaxFlowMatching(students, projectsWithoutOne, maxGroupSize);
+			var maxflowResultWithoutCurrentProject = new StudentProjectMaxFlowMatching(datasetContext, students, projectsWithoutOne);
 
-			SingleGroupPerProjectMatching matching = new SingleGroupPerProjectMatching(maxflowResultWithoutCurrentProject);
+//			SingleGroupPerProjectMatching matching = new SingleGroupPerProjectMatching(maxflowResultWithoutCurrentProject);
 
 			// calc effect
-			var metric = new AUPCRStudent(matching, projectsWithoutOne, students);
+			var metric = new AUPCRStudent(maxflowResultWithoutCurrentProject, projectsWithoutOne, students);
 
-			var result = metric.asDouble();
 			results.put(project, metric);
 		});
 

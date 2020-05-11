@@ -1,28 +1,39 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
+import nl.tudelft.aidm.optimalgroups.Algorithm;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.Objects;
 
-public interface TopicGroupAlgorithm
+public interface TopicGroupAlgorithm extends Algorithm
 {
-	String name();
+	GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext);
 
-	GroupProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext);
-
-	class Result
+	class Result implements Algorithm.Result<TopicGroupAlgorithm, GroupToProjectMatching<Group.FormedGroup>>
 	{
-		public final TopicGroupAlgorithm algo;
-		public final Matching<Group.FormedGroup, Project> result;
+		private final TopicGroupAlgorithm algo;
+		private final GroupToProjectMatching<Group.FormedGroup> result;
 
-		public Result(TopicGroupAlgorithm algo, Matching<Group.FormedGroup, Project> result)
+		public Result(TopicGroupAlgorithm algo, GroupToProjectMatching<Group.FormedGroup> result)
 		{
 			this.algo = algo;
 			this.result = result;
+		}
+
+		@Override
+		public Algorithm algo()
+		{
+			return algo;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> result()
+		{
+			return result;
 		}
 
 		@Override

@@ -2,8 +2,8 @@ package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve;
 
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -19,8 +19,10 @@ import java.util.Map;
 public class ProjectProfileCurveGroup extends ProfileCurveOfMatching
 {
 
+    private final Matching<Group.FormedGroup, Project> matching;
+
     public ProjectProfileCurveGroup(Matching<Group.FormedGroup, Project> matching) {
-        super(matching);
+        this.matching = matching;
     }
 
     @Override

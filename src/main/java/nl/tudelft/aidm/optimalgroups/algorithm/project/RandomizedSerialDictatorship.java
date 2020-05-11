@@ -3,15 +3,16 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatch;
-import nl.tudelft.aidm.optimalgroups.model.match.FormedGroupToProjectSlotMatching;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectSlotMatch;
+import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectSlotMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.*;
 
-public class RandomizedSerialDictatorship implements GroupProjectMatching<Group.FormedGroup>
+public class RandomizedSerialDictatorship implements GroupToProjectMatching<Group.FormedGroup>
 {
 	private final DatasetContext datasetContext;
 	private final FormedGroups groups;

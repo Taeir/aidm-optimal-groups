@@ -64,7 +64,7 @@ public class SequentualAgents extends Agents
 		}
 
 		@Override
-		public ProjectPreference getProjectPreference()
+		public ProjectPreference projectPreference()
 		{
 			throw new RuntimeException("Group preferences not yet reampped to sequenced agents");
 		}

@@ -1,27 +1,111 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
+import nl.tudelft.aidm.optimalgroups.Algorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.StudentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.TopicGroupAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
  * A matching is popular if there are more agents preferring it to the alternative.
  * Non-transitive: a,b,c in Algorithm then if: (a P b /\  b P c) does not imply a P c
  */
-public class PopularityMatrix
+public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm, ALGORES extends Algorithm.Result<ALGO, MATCHING>>
 {
-	private List<TopicGroupAlgorithm.Result> algoResults;
-	private List<MatchingPopularityComparison> algoPopularityComparisons;
+	public static class TopicGroup extends PopularityMatrix<GroupToProjectMatching<Group.FormedGroup>, TopicGroupAlgorithm, TopicGroupAlgorithm.Result>
+	{
+		public TopicGroup(List<? extends TopicGroupAlgorithm.Result> resultingMatchings)
+		{
+			super(resultingMatchings, MatchingPopularityComparisonTopicGroup::new);
+		}
 
-	public PopularityMatrix(List<TopicGroupAlgorithm.Result> resultingMatchings)
+		static class MatchingPopularityComparisonTopicGroup extends MatchingPopularityComparison<TopicGroupAlgorithm.Result>
+		{
+			final int numAgentsPreferingA;
+			final int numAgentsPreferingB;
+
+			public MatchingPopularityComparisonTopicGroup(TopicGroupAlgorithm.Result a, TopicGroupAlgorithm.Result b)
+			{
+				super(a, b);
+
+				var allAgents = a.result().datasetContext().allAgents();
+
+				// Ranking of assigned project by Agents in matching A
+				var rankInMatchingA = AssignedProjectRankStudent.inGroupMatching(a.result())
+					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+
+				// Ranking of assigned project by Agents in matching B
+				var rankInMatchingB = AssignedProjectRankStudent.inGroupMatching(b.result())
+					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+
+
+				numAgentsPreferingA = (int) allAgents.asCollection().stream()
+					.filter(agent -> rankInMatchingA.get(agent) < rankInMatchingB.get(agent))
+					.count();
+
+				numAgentsPreferingB = (int) allAgents.asCollection().stream()
+					.filter(agent -> rankInMatchingB.get(agent) < rankInMatchingA.get(agent))
+					.count();
+			}
+		}
+	}
+
+	public static class StudentProject extends PopularityMatrix<AgentToProjectMatching, StudentProjectAlgorithm, StudentProjectAlgorithm.Result>
+	{
+		public StudentProject(List<? extends StudentProjectAlgorithm.Result> resultingMatchings)
+		{
+			super(resultingMatchings, MatchingPopularityComparisonStudentTopic::new);
+		}
+
+		static class MatchingPopularityComparisonStudentTopic extends MatchingPopularityComparison<StudentProjectAlgorithm.Result>
+		{
+			final int numAgentsPreferingA;
+			final int numAgentsPreferingB;
+
+			public MatchingPopularityComparisonStudentTopic(StudentProjectAlgorithm.Result a, StudentProjectAlgorithm.Result b)
+			{
+				super(a, b);
+
+				var allAgents = a.result().datasetContext().allAgents();
+
+				// Ranking of assigned project by Agents in matching A
+				var rankInMatchingA = AssignedProjectRankStudent.inStudentMatching(a.result())
+					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+
+				// Ranking of assigned project by Agents in matching B
+				var rankInMatchingB = AssignedProjectRankStudent.inStudentMatching(b.result())
+					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+
+
+				numAgentsPreferingA = (int) allAgents.asCollection().stream()
+					.filter(agent -> rankInMatchingA.get(agent) < rankInMatchingB.get(agent))
+					.count();
+
+				numAgentsPreferingB = (int) allAgents.asCollection().stream()
+					.filter(agent -> rankInMatchingB.get(agent) < rankInMatchingA.get(agent))
+					.count();
+			}
+		}
+	}
+
+	/* POPULARITY MATRIX IMPL BELOW */
+	private List<? extends ALGORES> algoResults;
+	private List<MatchingPopularityComparison<ALGORES>> algoPopularityComparisons;
+
+	public PopularityMatrix(List<? extends ALGORES> resultingMatchings, BiFunction<ALGORES, ALGORES, MatchingPopularityComparison<ALGORES>> compare)
 	{
 		this.algoResults = resultingMatchings;
 
 		var allMatchingsBasedOnSameDatasetContext = resultingMatchings.stream()
-			.map(algoResult -> algoResult.result.datasetContext())
+			.map(algoResult -> algoResult.result().datasetContext())
 			.distinct()
 			.count() == 1;
 
@@ -30,53 +114,35 @@ public class PopularityMatrix
 
 		this.algoPopularityComparisons = new ArrayList<>();
 
-		for (TopicGroupAlgorithm.Result result : resultingMatchings) {
-			for (TopicGroupAlgorithm.Result otherResult : resultingMatchings) {
+		for (var result : resultingMatchings) {
+			for (var otherResult : resultingMatchings) {
 
 				if (result != otherResult) {
-					algoPopularityComparisons.add(new MatchingPopularityComparison(result, otherResult));
+					var comparison = compare.apply(result, otherResult);
+					algoPopularityComparisons.add(comparison);
 				}
 
 			}
 		}
 	}
 
-	public Set<MatchingPopularityComparison> asSet()
+	public Set<MatchingPopularityComparison<ALGORES>> asSet()
 	{
 		return new HashSet<>(algoPopularityComparisons);
 	}
 
-	static class MatchingPopularityComparison
+	static abstract class MatchingPopularityComparison<ALGORES extends Algorithm.Result>
 	{
-		final TopicGroupAlgorithm.Result a;
-		final TopicGroupAlgorithm.Result b;
+		private final ALGORES resultA;
+		private final ALGORES resultB;
 
-		final int numAgentsPreferingA;
-		final int numAgentsPreferingB;
+		int numAgentsPreferingA;
+		int numAgentsPreferingB;
 
-		public MatchingPopularityComparison(TopicGroupAlgorithm.Result a, TopicGroupAlgorithm.Result b)
+		public MatchingPopularityComparison(ALGORES resultA, ALGORES resultB)
 		{
-			this.a = a;
-			this.b = b;
-
-			var allAgents = a.result.datasetContext().allAgents();
-
-			// Ranking of assigned project by Agents in matching A
-			var rankInMatchingA = AssignedProjectRankStudent.ranksOf(a.result)
-				.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::studentsRank));
-
-			// Ranking of assigned project by Agents in matching B
-			var rankInMatchingB = AssignedProjectRankStudent.ranksOf(b.result)
-				.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::studentsRank));
-
-
-			numAgentsPreferingA = (int) allAgents.asCollection().stream()
-				.filter(agent -> rankInMatchingA.get(agent) < rankInMatchingB.get(agent))
-				.count();
-
-			numAgentsPreferingB = (int) allAgents.asCollection().stream()
-				.filter(agent -> rankInMatchingB.get(agent) < rankInMatchingA.get(agent))
-				.count();
+			this.resultA = resultA;
+			this.resultB = resultB;
 		}
 
 		@Override
@@ -87,7 +153,7 @@ public class PopularityMatrix
 			else if (numAgentsPreferingA < numAgentsPreferingB) winner = " < ";
 			else if (numAgentsPreferingA == numAgentsPreferingB) winner = " = ";
 
-			return String.format("%s (%s) %s (%s) %s ", a.algo.name(), numAgentsPreferingA, winner, numAgentsPreferingB, b.algo.name());
+			return String.format("%s (%s) %s (%s) %s ", resultA.algo().name(), numAgentsPreferingA, winner, numAgentsPreferingB, resultB.algo().name());
 		}
 
 		@Override
@@ -95,18 +161,19 @@ public class PopularityMatrix
 		{
 			if (this == o) return true;
 			if (!(o instanceof MatchingPopularityComparison)) return false;
-			MatchingPopularityComparison that = (MatchingPopularityComparison) o;
+			MatchingPopularityComparison<?> that = (MatchingPopularityComparison<?>) o;
 			return numAgentsPreferingA == that.numAgentsPreferingA &&
 				numAgentsPreferingB == that.numAgentsPreferingB &&
-				a.equals(that.a) &&
-				b.equals(that.b);
+				resultA.equals(that.resultA) &&
+				resultB.equals(that.resultB);
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Objects.hash(a, b, numAgentsPreferingA, numAgentsPreferingB);
+			return Objects.hash(resultA, resultB, numAgentsPreferingA, numAgentsPreferingB);
 		}
 	}
+
 
 }

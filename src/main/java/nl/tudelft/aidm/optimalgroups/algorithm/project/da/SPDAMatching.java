@@ -1,28 +1,27 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project.da;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.match.AgentToProjectMatch;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.GenericDatasource;
+import plouchtch.assertion.Assert;
+import plouchtch.lang.exception.ImplementMe;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class SPDAMatching implements StudentProjectMatching
+public class SPDAMatching implements AgentToProjectMatching
 {
-	private final CourseEdition courseEdition;
+	private final DatasetContext datasetContext;
 	private final Agents agents;
 	private final Projects projects;
 
@@ -41,11 +40,11 @@ public class SPDAMatching implements StudentProjectMatching
 			Project project = match.to();
 			var assignedProjectRank = new AssignedProjectRankStudent(student, project);
 
-			int rankNumber = assignedProjectRank.studentsRank();
+			int rankNumber = assignedProjectRank.asInt();
 //			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");
 
 //			assignedProjectRank.studentRanks().forEach(metric -> {
-			System.out.printf("Student %s\trank: %s\n", assignedProjectRank.student().id, assignedProjectRank.studentsRank());
+			System.out.printf("Student %s\trank: %s\n", assignedProjectRank.student().id, assignedProjectRank.asInt());
 
 //				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, assignedProjectRank.student()).asFraction());
 //			});
@@ -54,11 +53,11 @@ public class SPDAMatching implements StudentProjectMatching
 		return;
 	}
 
-	public SPDAMatching(CourseEdition courseEdition)
+	public SPDAMatching(DatasetContext datasetContext)
 	{
-		this.courseEdition = courseEdition;
-		this.agents = courseEdition.allAgents();
-		this.projects = courseEdition.allProjects();
+		this.datasetContext = datasetContext;
+		this.agents = datasetContext.allAgents();
+		this.projects = datasetContext.allProjects();
 
 		// todo: sanity check (capacity)
 	}
@@ -71,7 +70,7 @@ public class SPDAMatching implements StudentProjectMatching
 	@Override
 	public Map<Project, List<Agent>> groupedByProject()
 	{
-		return null;
+		throw new ImplementMe();
 	}
 
 	@Override
@@ -87,24 +86,24 @@ public class SPDAMatching implements StudentProjectMatching
 	@Override
 	public DatasetContext datasetContext()
 	{
-		return courseEdition;
+		return datasetContext;
 	}
 
 	private List<Match<Agent, Project>> determine()
 	{
-		List<ProposingAgent> unmatched = this.agents.asCollection().stream().map(ProposingAgent::new).collect(Collectors.toList());
+		Stack<ProposingAgent> unmatched = this.agents.asCollection().stream().map(ProposingAgent::new).collect(Collectors.toCollection(Stack::new));
 		List<ProposingAgent> matched = new ArrayList<>(unmatched.size());
 
 		Consumer<ProposingAgent> rejectionHandler = stud -> {
 			System.out.printf("   Student %s rejected\n", stud.id);
 			unmatched.add(stud);
 		};
-		Collection<ProposableProject> proposableProjects = projects.asCollection().stream().map((Project project) -> new ProposableProject(project, rejectionHandler)).collect(Collectors.toList());
+		Collection<ProposableProject> proposableProjects = projects.asCollection().stream()
+			.map((Project project) -> new ProposableProject(project, rejectionHandler))
+			.collect(Collectors.toList());
 
-		Predicate<Collection<?>> notEmpty = (collection) -> collection.isEmpty() == false;
-
-		while (notEmpty.test(unmatched)) {
-			var unmatchedAgent = unmatched.remove(0);
+		while (unmatched.size() > 0) {
+			var unmatchedAgent = unmatched.pop();
 
 			// propose to
 			var proposal = unmatchedAgent.makeNextProposal();
@@ -129,6 +128,9 @@ public class SPDAMatching implements StudentProjectMatching
 				matching.add(match);
 			});
 		}
+
+		Assert.that(matching.stream().map(Match::from).distinct().count() == datasetContext.allAgents().count())
+			.orThrowMessage("Not all agents matched");
 
 		return matching;
 	}

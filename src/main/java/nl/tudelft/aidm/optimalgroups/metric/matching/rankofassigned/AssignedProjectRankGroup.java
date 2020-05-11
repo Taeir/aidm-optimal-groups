@@ -1,9 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned;
 
 import nl.tudelft.aidm.optimalgroups.metric.RankInArray;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.Collection;
@@ -41,7 +41,7 @@ public class AssignedProjectRankGroup
 			.collect(Collectors.toList());
 	}
 
-	public static Stream<AssignedProjectRankGroup> ranksOf(Matching<Group.FormedGroup, Project> matching)
+	public static Stream<AssignedProjectRankGroup> groupRanks(Matching<? extends Group, Project> matching)
 	{
 		return matching.asList().stream()
 			.map(AssignedProjectRankGroup::new);

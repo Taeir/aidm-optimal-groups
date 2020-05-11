@@ -3,12 +3,13 @@ package nl.tudelft.aidm.optimalgroups.model.agent;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.GroupPreferenceInDb;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.ProjectPreferencesInDb;
+import nl.tudelft.aidm.optimalgroups.model.HasProjectPrefs;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 
 import javax.sql.DataSource;
 
-public abstract class Agent
+public abstract class Agent implements HasProjectPrefs
 {
 	public final Integer id;
 	public final ProjectPreference projectPreference;
@@ -45,7 +46,8 @@ public abstract class Agent
 		this.usingCombinedPreference = false;
 	}
 
-	public ProjectPreference getProjectPreference() {
+	@Override
+	public ProjectPreference projectPreference() {
 		return (usingCombinedPreference) ? this.combinedPreference : this.projectPreference;
 	}
 

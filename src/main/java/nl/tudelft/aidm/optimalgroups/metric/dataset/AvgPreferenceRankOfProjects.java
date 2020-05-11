@@ -29,7 +29,7 @@ public class AvgPreferenceRankOfProjects
 
 	public static AvgPreferenceRankOfProjects fromAgents(Agents agents, Projects allProjects)
 	{
-		var preferencesOfAll = agents.asCollection().stream().map(Agent::getProjectPreference).collect(Collectors.toList());
+		var preferencesOfAll = agents.asCollection().stream().map(Agent::projectPreference).collect(Collectors.toList());
 
 		return new AvgPreferenceRankOfProjects(preferencesOfAll, allProjects);
 	}
@@ -82,7 +82,11 @@ public class AvgPreferenceRankOfProjects
 		// Because JFreeChart's DefaultBoxAndWhiskerCategoryDataset renders the items in the order they are present in the chartDataset
 		projectToRanksMap.forEach((project, ranks) -> Collections.sort(ranks)); // sort the ranks to get the median easily later
 		projectToRanksMap.entrySet().stream()
-			.sorted(Comparator.comparing(projectRanksTuple -> Statistics.calculateMedian(projectRanksTuple.getValue(), false)))
+			.sorted(
+				Map.Entry.comparingByValue(
+					Comparator.comparing((List<Integer> ranks) -> Statistics.calculateMedian(ranks, false))
+						.thenComparing((List<Integer> ranks) -> Statistics.calculateMean(ranks)))
+			)
 			.forEach(entry ->
 				chartDataset.add(entry.getValue(), "", String.valueOf(entry.getKey()))
 			);

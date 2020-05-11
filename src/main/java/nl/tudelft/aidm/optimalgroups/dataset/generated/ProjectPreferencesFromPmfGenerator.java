@@ -1,0 +1,91 @@
+package nl.tudelft.aidm.optimalgroups.dataset.generated;
+
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
+import org.apache.commons.math3.distribution.EnumeratedDistribution;
+import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.util.Pair;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ *  This type of generator generates ProjectPreferences
+ * 	where in the projects rank is related to the probability of that project.
+ * 	The probability is determined by the given distribution. More precisely, the projects correspond to [0,mean]
+ * 	line of the PDF of the distribution. Mean = #number of projects.
+ */
+public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
+{
+	protected final Projects projects;
+	protected final List<Pair<Project, Double>> pmf;
+
+	/**
+	 * Base constructor, given a RealDistribution the PMF of projects is constructed.
+	 * @param projects The projects for which the preferences are generated
+	 * @param pmf The PMF according to which the projects are drawn from - will be normalized to sum 100%
+	 */
+	public ProjectPreferencesFromPmfGenerator(Projects projects, List<Pair<Project, Double>> pmf)
+	{
+		this.projects = projects;
+		this.pmf = pmf;
+	}
+
+	@Override
+	public ProjectPreference generateNew()
+	{
+		// Would be nicer to have NormallyDistributedProjectPreference type...
+		/// TODO: move PMF into own class
+		return new PmfGeneratedProjectPreference(pmf);
+	}
+
+	class PmfGeneratedProjectPreference implements ProjectPreference
+	{
+		// The PMF used to generate this preference profile
+		private final List<Pair<Project, Double>> completePmf;
+
+		private final List<Project> prefProfile;
+		private Integer[] asArray = null;
+
+		public PmfGeneratedProjectPreference(List<Pair<Project, Double>> completePmf)
+		{
+			this.completePmf = completePmf;
+			// We're building this list by drawing projects with probabilities defined in the PMF
+			var pref = new ArrayList<Project>(pmf.size());
+
+			// Copy the complete PMF
+			var pmf = new LinkedList<>(completePmf);
+
+			// While we have projects to add to our list
+			while (pmf.isEmpty() == false) {
+				EnumeratedDistribution<Project> projectPrefDistrib = new EnumeratedDistribution<>(pmf);
+				var sample = projectPrefDistrib.sample();
+				pref.add(sample);
+
+				// Remove the project from PMF, the pmf will be updated with the remaining elements
+				pmf.removeIf(pair -> pair.getKey().equals(sample));
+			}
+
+			prefProfile = pref;
+		}
+
+		@Override
+		public Integer[] asArray()
+		{
+			if (asArray == null) {
+				asArray = prefProfile.stream().map(Project::id).toArray(Integer[]::new);
+			}
+
+			return asArray;
+		}
+
+		@Override
+		public List<Project> asListOfProjects()
+		{
+			return Collections.unmodifiableList(prefProfile);
+		}
+	}
+}

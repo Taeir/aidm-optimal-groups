@@ -1,13 +1,15 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatch;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
 
 import java.util.ArrayList;
@@ -16,13 +18,13 @@ import java.util.List;
 /**
  * Puts *all* students matched to some project into a single group
  */
-public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group>
+public class SingleGroupPerProjectMatching implements GroupToProjectMatching<Group>
 {
-	private final StudentProjectMatching studentProjectMatching;
+	private final AgentToProjectMatching agentToProjectMatching;
 
-	public SingleGroupPerProjectMatching(StudentProjectMatching studentProjectMatching)
+	public SingleGroupPerProjectMatching(AgentToProjectMatching agentToProjectMatching)
 	{
-		this.studentProjectMatching = studentProjectMatching;
+		this.agentToProjectMatching = agentToProjectMatching;
 	}
 
 	private List<Match<Group, Project>> result = null;
@@ -37,12 +39,12 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 
 		FormedGroups formedGroups = new FormedGroups();
 
-		studentProjectMatching.groupedByProject().forEach((project, agentsAsList) -> {
+		agentToProjectMatching.groupedByProject().forEach((project, agentsAsList) -> {
 			Agents agents = Agents.from(agentsAsList);
 			Group.TentativeGroup group = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
 
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(group);
-			result.add(new StudentsToProjectMatch(formedGroup, project));
+			result.add(new GroupToProjectMatch<>(formedGroup, project));
 		});
 
 		this.result = result;
@@ -52,7 +54,7 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 	@Override
 	public DatasetContext datasetContext()
 	{
-		return studentProjectMatching.datasetContext();
+		return agentToProjectMatching.datasetContext();
 	}
 
 	//	public Matchings<Group, Project> result()
@@ -79,38 +81,4 @@ public class SingleGroupPerProjectMatching implements GroupProjectMatching<Group
 //
 //		return theMatching;
 //	}
-
-	private class StudentsToProjectMatch implements Match<Group, Project>
-	{
-		Group group;
-		Project project;
-
-		public StudentsToProjectMatch(Group group, Project project)
-		{
-			this.group = group;
-			this.project = project;
-		}
-
-		@Override
-		public Group from()
-		{
-			return group;
-		}
-
-		@Override
-		public Project to()
-		{
-			return project;
-		}
-
-		public Group group()
-		{
-			return group;
-		}
-
-		public Project project()
-		{
-			return project;
-		}
-	}
 }

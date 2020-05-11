@@ -17,7 +17,8 @@ import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Matching;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
@@ -88,14 +89,15 @@ public class ILPPPExperimentalResultsPipeline
 
 			//Matchings<Group.FormedGroup, Project.ProjectSlot> matchings = maxflow.result();
 			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
+			var matchingFromStudentPerspective = AgentToProjectMatching.from(matching);
 
-			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matching);
+			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matchingFromStudentPerspective);
 			//studentProfile.printResult();
 
 			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
 			//groupProfile.printResult();
 
-			AUPCR studentAUPCR = new AUPCRStudent(matching, projects, agents);
+			AUPCR studentAUPCR = new AUPCRStudent(matchingFromStudentPerspective, projects, agents);
 			//studentAUPCR.printResult();
 
 			AUPCR groupAUPCR = new AUPCRGroup(matching, projects, agents);

@@ -104,7 +104,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 			Map<Integer, Integer> prefs = new LinkedHashMap<>();
 
 			for (Agent agent : this.agents.asCollection()) {
-				Integer[] preferences = agent.getProjectPreference().asArray();
+				Integer[] preferences = agent.projectPreference().asArray();
 
 				for (int priority = 0; priority < preferences.length; priority++) {
 					int project = preferences[priority];
@@ -135,9 +135,9 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 
 			// Retrieve the projects
 			for (Agent agent : this.agents.asCollection()) {
-				Integer[] preferences = agent.getProjectPreference().asArray();
+				Integer[] preferences = agent.projectPreference().asArray();
 				if (preferences.length > 0) {
-					projects = agent.getProjectPreference().asMap().keySet();
+					projects = agent.projectPreference().asMap().keySet();
 					break;
 				}
 			}
@@ -159,7 +159,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 					int wins = 0;
 					int defeats = 0;
 					for (Agent a : this.agents.asCollection()) {
-						Map<Integer, Integer> preferences = a.getProjectPreference().asMap();
+						Map<Integer, Integer> preferences = a.projectPreference().asMap();
 						if (preferences.get(project) == null || preferences.get(compareProject) == null) {
 							continue;
 						}

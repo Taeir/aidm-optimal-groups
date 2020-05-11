@@ -1,13 +1,13 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.agent.SequentualAgents;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.match.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.StudToGroupTopicMatchingInstanceData;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -17,7 +17,7 @@ import plouchtch.lang.exception.ImplementMe;
 
 import java.util.List;
 
-public class CPDeterminedMatching implements GroupProjectMatching<Group.FormedGroup>
+public class CPDeterminedMatching implements GroupToProjectMatching<Group.FormedGroup>
 {
 
 	private final String minizincexec = "C:\\Program Files\\MiniZinc IDE (bundled)\\";
