@@ -148,5 +148,8 @@ hr {
     color: #999;
 }
 img {
-    width: 100%;
+    width: 90%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
