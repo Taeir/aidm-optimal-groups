@@ -3,14 +3,13 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,7 @@ public class SingleGroupPerProjectMatching implements GroupToProjectMatching<Gro
 
 		agentToProjectMatching.groupedByProject().forEach((project, agentsAsList) -> {
 			Agents agents = Agents.from(agentsAsList);
-			Group.TentativeGroup group = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
+			Group.TentativeGroup group = new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
 
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(group);
 			result.add(new GroupToProjectMatch<>(formedGroup, project));

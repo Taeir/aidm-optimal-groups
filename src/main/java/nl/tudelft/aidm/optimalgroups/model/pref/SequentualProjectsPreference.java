@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
 import plouchtch.assertion.Assert;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SequentualProjectsPreference implements ProjectPreference
@@ -51,5 +52,21 @@ public class SequentualProjectsPreference implements ProjectPreference
 	public List<Project> asListOfProjects()
 	{
 		throw new RuntimeException("IMPL ME");
+	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o) return true;
+		if (!(o instanceof ProjectPreference)) return false;
+		if (!(o instanceof SequentualProjectsPreference)) throw new RuntimeException("Hmm SequentualProjects is being compared with some other type. Check if use-case is alright.");
+		ProjectPreference that = (ProjectPreference) o;
+		return Arrays.equals(preferenceProfile, that.asArray());
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Arrays.hashCode(preferenceProfile);
 	}
 }

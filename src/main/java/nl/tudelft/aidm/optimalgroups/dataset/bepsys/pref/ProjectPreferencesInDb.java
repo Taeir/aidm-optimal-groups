@@ -60,8 +60,14 @@ public class ProjectPreferencesInDb implements ProjectPreference
 			var allProjects = courseEdition.allProjects();
 			var projectsNotInPreferences = allProjects.without(projectsInSubmittedPreferences);
 
+			// Append the missing projects in shuffled order. However, the shuffle can mess up the equals() method
+			// we have two strategies: either 1) checkpoint the submitted prefs (with missing projs) and use those in equals
+			// but that could complicate the equals method (do .asArray and then access the checkpoint field...)
+			// or 2) ensure that the shuffle is deterministic for the submitted preferences (the chosen option).
+			// Side note: it might have been better to move the "add missing projects to prefs" somewhere else...
 			ArrayList<Project> shuffledMissingProjects = new ArrayList<>(projectsNotInPreferences.asCollection());
-			Collections.shuffle(shuffledMissingProjects);
+			var rnd = new Random(Arrays.hashCode(submittedPreferencesOfAgentAsProjectIds));
+			Collections.shuffle(shuffledMissingProjects, rnd);
 
 			// Join the two lists/arrays using streams into a single array - Java has no native Array.join
 			preferences = Stream.concat(

@@ -7,10 +7,7 @@ import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  *  This type of generator generates ProjectPreferences
@@ -86,6 +83,22 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 		public List<Project> asListOfProjects()
 		{
 			return Collections.unmodifiableList(prefProfile);
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o) return true;
+			if (!(o instanceof ProjectPreference)) return false;
+			if (!(o instanceof PmfGeneratedProjectPreference)) throw new RuntimeException("Hmm PrefProfPmf is being compared with some other type. Check if use-case is alright.");
+			PmfGeneratedProjectPreference that = (PmfGeneratedProjectPreference) o;
+			return prefProfile.equals(that.prefProfile);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(prefProfile);
 		}
 	}
 }

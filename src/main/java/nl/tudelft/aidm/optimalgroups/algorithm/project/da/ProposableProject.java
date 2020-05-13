@@ -58,11 +58,13 @@ public class ProposableProject implements Project
 			return ProposalAnswer.REJECT;
 		}
 
-		// Fairness IDEA: keep track of num demotions and demote the agent with least amount of demotions
+		// Fairness idea: keep track of num demotions and demote the agent with least amount of demotions
+		// however, the ordinal utility is pretty much that.
+
 		// Now reject least-impacted agent
-		var proposalToReject = rejectableProposals.stream().sorted(
-			Comparator.comparing(Proposal::utilityIfRejected).reversed()
-		).findFirst().get();
+		var proposalToReject = rejectableProposals.stream()
+			.max(Comparator.comparing(Proposal::utilityIfRejected))
+			.get();
 
 
 		rejectedAgentConsumer.accept(proposalToReject.proposingAgent);
@@ -104,7 +106,7 @@ public class ProposableProject implements Project
 		REJECT
 	}
 
-	class TentativelyAcceptedProposal extends Proposal
+	static class TentativelyAcceptedProposal extends Proposal
 	{
 		public TentativelyAcceptedProposal(Proposal proposal)
 		{

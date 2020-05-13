@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report;
 
+import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Document;
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 public class ExperimentReportInHtml
@@ -33,6 +35,7 @@ public class ExperimentReportInHtml
 
 		/* Markdown to Html stuff */
 		MutableDataSet options = new MutableDataSet();
+		options.set(Parser.EXTENSIONS, List.of(TablesExtension.create()));
 
 		Parser parser = Parser.builder(options).build();
 		HtmlRenderer renderer = HtmlRenderer.builder(options).build();

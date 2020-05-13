@@ -2,7 +2,7 @@ package nl.tudelft.aidm.optimalgroups.model.group;
 
 import nl.tudelft.aidm.optimalgroups.model.HasProjectPrefs;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 public interface Group extends HasProjectPrefs
@@ -67,7 +67,7 @@ public interface Group extends HasProjectPrefs
 		public TentativeGroup combined(TentativeGroup other)
 		{
 			Agents agents = members.with(other.members);
-			ProjectPreferenceOfAgents pref = ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents);
+			AggregatedProfilePreference pref = AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents);
 
 			return new TentativeGroup(agents, pref);
 		}

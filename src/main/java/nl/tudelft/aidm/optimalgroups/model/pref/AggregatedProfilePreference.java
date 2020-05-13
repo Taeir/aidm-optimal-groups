@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * ProjectPreference implementation for a whole group. This is an average of the group member preferences (as implemented in BepSYS)
  */
-public abstract class ProjectPreferenceOfAgents implements ProjectPreference
+public abstract class AggregatedProfilePreference implements ProjectPreference
 {
 	protected Agents agents;
 
@@ -22,7 +22,7 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 
 	protected CourseEdition courseEdition;
 
-	public ProjectPreferenceOfAgents(Agents agents)
+	public AggregatedProfilePreference(Agents agents)
 	{
 		this.agents = agents;
 	}
@@ -84,15 +84,32 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 		}
 	}
 
-	public static ProjectPreferenceOfAgents aggregateWithGloballyConfiguredAggregationMethod(Agents agents) {
+	public static AggregatedProfilePreference aggregateWithGloballyConfiguredAggregationMethod(Agents agents) {
 		if (Application.preferenceAggregatingMethod.equals("Copeland")) {
-			return new ProjectPreferenceOfAgents.Copeland(agents);
+			return new AggregatedProfilePreference.Copeland(agents);
 		} else {
-			return new ProjectPreferenceOfAgents.Borda(agents);
+			return new AggregatedProfilePreference.Borda(agents);
 		}
 	}
 
-	public static class Borda extends ProjectPreferenceOfAgents {
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o) return true;
+		if (!(o instanceof ProjectPreference)) return false;
+		if (!(o instanceof AggregatedProfilePreference)) throw new RuntimeException("Hmm AggregatedProfilePreference is being compared with some other type. Check if use-case is alright.");
+		AggregatedProfilePreference that = (AggregatedProfilePreference) o;
+		return Arrays.equals(avgPreferenceAsArray, that.avgPreferenceAsArray);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Arrays.hashCode(avgPreferenceAsArray);
+	}
+
+	public static class Borda extends AggregatedProfilePreference
+	{
 
 		public Borda(Agents agents) {
 			super(agents);
@@ -123,7 +140,8 @@ public abstract class ProjectPreferenceOfAgents implements ProjectPreference
 		}
 	}
 
-	public static class Copeland extends ProjectPreferenceOfAgents {
+	public static class Copeland extends AggregatedProfilePreference
+	{
 
 		public Copeland(Agents agents) {
 			super(agents);

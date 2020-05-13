@@ -1,6 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report;
 
+import com.vladsch.flexmark.util.format.MarkdownTable;
 import net.steppschuh.markdowngenerator.Markdown;
+import nl.tudelft.aidm.optimalgroups.experiment.ProfilePrefFreqs;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
@@ -64,11 +66,14 @@ public class ExperimentReportInMarkdown
 //		Assert.that(allProjectsHaveSameAmountOfSlots).orThrowMessage("Not implemented: handling projects with heterogeneous amount of slots");
 //		var numSlots = dataContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).findAny().getAsInt();
 
-
-
 		var doc = new StringBuffer();
+
 		doc.append(Markdown.heading("Dataset info", 3).toString()).append("\n");
-		doc.append(Markdown.image(embed(experiment.projectRankingDistribution.asChart()))).append("\n");
+
+		doc.append(Markdown.image(embed(experiment.projectRankingDistribution.asChart()))).append("\n\n");
+
+		doc.append(new ProfilePrefFreqs(dataContext, 5, 30).asMarkdownTable()).append("\n");
+
 		doc.append(Markdown.unorderedList(
 			"\\#agents: " + numAgents,
 			"\\#projects: " + numProjects,

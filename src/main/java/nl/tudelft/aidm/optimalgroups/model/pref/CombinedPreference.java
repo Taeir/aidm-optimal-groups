@@ -158,4 +158,30 @@ public class CombinedPreference implements ProjectPreference {
          */
         void apply(int projectId, int rank);
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+
+        if (o instanceof ProjectPreference) {
+            if (o instanceof CombinedPreference) {
+                CombinedPreference that = (CombinedPreference) o;
+                return projectPreference.equals(that.projectPreference);
+            }
+            else {
+                throw new RuntimeException("Hmm CombinedPref is being compared with some other type. Check if use-case is alright.");
+//                ProjectPreference that = (ProjectPreference) o;
+//                return projectPreference.equals(that);
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(projectPreference);
+    }
 }

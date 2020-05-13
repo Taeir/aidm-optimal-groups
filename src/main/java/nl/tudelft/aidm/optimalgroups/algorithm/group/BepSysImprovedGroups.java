@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreferenceOfAgents;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 
 
 import java.util.*;
@@ -200,7 +200,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
                 Agents agents = Agents.from(clique);
 
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
 //                System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
@@ -536,7 +536,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents));
+            return new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
         }
     }
 
@@ -564,7 +564,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = g1.members().with(g2.members());
-            ProjectPreference preferences = ProjectPreferenceOfAgents.aggregateWithGloballyConfiguredAggregationMethod(agents);
+            ProjectPreference preferences = AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents);
 
             return new Group.TentativeGroup(agents, preferences);
         }
