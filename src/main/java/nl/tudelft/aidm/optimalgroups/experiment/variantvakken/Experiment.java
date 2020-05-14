@@ -1,7 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.StudentProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.TopicGroupAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.Distribution;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 public class Experiment
 {
 	public final DatasetContext datasetContext;
-	public final List<StudentProjectAlgorithm> matchingAlgorithms;
+	public final List<AgentProjectAlgorithm> matchingAlgorithms;
 	public final AvgPreferenceRankOfProjects projectRankingDistribution;
 
 	private ExperimentResult result;
@@ -38,7 +37,7 @@ public class Experiment
 	// unsupported for now
 	private final int numIterations = 1;
 
-	public Experiment(DatasetContext datasetContext, List<StudentProjectAlgorithm> matchingAlgorithms)
+	public Experiment(DatasetContext datasetContext, List<AgentProjectAlgorithm> matchingAlgorithms)
 	{
 		this.datasetContext = datasetContext;
 		this.matchingAlgorithms = Collections.unmodifiableList(matchingAlgorithms);

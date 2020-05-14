@@ -1,8 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.DeferredAccpetanceSPAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.MaxFlowSPAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.StudentProjectAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.DeferredAcceptance_AP_Algorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.MaxFlow_AP_Algorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.dataset.VariantvakkenSinglePmf;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.Experiment;
 
@@ -13,9 +13,9 @@ import java.util.List;
 public class VariantVakkenReport1105
 {
 
-	static List<StudentProjectAlgorithm> algorithms = List.of(
-		new MaxFlowSPAlgorithm(),
-		new DeferredAccpetanceSPAlgorithm()
+	static List<AgentProjectAlgorithm> algorithms = List.of(
+		new MaxFlow_AP_Algorithm(),
+		new DeferredAcceptance_AP_Algorithm()
 	);
 
 	public static void main(String[] args)

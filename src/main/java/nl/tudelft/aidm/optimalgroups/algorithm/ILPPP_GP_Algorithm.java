@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 
-public class ILPPP_TGAlgorithm implements TopicGroupAlgorithm
+public class ILPPP_GP_Algorithm implements GroupProjectAlgorithm
 {
 	@Override
 	public String name()

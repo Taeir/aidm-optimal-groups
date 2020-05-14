@@ -1,26 +1,27 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 
-public class CombinedPrefs_TGAlgorithm implements TopicGroupAlgorithm
+public class BepSys_GP_Algorithm implements GroupProjectAlgorithm
 {
 	@Override
 	public String name()
 	{
-		return "Peer and Topic preferences merging";
+		// TODO include Pref agg method
+		return "BepSys";
 	}
 
 	@Override
 	public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 	{
-		var formedGroups = new CombinedPreferencesGreedy(datasetContext).asFormedGroups();
-		var matching = new GroupProjectMaxFlow(datasetContext, formedGroups, datasetContext.allProjects());
+		var groups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
+		var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects());
 
-		return matching;
+		return groupsToProjects;
 	}
 
 	@Override

@@ -1,20 +1,20 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.project.da.SPDAMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 
-public class DeferredAccpetanceSPAlgorithm implements StudentProjectAlgorithm
+public class MaxFlow_AP_Algorithm implements AgentProjectAlgorithm
 {
 	@Override
 	public String name()
 	{
-		return "Capacitated DA";
+		return "Maxflow";
 	}
 
 	@Override
 	public AgentToProjectMatching determineMatching(DatasetContext datasetContext)
 	{
-		return new SPDAMatching(datasetContext);
+		return new StudentProjectMaxFlowMatching(datasetContext);
 	}
 }

@@ -6,16 +6,16 @@ import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 
 import java.util.Objects;
 
-public interface StudentProjectAlgorithm extends Algorithm
+public interface AgentProjectAlgorithm extends Algorithm
 {
 	AgentToProjectMatching determineMatching(DatasetContext datasetContext);
 
-	class Result implements Algorithm.Result<StudentProjectAlgorithm, AgentToProjectMatching>
+	class Result implements Algorithm.Result<AgentProjectAlgorithm, AgentToProjectMatching>
 	{
-		private final StudentProjectAlgorithm algo;
+		private final AgentProjectAlgorithm algo;
 		private final AgentToProjectMatching result;
 
-		public Result(StudentProjectAlgorithm algo, AgentToProjectMatching result)
+		public Result(AgentProjectAlgorithm algo, AgentToProjectMatching result)
 		{
 			this.algo = algo;
 			this.result = result;

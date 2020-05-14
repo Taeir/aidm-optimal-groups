@@ -1,6 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.experiment.thesis;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.TopicGroupAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
 
 import java.util.Collections;

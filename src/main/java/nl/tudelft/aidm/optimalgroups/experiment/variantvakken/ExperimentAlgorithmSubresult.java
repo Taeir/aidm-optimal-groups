@@ -1,13 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.StudentProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.TopicGroupAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
-import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 
-public class ExperimentAlgorithmSubresult extends StudentProjectAlgorithm.Result
+public class ExperimentAlgorithmSubresult extends AgentProjectAlgorithm.Result
 {
 //	public final GiniCoefficient giniStudentProjectRank;
 //	public final GiniCoefficient giniGroupProjectRank;
@@ -22,7 +19,7 @@ public class ExperimentAlgorithmSubresult extends StudentProjectAlgorithm.Result
 
 	public final MatchingMetrics.StudentProject studentPerspectiveMetrics;
 
-	public ExperimentAlgorithmSubresult(StudentProjectAlgorithm algo, AgentToProjectMatching result)
+	public ExperimentAlgorithmSubresult(AgentProjectAlgorithm algo, AgentToProjectMatching result)
 	{
 		super(algo, result);
 

@@ -1,8 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
 import nl.tudelft.aidm.optimalgroups.Algorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.StudentProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.TopicGroupAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
@@ -20,19 +20,19 @@ import java.util.stream.Collectors;
  */
 public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm, ALGORES extends Algorithm.Result<ALGO, MATCHING>>
 {
-	public static class TopicGroup extends PopularityMatrix<GroupToProjectMatching<Group.FormedGroup>, TopicGroupAlgorithm, TopicGroupAlgorithm.Result>
+	public static class TopicGroup extends PopularityMatrix<GroupToProjectMatching<Group.FormedGroup>, GroupProjectAlgorithm, GroupProjectAlgorithm.Result>
 	{
-		public TopicGroup(List<? extends TopicGroupAlgorithm.Result> resultingMatchings)
+		public TopicGroup(List<? extends GroupProjectAlgorithm.Result> resultingMatchings)
 		{
 			super(resultingMatchings, MatchingPopularityComparisonTopicGroup::new);
 		}
 
-		static class MatchingPopularityComparisonTopicGroup extends MatchingPopularityComparison<TopicGroupAlgorithm.Result>
+		static class MatchingPopularityComparisonTopicGroup extends MatchingPopularityComparison<GroupProjectAlgorithm.Result>
 		{
 			final int numAgentsPreferingA;
 			final int numAgentsPreferingB;
 
-			public MatchingPopularityComparisonTopicGroup(TopicGroupAlgorithm.Result a, TopicGroupAlgorithm.Result b)
+			public MatchingPopularityComparisonTopicGroup(GroupProjectAlgorithm.Result a, GroupProjectAlgorithm.Result b)
 			{
 				super(a, b);
 
@@ -58,19 +58,19 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 		}
 	}
 
-	public static class StudentProject extends PopularityMatrix<AgentToProjectMatching, StudentProjectAlgorithm, StudentProjectAlgorithm.Result>
+	public static class StudentProject extends PopularityMatrix<AgentToProjectMatching, AgentProjectAlgorithm, AgentProjectAlgorithm.Result>
 	{
-		public StudentProject(List<? extends StudentProjectAlgorithm.Result> resultingMatchings)
+		public StudentProject(List<? extends AgentProjectAlgorithm.Result> resultingMatchings)
 		{
 			super(resultingMatchings, MatchingPopularityComparisonStudentTopic::new);
 		}
 
-		static class MatchingPopularityComparisonStudentTopic extends MatchingPopularityComparison<StudentProjectAlgorithm.Result>
+		static class MatchingPopularityComparisonStudentTopic extends MatchingPopularityComparison<AgentProjectAlgorithm.Result>
 		{
 			final int numAgentsPreferingA;
 			final int numAgentsPreferingB;
 
-			public MatchingPopularityComparisonStudentTopic(StudentProjectAlgorithm.Result a, StudentProjectAlgorithm.Result b)
+			public MatchingPopularityComparisonStudentTopic(AgentProjectAlgorithm.Result a, AgentProjectAlgorithm.Result b)
 			{
 				super(a, b);
 

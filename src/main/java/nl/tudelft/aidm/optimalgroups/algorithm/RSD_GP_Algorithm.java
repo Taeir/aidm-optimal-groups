@@ -2,26 +2,25 @@ package nl.tudelft.aidm.optimalgroups.algorithm;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 
-public class BepSys_TGAlgorithm implements TopicGroupAlgorithm
+public class RSD_GP_Algorithm implements GroupProjectAlgorithm
 {
 	@Override
 	public String name()
 	{
-		// TODO include Pref agg method
-		return "BepSys";
+		return "BepSys groups into Randomised Serial Dictatorship (IA with Random lottery)";
 	}
 
 	@Override
 	public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 	{
-		var groups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
-		var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects());
+		var formedGroups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true).asFormedGroups();
+		var matching = new RandomizedSerialDictatorship(datasetContext, formedGroups, datasetContext.allProjects());
 
-		return groupsToProjects;
+		return matching;
 	}
 
 	@Override

@@ -4,21 +4,19 @@ import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.Objects;
 
-public interface TopicGroupAlgorithm extends Algorithm
+public interface GroupProjectAlgorithm extends Algorithm
 {
 	GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext);
 
-	class Result implements Algorithm.Result<TopicGroupAlgorithm, GroupToProjectMatching<Group.FormedGroup>>
+	class Result implements Algorithm.Result<GroupProjectAlgorithm, GroupToProjectMatching<Group.FormedGroup>>
 	{
-		private final TopicGroupAlgorithm algo;
+		private final GroupProjectAlgorithm algo;
 		private final GroupToProjectMatching<Group.FormedGroup> result;
 
-		public Result(TopicGroupAlgorithm algo, GroupToProjectMatching<Group.FormedGroup> result)
+		public Result(GroupProjectAlgorithm algo, GroupToProjectMatching<Group.FormedGroup> result)
 		{
 			this.algo = algo;
 			this.result = result;
