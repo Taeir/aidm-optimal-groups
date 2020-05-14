@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.experiment.thesis.report;
 
+import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Document;
@@ -33,6 +34,7 @@ public class ExperimentReportInHtml
 
 		/* Markdown to Html stuff */
 		MutableDataSet options = new MutableDataSet();
+		options.set(Parser.EXTENSIONS, List.of(TablesExtension.create()));
 
 		Parser parser = Parser.builder(options).build();
 		HtmlRenderer renderer = HtmlRenderer.builder(options).build();

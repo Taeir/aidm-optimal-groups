@@ -153,3 +153,18 @@ img {
     margin-left: auto;
     margin-right: auto;
 }
+table {
+     margin-left: auto;
+     margin-right: auto;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+     border:1px solid #583030;
+ }
+table thead th {
+    width: 50%;
+    background-color:rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    border-bottom: 1px solid black;
+}
+table td {
+    padding-right: 10px;
+}

@@ -1,15 +1,13 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report;
 
-import com.vladsch.flexmark.util.format.MarkdownTable;
 import net.steppschuh.markdowngenerator.Markdown;
-import nl.tudelft.aidm.optimalgroups.experiment.ProfilePrefFreqs;
+import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import plouchtch.assertion.Assert;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,7 +70,7 @@ public class ExperimentReportInMarkdown
 
 		doc.append(Markdown.image(embed(experiment.projectRankingDistribution.asChart()))).append("\n\n");
 
-		doc.append(new ProfilePrefFreqs(dataContext, 5, 30).asMarkdownTable()).append("\n");
+		doc.append(BinnedProjectPreferences.exactBins(dataContext, 3, 30).asMarkdownTable()).append("\n");
 
 		doc.append(Markdown.unorderedList(
 			"\\#agents: " + numAgents,

@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.experiment.thesis.report;
 
 import net.steppschuh.markdowngenerator.Markdown;
+import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.experiment.thesis.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.thesis.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
@@ -65,7 +66,11 @@ public class ExperimentReportInMarkdown
 
 		var doc = new StringBuffer();
 		doc.append(Markdown.heading("Dataset info", 3).toString()).append("\n");
-		doc.append(Markdown.image(embed(experiment.projectRankingDistribution.asChart()))).append("\n");
+
+		doc.append(Markdown.image(embed(experiment.projectRankingDistribution.asChart()))).append("\n\n");
+
+		doc.append(BinnedProjectPreferences.exactTopRanksBins(dataContext, 3, 30).asMarkdownTable()).append("\n");
+
 		doc.append(Markdown.unorderedList(
 			"\\#agents: " + numAgents,
 			"\\#projects: " + numProjects,
