@@ -4,17 +4,18 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatchi
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 
-public class MaxFlow_AP_Algorithm implements AgentProjectAlgorithm
+public class MaxFlow_expcost_AP_Algorithm implements AgentProjectAlgorithm
 {
 	@Override
 	public String name()
 	{
-		return "Maxflow";
+		return "Maxflow (exp cost)";
 	}
 
 	@Override
 	public AgentToProjectMatching determineMatching(DatasetContext datasetContext)
 	{
-		return new AgentProjectMaxFlowMatching(datasetContext);
+		PreferencesToCostFn preferencesToCostFn = (projectPreference, theProject) -> (int) Math.pow(projectPreference.rankOf(theProject), 2);
+		return new AgentProjectMaxFlowMatching(datasetContext, preferencesToCostFn);
 	}
 }

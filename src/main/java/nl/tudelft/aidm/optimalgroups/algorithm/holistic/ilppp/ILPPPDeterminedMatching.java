@@ -2,7 +2,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
-import nl.tudelft.aidm.optimalgroups.algorithm.project.StudentProjectMaxFlowMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
 import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
@@ -105,7 +105,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 		return new FormedGroupToProjectMatching(datasetContext, matchingsAsList);
 	}
 
-	boolean canFormValidGroupsWithoutRemainders(StudentProjectMaxFlowMatching matching, GroupSizeConstraint groupSizeConstraint)
+	boolean canFormValidGroupsWithoutRemainders(AgentProjectMaxFlowMatching matching, GroupSizeConstraint groupSizeConstraint)
 	{
 		var groupedByProject = matching.groupedByProject();
 
@@ -156,7 +156,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 			return solution;
 		}
 
-		private boolean solutionIsAcceptable(StudentProjectMaxFlowMatching m)
+		private boolean solutionIsAcceptable(AgentProjectMaxFlowMatching m)
 		{
 			boolean noProjectsWithStudentsButLessThanMinimumSize = m.groupedByProject().values().stream().allMatch(studentsAssignedToProject -> {
 					// check if the following is true for each project
@@ -168,9 +168,9 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 			return noProjectsWithStudentsButLessThanMinimumSize && m.allStudentsAreMatched() && canFormValidGroupsWithoutRemainders(m, groupSizeConstraint);
 		}
 
-		private Optional<MatchingWithMetric> solve(Predicate<StudentProjectMaxFlowMatching> candidateSoltutionTest, GroupSizeConstraint groupSizeConstraint) {
+		private Optional<MatchingWithMetric> solve(Predicate<AgentProjectMaxFlowMatching> candidateSoltutionTest, GroupSizeConstraint groupSizeConstraint) {
 
-			var matching = StudentProjectMaxFlowMatching.of(datasetContext, agents, projects);
+			var matching = AgentProjectMaxFlowMatching.of(datasetContext, agents, projects);
 
 //			SingleGroupPerProjectMatching singleGroup = new SingleGroupPerProjectMatching(matching);
 			var metric = new AUPCRStudent(matching, projects, agents);
