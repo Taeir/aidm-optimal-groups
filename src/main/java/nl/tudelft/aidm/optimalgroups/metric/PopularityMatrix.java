@@ -29,9 +29,6 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 		static class MatchingPopularityComparisonTopicGroup extends MatchingPopularityComparison<GroupProjectAlgorithm.Result>
 		{
-			final int numAgentsPreferingA;
-			final int numAgentsPreferingB;
-
 			public MatchingPopularityComparisonTopicGroup(GroupProjectAlgorithm.Result a, GroupProjectAlgorithm.Result b)
 			{
 				super(a, b);
@@ -67,9 +64,6 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 		static class MatchingPopularityComparisonStudentTopic extends MatchingPopularityComparison<AgentProjectAlgorithm.Result>
 		{
-			final int numAgentsPreferingA;
-			final int numAgentsPreferingB;
-
 			public MatchingPopularityComparisonStudentTopic(AgentProjectAlgorithm.Result a, AgentProjectAlgorithm.Result b)
 			{
 				super(a, b);
