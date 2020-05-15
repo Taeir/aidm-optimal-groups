@@ -11,12 +11,14 @@ public class ProposingAgent extends Agent
 {
 	public final Agent agent;
 	private final Stack<Project> unproposedInDecreasingPreferentialOrder;
+	private final Proposal.Template proposalTemplate;
 
-	protected ProposingAgent(Agent agent)
+	protected ProposingAgent(Agent agent, Proposal.Template proposalTemplate)
 	{
 		super(agent);
 
 		this.agent = agent;
+		this.proposalTemplate = proposalTemplate;
 
 		var prefProjects = new ArrayList<>(agent.projectPreference().asListOfProjects());
 		Collections.reverse(prefProjects);
@@ -28,10 +30,10 @@ public class ProposingAgent extends Agent
 	public Proposal makeNextProposal()
 	{
 		try {
-			var utilityOfGettingProject = unproposedInDecreasingPreferentialOrder.size();
+//			var utilityOfGettingProject = unproposedInDecreasingPreferentialOrder.size();
 			var projectToProposeToNext = unproposedInDecreasingPreferentialOrder.pop();
 
-			return new Proposal(this, projectToProposeToNext, utilityOfGettingProject);
+			return proposalTemplate.newProposal(this, projectToProposeToNext);
 		}
 		catch (Exception exception)
 		{

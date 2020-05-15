@@ -15,64 +15,61 @@ public class ProposableProject implements Project
 	private final int capacity;
 	public final Project project;
 
-	private List<TentativelyAcceptedProposal> tentativelyAccepted;
-	private Consumer<ProposingAgent> rejectedAgentConsumer;
-//	private Function<ProposingAgent, Integer> utilityAfterReject;
+	private final List<TentativelyAcceptedProposal> tentativelyAccepted;
 
 	/**
 	 * @param project The underlying project
-	 * @param rejectedAgentConsumer Handles rejection of the given agent
 	 */
-	public ProposableProject(Project project, Consumer<ProposingAgent> rejectedAgentConsumer/*, Function<ProposingAgent, Integer> utilityAfterReject*/)
+	public ProposableProject(Project project)
 	{
 		this.capacity = project.slots().size();
 		this.tentativelyAccepted = new ArrayList<>(capacity);
 
 		this.project = project;
-		this.rejectedAgentConsumer = rejectedAgentConsumer;
-//		this.utilityAfterReject = utilityAfterReject;
 	}
 
-	public ProposalAnswer receiveProposal(Proposal proposal)
+	public void handleProposal(Proposal proposal)
 	{
 		boolean notAtCapacity = tentativelyAccepted.size() < capacity;
 
-		// Have room - accept
+		/* Have room - accept */
 		if (notAtCapacity) {
 			tentativelyAccepted.add(new TentativelyAcceptedProposal(proposal));
-			return ProposalAnswer.ACCEPT;
+			proposal.tentativelyAccept();
+			return;
 		}
 
-		// No capacity left - decline proposal, or decline this proposing agent?
-// TODO: Use this to do a search - it's a "what if reject, where will the agent end up (heuristic?)"
-//		int utilityAfterRejectingThisProposingAgent = utilityAfterReject.apply(agent);
+		// TODO/Idea: _expected_ utility after reject can be a heuristic - but not very strategy-proof
 
+		/* No capacity left - decline proposal, or decline this proposing agent? */
 		// Find all agents that are better off being rejected than the currently proposing agent
 		var rejectableProposals = tentativelyAccepted.stream()
-			.filter(tentativelyAcceptedProposal ->
-				tentativelyAcceptedProposal.utilityIfRejected() > proposal.utilityIfRejected())
+			.filter(tentativelyAcceptedProposal -> tentativelyAcceptedProposal.agentsExpectedUtilityAfterReject() > proposal.agentsExpectedUtilityAfterReject())
 			.collect(Collectors.toList());
 
 		if (rejectableProposals.isEmpty()) {
-			// Nobody is better off being rejected than the currently proposing agent
-			return ProposalAnswer.REJECT;
+			// Nobody is better off being rejected than the currently proposing agent (then we apply first-come first-serve rules and the new proposal isn't the first)
+			// (please disregard the contextually unfitting method name... Java8's Consumer<T>#accept(T))
+			proposal.reject();
+			return;
 		}
 
 		// Fairness idea: keep track of num demotions and demote the agent with least amount of demotions
-		// however, the ordinal utility is pretty much that.
+		// however, in our current problem setting we already do that as the utility derived from ranks is pretty much that.
 
 		// Now reject least-impacted agent
-		var proposalToReject = rejectableProposals.stream()
-			.max(Comparator.comparing(Proposal::utilityIfRejected))
-			.get();
+		rejectableProposals.stream()
+			.max(Comparator.comparing(Proposal::agentsExpectedUtilityAfterReject))
+			.ifPresentOrElse(proposalToReject -> {
+				proposalToReject.reject();
+				tentativelyAccepted.remove(proposalToReject);
 
+				tentativelyAccepted.add(new TentativelyAcceptedProposal(proposal));
+			},
+			() -> {
+				throw new RuntimeException("Could not find a proposal to reject but had to - check if correct");
+			});
 
-		rejectedAgentConsumer.accept(proposalToReject.proposingAgent);
-
-		tentativelyAccepted.remove(proposalToReject);
-		tentativelyAccepted.add(new TentativelyAcceptedProposal(proposal));
-
-		return ProposalAnswer.ACCEPT;
 	}
 
 	public Collection<Agent> acceptedAgents()
@@ -97,13 +94,6 @@ public class ProposableProject implements Project
 	public List<ProjectSlot> slots()
 	{
 		return project.slots();
-	}
-
-
-	public enum ProposalAnswer
-	{
-		ACCEPT,
-		REJECT
 	}
 
 	static class TentativelyAcceptedProposal extends Proposal

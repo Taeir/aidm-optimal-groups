@@ -10,13 +10,13 @@ import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
+import org.jetbrains.annotations.NotNull;
 import org.sql2o.GenericDatasource;
 import plouchtch.assertion.Assert;
 import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class SPDAMatching implements AgentToProjectMatching
@@ -62,11 +62,6 @@ public class SPDAMatching implements AgentToProjectMatching
 		// todo: sanity check (capacity)
 	}
 
-//	public static SPDAMatching of(Agents agents, Projects projects)
-//	{
-//		return new SPDAMatching(agents, projects);
-//	}
-
 	@Override
 	public Map<Project, List<Agent>> groupedByProject()
 	{
@@ -91,35 +86,34 @@ public class SPDAMatching implements AgentToProjectMatching
 
 	private List<Match<Agent, Project>> determine()
 	{
-		Stack<ProposingAgent> unmatched = this.agents.asCollection().stream().map(ProposingAgent::new).collect(Collectors.toCollection(Stack::new));
-		List<ProposingAgent> matched = new ArrayList<>(unmatched.size());
+		var proposableProjects = new ProposableProjects(this.projects);
+		var unmatched = new Stack<ProposingAgent>();
 
-		Consumer<ProposingAgent> rejectionHandler = stud -> {
-			System.out.printf("   Student %s rejected\n", stud.id);
+		Consumer<ProposingAgent> rejectionFn = stud -> {
+//			System.out.printf("   Student %s rejected\n", stud.id);
 			unmatched.add(stud);
 		};
-		Collection<ProposableProject> proposableProjects = projects.asCollection().stream()
-			.map((Project project) -> new ProposableProject(project, rejectionHandler))
-			.collect(Collectors.toList());
+
+		Proposal.Template proposalTemplate = (proposingAgent, project) ->
+			new Proposal(proposingAgent, project,
+				proposal -> {}, // do nothing if accepted (ProposableProjects manage their tentatively accepted)
+				proposal -> rejectionFn.accept(proposal.proposingAgent)
+			);
+
+		// Put agents into unmatched
+		this.agents.asCollection().stream()
+			.map(agent -> new ProposingAgent(agent, proposalTemplate))
+			.forEach(unmatched::push);
+
 
 		while (unmatched.size() > 0) {
 			var unmatchedAgent = unmatched.pop();
-
-			// propose to
 			var proposal = unmatchedAgent.makeNextProposal();
-
 //			System.out.printf("Student %s,\tproposing to: %s\n", unmatchedAgent.agent, proposal.projectProposingFor().id());
-
-			// UGLY and inefficient: FIXME!
-			var projToProposeTo = proposableProjects.stream().filter(proposableProject -> proposableProject.id() == proposal.projectProposingFor().id())
-				.findAny().get();
-
-			// note: exception (stack is empty or an npe) --> there are no projects to propose to
-			if (projToProposeTo.receiveProposal(proposal) == ProposableProject.ProposalAnswer.REJECT) {
-				unmatched.add(unmatchedAgent);
-			}
+			proposableProjects.receiveProposal(proposal);
 		}
 
+		/* Algo done, now transform into a Matching */
 		List<Match<Agent, Project>> matching = new ArrayList<>();
 		for (ProposableProject proposableProject : proposableProjects)
 		{
@@ -133,6 +127,34 @@ public class SPDAMatching implements AgentToProjectMatching
 			.orThrowMessage("Not all agents matched");
 
 		return matching;
+	}
+
+	static class ProposableProjects implements Iterable<ProposableProject>
+	{
+		private final List<ProposableProject> asList;
+
+		ProposableProjects(Projects projects)
+		{
+			this.asList = projects.asCollection().stream()
+				.map(ProposableProject::new)
+				.collect(Collectors.toList());
+		}
+
+		void receiveProposal(Proposal proposal)
+		{
+			// UGLY and inefficient: FIXME!
+			var projToProposeTo = asList.stream().filter(proposableProject -> proposableProject.id() == proposal.projectProposingFor().id())
+				.findAny().get();
+
+			projToProposeTo.handleProposal(proposal);
+		}
+
+		@NotNull
+		@Override
+		public Iterator<ProposableProject> iterator()
+		{
+			return asList.iterator();
+		}
 	}
 
 }
