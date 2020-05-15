@@ -1,5 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.dataset.generated;
 
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributedProjectPreferencesGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PreferenceGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;

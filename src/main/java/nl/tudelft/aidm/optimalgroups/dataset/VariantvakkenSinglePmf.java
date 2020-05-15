@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.dataset;
 
-import nl.tudelft.aidm.optimalgroups.dataset.generated.ProjectPreferencesFromPmfGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.ProjectPreferencesFromPmfGenerator;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
