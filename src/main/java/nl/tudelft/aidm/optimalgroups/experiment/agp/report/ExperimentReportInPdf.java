@@ -1,11 +1,11 @@
-package nl.tudelft.aidm.optimalgroups.experiment.thesis.report;
+package nl.tudelft.aidm.optimalgroups.experiment.agp.report;
 
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.pdf.converter.PdfConverterExtension;
 import com.vladsch.flexmark.util.ast.Document;
 import com.vladsch.flexmark.util.data.MutableDataSet;
-import nl.tudelft.aidm.optimalgroups.experiment.thesis.Experiment;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
 
 import java.io.BufferedWriter;
 import java.io.File;

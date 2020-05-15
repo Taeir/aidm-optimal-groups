@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report;
+package nl.tudelft.aidm.optimalgroups.experiment.variantvakken;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.DeferredAcceptance_AP_Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.MaxFlow_AP_Algorithm;
@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.MaxFlow_expcost_AP_Algorithm;
 import nl.tudelft.aidm.optimalgroups.dataset.VariantvakkenSinglePmf;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.Experiment;
+import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report.ExperimentReportInHtml;
 
 import java.io.File;
 import java.util.ArrayList;

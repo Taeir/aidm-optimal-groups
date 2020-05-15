@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.experiment.thesis;
+package nl.tudelft.aidm.optimalgroups.experiment.agp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;

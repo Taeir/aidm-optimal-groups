@@ -1,9 +1,9 @@
-package nl.tudelft.aidm.optimalgroups.experiment.thesis.report;
+package nl.tudelft.aidm.optimalgroups.experiment.agp.report;
 
 import net.steppschuh.markdowngenerator.Markdown;
 import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
-import nl.tudelft.aidm.optimalgroups.experiment.thesis.Experiment;
-import nl.tudelft.aidm.optimalgroups.experiment.thesis.ExperimentAlgorithmSubresult;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtils;

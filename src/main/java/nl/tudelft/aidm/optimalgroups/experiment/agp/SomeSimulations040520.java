@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.experiment.thesis.report;
+package nl.tudelft.aidm.optimalgroups.experiment.agp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.BepSys_GP_Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.CombinedPrefs_GP_Algorithm;
@@ -8,7 +8,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.NormallyDistributedProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.PreferenceGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.UniformProjectPreferencesGenerator;
-import nl.tudelft.aidm.optimalgroups.experiment.thesis.Experiment;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
