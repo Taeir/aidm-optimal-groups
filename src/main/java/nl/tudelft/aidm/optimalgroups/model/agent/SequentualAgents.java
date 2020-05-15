@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
+import plouchtch.lang.exception.ImplementMe;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +17,8 @@ public class SequentualAgents extends Agents
 {
 	private SequentualAgents(Agents agents, SequentualProjects sequentualProjects)
 	{
-		super(mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
+		super(agents.datsetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
+		throw new ImplementMe(); // "Sequentualization must happen in datasetContext"
 	}
 
 	private static List<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects)

@@ -6,9 +6,11 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 
 import java.util.Objects;
 
@@ -70,6 +72,41 @@ public interface GroupProjectAlgorithm extends Algorithm
 		{
 			var groups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
 			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects());
+
+			return groupsToProjects;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name();
+		}
+	}
+
+	class BepSys_minimizeIndividualDisutility implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			// TODO include Pref agg method
+			return "BepSys (min indiv disutil)";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var groups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
+
+			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects(),
+
+				// Cost assignment function: the max rank between the individuals within that group
+				(projectPreference, theProject) -> {
+					var aggPref = ((AggregatedProfilePreference) projectPreference);
+					return aggPref.agentsAggregatedFrom().asCollection().stream()
+						.map(Agent::projectPreference)
+						.mapToInt(pp -> pp.rankOf(theProject))
+						.max().orElseThrow();
+				});
 
 			return groupsToProjects;
 		}

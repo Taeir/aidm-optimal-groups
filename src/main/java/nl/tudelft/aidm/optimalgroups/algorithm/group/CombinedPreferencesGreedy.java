@@ -16,8 +16,10 @@ import static java.util.Map.Entry.*;
 
 public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
-    private Agents students;
+    private final DatasetContext datasetContext;
     private final GroupSizeConstraint groupSizeConstraint;
+
+    private Agents students;
     private HashSet<Agent> availableStudents;
     private HashSet<Agent> unavailableStudents;
 
@@ -25,9 +27,10 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
 
     private boolean done = false;
 
-    public CombinedPreferencesGreedy(DatasetContext courseEdition) {
-        this.students = courseEdition.allAgents();
-        this.groupSizeConstraint = courseEdition.groupSizeConstraint();
+    public CombinedPreferencesGreedy(DatasetContext datasetContext) {
+        this.students = datasetContext.allAgents();
+        this.groupSizeConstraint = datasetContext.groupSizeConstraint();
+        this.datasetContext = datasetContext;
 
         this.initializeObjects(students);
     }

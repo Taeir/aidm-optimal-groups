@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.Application;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
@@ -20,14 +21,20 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 	protected List<Project> avgPreferenceAsProjectList;
 	protected Map<Integer, Integer> avgPreferenceMap;
 
-	protected CourseEdition courseEdition;
+	protected DatasetContext datasetContext;
 
 	public AggregatedProfilePreference(Agents agents)
 	{
 		this.agents = agents;
+		this.datasetContext = agents.datsetContext;
 	}
 
-	abstract Integer[] calculateAverageOfGroup();
+	protected abstract Integer[] calculateAverageOfGroup();
+
+	public Agents agentsAggregatedFrom()
+	{
+		return agents;
+	}
 
 	@Override
 	public synchronized Integer[] asArray()
@@ -46,7 +53,7 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 		if (avgPreferenceAsProjectList == null) {
 			var projectIdsInOrder = asArray();
 
-			Projects allProjects = courseEdition.allProjects();
+			Projects allProjects = datasetContext.allProjects();
 			List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
 
 			for (var projId : projectIdsInOrder) {
@@ -54,7 +61,6 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 			}
 
 			avgPreferenceAsProjectList = Collections.unmodifiableList(projectList);
-
 		}
 
 		return avgPreferenceAsProjectList;
@@ -116,7 +122,7 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 		}
 
 		@Override
-		Integer[] calculateAverageOfGroup() {
+		protected Integer[] calculateAverageOfGroup() {
 			// mapping: Project --> Preference-rank
 			Map<Integer, Integer> prefs = new LinkedHashMap<>();
 
@@ -148,7 +154,7 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 		}
 
 		@Override
-		Integer[] calculateAverageOfGroup() {
+		protected Integer[] calculateAverageOfGroup() {
 			Set<Integer> projects = null;
 
 			// Retrieve the projects

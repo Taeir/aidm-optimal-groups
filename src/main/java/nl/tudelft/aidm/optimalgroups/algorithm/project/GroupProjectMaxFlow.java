@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import louchtch.graphmatch.matching.MaxFlowMatching;
 import louchtch.graphmatch.model.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.PreferencesToCostFn;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
@@ -23,14 +24,21 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 	private final DatasetContext datasetContext;
 	private final FormedGroups groups;
 	private final Projects projects;
+	private final PreferencesToCostFn preferencesToCostFn;
 
 	private FormedGroupToProjectSlotMatching result = null;
 
 	public GroupProjectMaxFlow(DatasetContext datasetContext, FormedGroups groups, Projects projects)
 	{
+		this(datasetContext, groups, projects, ProjectPreference::rankOf);
+	}
+
+	public GroupProjectMaxFlow(DatasetContext datasetContext, FormedGroups groups, Projects projects, PreferencesToCostFn preferencesToCostFn)
+	{
 		this.datasetContext = datasetContext;
 		this.groups = groups;
 		this.projects = projects;
+		this.preferencesToCostFn = preferencesToCostFn;
 	}
 
 	@Override
@@ -44,7 +52,7 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 		GroupVertices groupVertices = new GroupVertices(groups);
 		ProjectVertices projectVertices = new ProjectVertices(projects);
 
-		ProjectGroupPreferenceEdges projectGroupPreferenceEdges = new ProjectGroupPreferenceEdges(groupVertices, projectVertices);
+		ProjectGroupPreferenceEdges projectGroupPreferenceEdges = new ProjectGroupPreferenceEdges(groupVertices, projectVertices, preferencesToCostFn);
 
 		// Sick cast https://stackoverflow.com/questions/3246137/java-generics-cannot-cast-listsubclass-to-listsuperclass
 		// warning: not very safe, but not catastrophic if lists are not modified
@@ -52,9 +60,8 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 		var right = (Vertices<GroupProjectMatching>) (Vertices<? extends GroupProjectMatching>) projectVertices;
 
 		var matching = new MaxFlowMatching<>(new MaxFlowGraph<>(left, right, projectGroupPreferenceEdges), SearchType.MinCost);
-		var matchingAsListOfEdges = matching.asListOfEdges();
 
-		for (Edge<GroupProjectMatching> matchEdge : matchingAsListOfEdges)
+		for (Edge<GroupProjectMatching> matchEdge : matching.asListOfEdges())
 		{
 			Group.FormedGroup group = ((GroupVertexContent) matchEdge.from.content()).group;
 			Project.ProjectSlot project = ((ProjectVertexContent) matchEdge.to.content()).slot;
@@ -114,19 +121,18 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 
 	private static class ProjectGroupPreferenceEdges extends DirectedWeightedEdges<GroupProjectMatching>
 	{
-		public ProjectGroupPreferenceEdges(GroupVertices groups, ProjectVertices projects)
+		public ProjectGroupPreferenceEdges(GroupVertices groups, ProjectVertices projects, PreferencesToCostFn preferencesToCostFn)
 		{
 			groups.forEach(group -> {
 
-				ProjectPreference projectPreference = group.content().projectPreference();
-				projectPreference.forEach((int projectId, int rank) -> {
-					List<Vertex<ProjectVertexContent>> projectSlotVertices = projects.slotVerticesForProject(projectId);
+				var projectPreference = group.content().projectPreference();
+				projectPreference.forEach((Project project, int rank) -> {
 
-					projectSlotVertices.forEach(projectSlotVertex -> {
-						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, rank));
+					projects.slotVerticesForProject(project.id()).forEach(projectSlotVertex -> {
+						var costOfAssignment = preferencesToCostFn.costOfGettingAssigned(projectPreference, project);
+						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, costOfAssignment));
 					});
 				});
-
 			});
 		}
 	}

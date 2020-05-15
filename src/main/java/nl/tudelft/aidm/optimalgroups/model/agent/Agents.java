@@ -1,5 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.model.agent;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import plouchtch.assertion.Assert;
+
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -8,19 +11,16 @@ import java.util.function.Consumer;
  */
 public class Agents
 {
+	public final DatasetContext datsetContext;
+
 	// list for now
 	private List<Agent> agents;
 	private Map<Integer, Agent> idToAgentsMap;
 
-	private String courseEditionId;
 
-	public Agents(Agent... agents)
+	public Agents(DatasetContext datsetContext, List<Agent> agents)
 	{
-		this(List.of(agents));
-	}
-
-	public Agents(List<Agent> agents)
-	{
+		this.datsetContext = datsetContext;
 		this.agents = agents;
 
 		idToAgentsMap = new HashMap<>(agents.size());
@@ -59,10 +59,12 @@ public class Agents
 
 	public Agents with(Agents other)
 	{
+		Assert.that(datsetContext.equals(other.datsetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
+
 		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
 		copyAgents.addAll(other.agents);
 
-		return new Agents(copyAgents);
+		return new Agents(datsetContext, copyAgents);
 	}
 
 	public void forEach(Consumer<Agent> fn)
@@ -121,7 +123,8 @@ public class Agents
 
 	public static Agents from(List<Agent> agents)
 	{
-		return new Agents(agents);
+		var datasetContext = agents.get(0).context;
+		return new Agents(datasetContext, agents);
 	}
 
 	@Override
@@ -130,13 +133,13 @@ public class Agents
 		if (this == o) return true;
 		if (!(o instanceof Agents)) return false;
 		Agents other = (Agents) o;
-		return courseEditionId.equals(other.courseEditionId) &&
+		return datsetContext.equals(other.datsetContext) &&
 			agents.equals(other.agents);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(agents, courseEditionId);
+		return Objects.hash(agents, datsetContext);
 	}
 }

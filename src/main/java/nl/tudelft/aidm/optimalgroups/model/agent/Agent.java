@@ -15,7 +15,7 @@ public abstract class Agent implements HasProjectPrefs
 	public final ProjectPreference projectPreference;
 	public final GroupPreference groupPreference;
 
-	protected final DatasetContext context;
+	public final DatasetContext context;
 
 	// TODO: extract to own type?
 	private boolean usingCombinedPreference = false;

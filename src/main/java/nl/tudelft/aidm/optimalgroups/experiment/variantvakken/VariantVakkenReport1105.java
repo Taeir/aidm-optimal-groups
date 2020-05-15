@@ -29,7 +29,7 @@ public class VariantVakkenReport1105
 		experimentsForInReport.add(flipPopExperiment());
 
 		new ExperimentReportInHtml(experimentsForInReport)
-			.writeHtmlSourceToFile(new File("reports/Variantvakken1105.html"));
+			.writeHtmlSourceToFile(new File("reports/Variantvakken1505.html"));
 
 		return;
 	}

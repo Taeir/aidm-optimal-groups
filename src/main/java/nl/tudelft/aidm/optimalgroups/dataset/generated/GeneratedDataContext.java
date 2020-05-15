@@ -28,7 +28,7 @@ public class GeneratedDataContext implements DatasetContext
 		var hexEpochSeconds = Long.toHexString(Instant.now().getEpochSecond());
 		id = String.format("DC[RND_a%s_p%s_%s]_%s", numAgents, projects.count(), hexEpochSeconds, groupSizeConstraint);
 
-		agents = Agents.from(
+		agents = new Agents(this,
 			IntStream.rangeClosed(1, numAgents)
 				.mapToObj(i -> new Agent.AgentInDatacontext(i, generator.generateNew(), GroupPreference.none(), this))
 				.collect(Collectors.toList())
