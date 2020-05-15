@@ -6,6 +6,6 @@ public interface Algorithm
 
 	interface Result<A extends Algorithm, R> {
 		Algorithm algo();
-		R result();
+		R producedMatching();
 	}
 }

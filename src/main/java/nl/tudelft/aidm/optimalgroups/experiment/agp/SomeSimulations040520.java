@@ -1,8 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.experiment.agp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.BepSys_GP_Algorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.CombinedPrefs_GP_Algorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.RSD_GP_Algorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.NormallyDistributedProjectPreferencesGenerator;
@@ -24,9 +22,9 @@ public class SomeSimulations040520
 		var experimentsForInReport = new ArrayList<Experiment>();
 
 		var algorithms = List.of(
-			new BepSys_GP_Algorithm(),
-			new CombinedPrefs_GP_Algorithm(),
-			new RSD_GP_Algorithm()
+			new GroupProjectAlgorithm.BepSys(),
+			new GroupProjectAlgorithm.CombinedPrefs(),
+			new GroupProjectAlgorithm.RSD()
 			/*new ILPPP_TGAlgorithm()*/); // will not succeed on CE10
 
 		var groupSize = GroupSizeConstraint.manual(4, 5);

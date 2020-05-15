@@ -33,14 +33,14 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 			{
 				super(a, b);
 
-				var allAgents = a.result().datasetContext().allAgents();
+				var allAgents = a.producedMatching().datasetContext().allAgents();
 
 				// Ranking of assigned project by Agents in matching A
-				var rankInMatchingA = AssignedProjectRankStudent.inGroupMatching(a.result())
+				var rankInMatchingA = AssignedProjectRankStudent.inGroupMatching(a.producedMatching())
 					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
 
 				// Ranking of assigned project by Agents in matching B
-				var rankInMatchingB = AssignedProjectRankStudent.inGroupMatching(b.result())
+				var rankInMatchingB = AssignedProjectRankStudent.inGroupMatching(b.producedMatching())
 					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
 
 
@@ -68,14 +68,14 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 			{
 				super(a, b);
 
-				var allAgents = a.result().datasetContext().allAgents();
+				var allAgents = a.producedMatching().datasetContext().allAgents();
 
 				// Ranking of assigned project by Agents in matching A
-				var rankInMatchingA = AssignedProjectRankStudent.inStudentMatching(a.result())
+				var rankInMatchingA = AssignedProjectRankStudent.inStudentMatching(a.producedMatching())
 					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
 
 				// Ranking of assigned project by Agents in matching B
-				var rankInMatchingB = AssignedProjectRankStudent.inStudentMatching(b.result())
+				var rankInMatchingB = AssignedProjectRankStudent.inStudentMatching(b.producedMatching())
 					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
 
 
@@ -99,7 +99,7 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 		this.algoResults = resultingMatchings;
 
 		var allMatchingsBasedOnSameDatasetContext = resultingMatchings.stream()
-			.map(algoResult -> algoResult.result().datasetContext())
+			.map(algoResult -> algoResult.producedMatching().datasetContext())
 			.distinct()
 			.count() == 1;
 

@@ -1,6 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
 import nl.tudelft.aidm.optimalgroups.Algorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.project.da.SPDAMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 
@@ -13,12 +15,12 @@ public interface AgentProjectAlgorithm extends Algorithm
 	class Result implements Algorithm.Result<AgentProjectAlgorithm, AgentToProjectMatching>
 	{
 		private final AgentProjectAlgorithm algo;
-		private final AgentToProjectMatching result;
+		private final AgentToProjectMatching producedMatching;
 
-		public Result(AgentProjectAlgorithm algo, AgentToProjectMatching result)
+		public Result(AgentProjectAlgorithm algo, AgentToProjectMatching producedMatching)
 		{
 			this.algo = algo;
-			this.result = result;
+			this.producedMatching = producedMatching;
 		}
 
 		@Override
@@ -28,9 +30,9 @@ public interface AgentProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public AgentToProjectMatching result()
+		public AgentToProjectMatching producedMatching()
 		{
-			return result;
+			return producedMatching;
 		}
 
 		@Override
@@ -41,13 +43,59 @@ public interface AgentProjectAlgorithm extends Algorithm
 			if (!super.equals(o)) return false;
 			Result result1 = (Result) o;
 			return algo.equals(result1.algo) &&
-				result.equals(result1.result);
+				producedMatching.equals(result1.producedMatching);
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Objects.hash(super.hashCode(), algo, result);
+			return Objects.hash(super.hashCode(), algo, producedMatching);
+		}
+	}
+
+	class DeferredAcceptance implements AgentProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "DA (SOSM)";
+		}
+
+		@Override
+		public AgentToProjectMatching determineMatching(DatasetContext datasetContext)
+		{
+			return new SPDAMatching(datasetContext);
+		}
+	}
+
+	class MinCostMaxFlow implements AgentProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Maxflow";
+		}
+
+		@Override
+		public AgentToProjectMatching determineMatching(DatasetContext datasetContext)
+		{
+			return new AgentProjectMaxFlowMatching(datasetContext);
+		}
+	}
+
+	class MinCostMaxFlow_ExpCosts implements AgentProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Maxflow (exp cost)";
+		}
+
+		@Override
+		public AgentToProjectMatching determineMatching(DatasetContext datasetContext)
+		{
+			PreferencesToCostFn preferencesToCostFn = (projectPreference, theProject) -> (int) Math.pow(projectPreference.rankOf(theProject), 2);
+			return new AgentProjectMaxFlowMatching(datasetContext, preferencesToCostFn);
 		}
 	}
 }
