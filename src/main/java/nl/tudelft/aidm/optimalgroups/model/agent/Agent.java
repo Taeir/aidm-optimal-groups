@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 public abstract class Agent implements HasProjectPrefs
 {
 	public final Integer id;
-	public final ProjectPreference projectPreference;
+	private final ProjectPreference projectPreference;
 	public final GroupPreference groupPreference;
 
 	public final DatasetContext context;

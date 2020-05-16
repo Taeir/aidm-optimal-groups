@@ -72,7 +72,11 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 	 */
 	public AgentProjectMaxFlowMatching(DatasetContext datasetContext, Agents students, Projects projects)
 	{
-		this(datasetContext, students, projects, ProjectPreference::rankOf);
+		this(datasetContext, students, projects, (projectPreference, theProject) -> {
+			// If project not present: agent is indifferent or does not want the project,
+			// in both cases it's ok to assign maximum cost
+			return projectPreference.rankOf(theProject).orElse(datasetContext.allProjects().count());
+		});
 	}
 
 	/**
@@ -236,7 +240,7 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 				// for each student's preference, create the edges to projects according to preferences
 				Agent student = studentVertex.content().theStudent;
 
-				if (student.projectPreference.isCompletelyIndifferent()) {
+				if (student.projectPreference().isCompletelyIndifferent()) {
 					// Indifferent -> no projects in pref profile at all
 					projectVertices.forEach(projectVertex -> {
 						// This student is indifferent, therefore prioritize everyone else by assigning lowest rank
@@ -252,10 +256,10 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 				else {
 					// Note: if student is missing projects from the profile, no edge will be created
 					// therefore projects that are missing from the pref profile are counted as "do not want"
-					student.projectPreference.forEach((Project project, int rank) -> {
+					student.projectPreference().forEach((Project project, int rank) -> {
 						projectVertices.findForProject(project.id())
 							.ifPresent(projectVertex -> {
-								var costOfProjectToStudent = preferencesToCostFunction.costOfGettingAssigned(student.projectPreference, project);
+								var costOfProjectToStudent = preferencesToCostFunction.costOfGettingAssigned(student.projectPreference(), project);
 								var edge = DirectedWeightedEdge.between(studentVertex, projectVertex, costOfProjectToStudent);
 								add(edge);
 							});

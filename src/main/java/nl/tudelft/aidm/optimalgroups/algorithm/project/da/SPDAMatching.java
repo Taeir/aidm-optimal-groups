@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project.da;
 
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -40,7 +40,7 @@ public class SPDAMatching implements AgentToProjectMatching
 			Project project = match.to();
 			var assignedProjectRank = new AssignedProjectRankStudent(student, project);
 
-			int rankNumber = assignedProjectRank.asInt();
+//			int rankNumber = assignedProjectRank.asInt();
 //			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");
 
 //			assignedProjectRank.studentRanks().forEach(metric -> {

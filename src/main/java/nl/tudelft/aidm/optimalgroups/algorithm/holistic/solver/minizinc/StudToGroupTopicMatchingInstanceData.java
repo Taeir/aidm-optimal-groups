@@ -66,7 +66,7 @@ public class StudToGroupTopicMatchingInstanceData implements JsonDatafile
 	private static String preferencesProfile(Agents agents)
 	{
 		var profileAsString = agents.asCollection().stream().sorted(Comparator.comparing(agent -> agent.id))
-			.map(agent -> agent.projectPreference.asArray())
+			.map(agent -> agent.projectPreference().asArray())
 			.map(Arrays::toString)
 			.collect(Collectors.joining(",\n", "[", "]"));
 

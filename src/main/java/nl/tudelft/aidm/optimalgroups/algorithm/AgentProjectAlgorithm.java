@@ -94,7 +94,15 @@ public interface AgentProjectAlgorithm extends Algorithm
 		@Override
 		public AgentToProjectMatching determineMatching(DatasetContext datasetContext)
 		{
-			PreferencesToCostFn preferencesToCostFn = (projectPreference, theProject) -> (int) Math.pow(projectPreference.rankOf(theProject), 2);
+			PreferencesToCostFn preferencesToCostFn = (projectPreference, theProject) ->
+			{
+				// If project is not in preferences (either indifference or a "do-not-want" project,
+				// assign it the highest cost.
+				int maxRank = datasetContext.allProjects().count();
+				int rank = projectPreference.rankOf(theProject).orElse(maxRank);
+				return (int) Math.pow(rank, 2);
+			};
+
 			return new AgentProjectMaxFlowMatching(datasetContext, preferencesToCostFn);
 		}
 	}

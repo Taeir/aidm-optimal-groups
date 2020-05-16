@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr;
 
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
@@ -49,7 +49,7 @@ public class AUPCRGroup extends AUPCR {
         for (int r = 1; r <= projects.count(); r++) {
             for (Match<? extends Group, Project> match : matching.asList()) {
                 AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
-                if (assignedProjectRank.groupRank() <= r) {
+                if (r >=assignedProjectRank.asInt().orElseThrow()) {
                     result += 1;
                 }
             }

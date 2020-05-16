@@ -28,8 +28,8 @@ public class GroupPreferenceSatisfaction
 
 	private int peersInGroup() {
 		Group.FormedGroup group = match.from();
-		int[] groupMembers = group.members().asCollection().stream().mapToInt(agent -> agent.id).toArray();
-		int[] pref = student.groupPreference.asArray();
+		Integer[] groupMembers = group.members().asCollection().stream().map(agent -> agent.id).toArray(Integer[]::new);
+		Integer[] pref = student.projectPreference().asArray();
 
 		NumMatchingArrayElements numMatchingArrayElements = new NumMatchingArrayElements(groupMembers, pref);
 		int count = numMatchingArrayElements.asInt();
@@ -38,6 +38,6 @@ public class GroupPreferenceSatisfaction
 	}
 
 	private int peersGiven() {
-		return this.student.groupPreference.asArray().length;
+		return this.student.projectPreference().asArray().length;
 	}
 }

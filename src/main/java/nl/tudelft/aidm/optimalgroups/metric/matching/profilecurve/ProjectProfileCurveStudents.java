@@ -1,24 +1,18 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve;
 
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.ui.ApplicationFrame;
-import org.jfree.data.Range;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.*;
 
 import java.awt.*;
@@ -45,15 +39,14 @@ public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
             for (var match : this.matching.asList()) {
                 var assignedProjectRank = new AssignedProjectRankStudent(match);
 
-                int studentsRank = assignedProjectRank.asInt();
+                // Student rank -1 indicates no project preference, hence we exclude
+                // in order to not inflate our performance
+                if (assignedProjectRank.isOfIndifferentAgent())
+                    continue;
 
-                    // Student rank -1 indicates no project preference, hence we exclude
-                    // in order to not inflate our performance
-                if (studentsRank == -1)
-                    return;
-
-                this.worstRank = Math.max(this.worstRank, studentsRank);
-                this.profile.merge(studentsRank, 1, Integer::sum);
+                int rank = assignedProjectRank.asInt().orElseThrow();
+                this.worstRank = Math.max(this.worstRank, rank);
+                this.profile.merge(rank, 1, Integer::sum);
             }
         }
     }

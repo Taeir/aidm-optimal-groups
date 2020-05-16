@@ -1,6 +1,5 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned;
+package nl.tudelft.aidm.optimalgroups.metric.rank;
 
-import nl.tudelft.aidm.optimalgroups.metric.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
@@ -8,9 +7,10 @@ import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
+import java.util.OptionalInt;
 import java.util.stream.Stream;
 
-public class AssignedProjectRankStudent
+public class AssignedProjectRankStudent implements AssignedRank
 {
 	private Agent student;
 	private Project project;
@@ -31,15 +31,19 @@ public class AssignedProjectRankStudent
 		return student;
 	}
 
-	public int asInt()
+	@Override
+	public OptionalInt asInt()
 	{
 		int projectId = project.id();
+		Integer[] preferencesAsArray = student.projectPreference().asArray();
 
-		if (student.projectPreference.isCompletelyIndifferent())
-			return -1;
+		return new RankInArray().determineRank(projectId, preferencesAsArray);
+	}
 
-		int rank = new RankInArray().determineRank(projectId, student.projectPreference.asArray());
-		return rank;
+	@Override
+	public boolean isOfIndifferentAgent()
+	{
+		return student.projectPreference().isCompletelyIndifferent();
 	}
 
 	public static Stream<AssignedProjectRankStudent> inGroupMatching(Matching<Group.FormedGroup, Project> matching)

@@ -408,7 +408,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                 if (possibleGroupMerges.size() == 0) {
                     for (Agent a : unmergedGroup.members().asCollection()) {
                         Agents singleAgent = Agents.from(a);
-                        unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference));
+                        unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference()));
                     }
                 }
 
@@ -478,7 +478,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                         // Divide all people of this group
                         for (Agent a : unmergedGroup.members().asCollection()) {
                             Agents singleAgent = Agents.from(a);
-                            unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference));
+                            unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference()));
                         }
                     }
                 }

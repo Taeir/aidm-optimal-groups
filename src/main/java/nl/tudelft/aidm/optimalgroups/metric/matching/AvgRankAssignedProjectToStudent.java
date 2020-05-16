@@ -1,10 +1,12 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching;
 
 import nl.tudelft.aidm.optimalgroups.metric.bla.AvgRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+
+import java.util.OptionalInt;
 
 public class AvgRankAssignedProjectToStudent implements AvgRank
 {
@@ -29,7 +31,7 @@ public class AvgRankAssignedProjectToStudent implements AvgRank
 	{
 		var sum = matching.asList().stream()
 			.map(AssignedProjectRankStudent::new)
-			.mapToInt(AssignedProjectRankStudent::asInt)
+			.map(AssignedProjectRankStudent::asInt).flatMapToInt(OptionalInt::stream)
 			.sum() * 1.0;
 
 		var numStudents = matching.asList().size();

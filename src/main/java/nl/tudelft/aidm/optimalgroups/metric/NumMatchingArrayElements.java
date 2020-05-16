@@ -6,10 +6,10 @@ import java.util.Set;
 
 public class NumMatchingArrayElements
 {
-	private final int[] array;
-	private final int[] elementsToFind;
+	private final Integer[] array;
+	private final Integer[] elementsToFind;
 
-	public NumMatchingArrayElements(int[] array, int[] elementsToFind)
+	public NumMatchingArrayElements(Integer[] array, Integer[] elementsToFind)
 	{
 		this.array = array;
 		this.elementsToFind = elementsToFind;

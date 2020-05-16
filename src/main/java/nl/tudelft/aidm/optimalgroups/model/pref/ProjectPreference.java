@@ -1,11 +1,12 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
-import nl.tudelft.aidm.optimalgroups.metric.RankInArray;
+import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 
 public interface ProjectPreference
 {
@@ -61,7 +62,7 @@ public interface ProjectPreference
 		return difference;
 	}
 
-	default int rankOf(Project project)
+	default OptionalInt rankOf(Project project)
 	{
 		return new RankInArray().determineRank(project.id(), this.asArray());
 	}

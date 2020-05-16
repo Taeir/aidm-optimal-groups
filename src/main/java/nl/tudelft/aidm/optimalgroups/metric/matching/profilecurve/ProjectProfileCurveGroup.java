@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve;
 
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
@@ -34,15 +34,13 @@ public class ProjectProfileCurveGroup extends ProfileCurveOfMatching
             for (Match<Group.FormedGroup, Project> match : this.matching.asList())
             {
                 AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
-                int groupRank = assignedProjectRank.groupRank();
 
-                this.worstRank = Math.max(this.worstRank, groupRank);
+                if (assignedProjectRank.isOfIndifferentAgent())
+                    continue;
 
-                if (this.profile.containsKey(groupRank))
-                    this.profile.put(groupRank, this.profile.get(groupRank) + 1);
-                else
-                    this.profile.put(groupRank, 1);
-
+                var rank = assignedProjectRank.asInt().orElseThrow();
+                this.worstRank = Math.max(this.worstRank, rank);
+                this.profile.merge(rank, 1, Integer::sum);
             }
         }
     }

@@ -69,7 +69,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
                     continue;
                 }
 
-                int differenceToOther = student.projectPreference.differenceTo(other.projectPreference);
+                int differenceToOther = student.projectPreference().differenceTo(other.projectPreference());
                 differences.put(other, differenceToOther);
             }
 

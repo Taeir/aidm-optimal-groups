@@ -30,7 +30,11 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 
 	public GroupProjectMaxFlow(DatasetContext datasetContext, FormedGroups groups, Projects projects)
 	{
-		this(datasetContext, groups, projects, ProjectPreference::rankOf);
+		this(datasetContext, groups, projects, (projectPreference, theProject) -> {
+			// If project not present: agent is indifferent or does not want the project,
+			// in both cases it's ok to assign maximum cost
+			return projectPreference.rankOf(theProject).orElse(datasetContext.allProjects().count());
+		});
 	}
 
 	public GroupProjectMaxFlow(DatasetContext datasetContext, FormedGroups groups, Projects projects, PreferencesToCostFn preferencesToCostFn)

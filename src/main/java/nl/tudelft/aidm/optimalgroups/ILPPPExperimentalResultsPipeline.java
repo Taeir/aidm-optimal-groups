@@ -11,8 +11,8 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProfileCurveOf
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroupDistribution;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudentDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroupDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudentDistribution;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;

@@ -7,12 +7,15 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMat
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 
 public interface GroupProjectAlgorithm extends Algorithm
 {
@@ -104,7 +107,8 @@ public interface GroupProjectAlgorithm extends Algorithm
 					var aggPref = ((AggregatedProfilePreference) projectPreference);
 					return aggPref.agentsAggregatedFrom().asCollection().stream()
 						.map(Agent::projectPreference)
-						.mapToInt(pp -> pp.rankOf(theProject))
+						.filter(Predicate.not(ProjectPreference::isCompletelyIndifferent))
+						.mapToInt(pp -> pp.rankOf(theProject).orElse(0))
 						.max().orElseThrow();
 				});
 

@@ -91,7 +91,7 @@ public class CombinedPreference implements ProjectPreference {
 
             // Get the agent object belonging to the peer and its project preferences (or throw exception if it is not in collection)
             Agent peer = this.agents.findByAgentId(peerId).get();
-            Integer[] peerProjectPreferences = peer.projectPreference.asArray();
+            Integer[] peerProjectPreferences = peer.projectPreference().asArray();
 
             for (int rank = 0; rank < peerProjectPreferences.length; rank++) {
                 int project = peerProjectPreferences[rank];

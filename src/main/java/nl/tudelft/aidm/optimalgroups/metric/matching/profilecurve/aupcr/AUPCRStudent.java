@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr;
 
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
@@ -33,7 +33,7 @@ public class AUPCRStudent extends AUPCR {
     protected float totalArea() {
         float studentsWithPreference = 0;
         for (Agent student : this.students.asCollection()) {
-            if (student.projectPreference.isCompletelyIndifferent() == false)
+            if (student.projectPreference().isCompletelyIndifferent() == false)
                 studentsWithPreference += 1;
         }
 
@@ -53,7 +53,7 @@ public class AUPCRStudent extends AUPCR {
                 var rank = new AssignedProjectRankStudent(match);
 
                 // Student rank -1 indicates no preference, do not include this student
-                if (rank.asInt() <= r && rank.asInt() != -1) {
+                if (!rank.isOfIndifferentAgent() && r >= rank.asInt().orElseThrow()) {
                     result += 1;
                 }
             }

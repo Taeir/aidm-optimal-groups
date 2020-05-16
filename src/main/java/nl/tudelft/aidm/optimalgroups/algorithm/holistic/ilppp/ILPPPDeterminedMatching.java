@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankGroup;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -42,7 +42,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 		for (var match : matches) {
 			AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
 
-			int rankNumber = assignedProjectRank.groupRank();
+			int rankNumber = assignedProjectRank.asInt().orElse(-1);
 			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");
 
 			assignedProjectRank.studentRanks().forEach(metric -> {

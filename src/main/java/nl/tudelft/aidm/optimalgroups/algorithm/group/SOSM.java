@@ -106,7 +106,7 @@ public class SOSM implements GroupFormingAlgorithm
                 while(tentativelyFormedGroups.count() < minAmountOfGroups)
                 {
                     Agent randomStudent = this.students.asCollection().iterator().next();
-                    Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(Agents.from(randomStudent), randomStudent.projectPreference);
+                    Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(Agents.from(randomStudent), randomStudent.projectPreference());
                     this.tentativelyFormedGroups.addAsFormed(tentativeGroup);
                     this.availableStudents.remove(randomStudent);
                     this.unavailableStudents.add(randomStudent);

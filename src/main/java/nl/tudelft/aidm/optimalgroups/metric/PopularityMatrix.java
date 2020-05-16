@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.metric;
 import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.metric.matching.rankofassigned.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
@@ -45,11 +45,20 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 
 				numAgentsPreferingA = (int) allAgents.asCollection().stream()
-					.filter(agent -> rankInMatchingA.get(agent) < rankInMatchingB.get(agent))
+					.filter(agent -> {
+						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
+						// All agents who prefer matching A to B (rank the assigned project in matching A higher than in B)
+						return rankInA < rankInB;
+					})
 					.count();
 
 				numAgentsPreferingB = (int) allAgents.asCollection().stream()
-					.filter(agent -> rankInMatchingB.get(agent) < rankInMatchingA.get(agent))
+					.filter(agent -> {
+						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
+						return rankInB < rankInA;
+					})
 					.count();
 			}
 		}
@@ -80,11 +89,20 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 
 				numAgentsPreferingA = (int) allAgents.asCollection().stream()
-					.filter(agent -> rankInMatchingA.get(agent) < rankInMatchingB.get(agent))
+					.filter(agent -> {
+						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
+						// All agents who prefer matching A to B (rank the assigned project in matching A higher than in B)
+						return rankInA < rankInB;
+					})
 					.count();
 
 				numAgentsPreferingB = (int) allAgents.asCollection().stream()
-					.filter(agent -> rankInMatchingB.get(agent) < rankInMatchingA.get(agent))
+					.filter(agent -> {
+						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
+						return rankInB < rankInA;
+					})
 					.count();
 			}
 		}
