@@ -4,7 +4,9 @@ import net.steppschuh.markdowngenerator.Markdown;
 import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
+import nl.tudelft.aidm.optimalgroups.metric.matching.NumberAgentsMatched;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -43,7 +45,7 @@ public class ExperimentReportInMarkdown
 			doc.append( Markdown.heading("Experiment - " + experiment.datasetContext.identifier(), 2).toString() )
 				.append("\n");
 			doc.append( datasetInfo(experiment) );
-			doc.append( popularityInMarkdown(experiment.result().popularityMatrix) );
+			doc.append( summary(experiment.result()) );
 			doc.append( algoResultsInMarkdown(experiment.result().results) );
 			doc.append( Markdown.rule() )
 				.append("\n");
@@ -67,16 +69,19 @@ public class ExperimentReportInMarkdown
 		var doc = new StringBuffer();
 		doc.append(Markdown.heading("Dataset info", 3).toString()).append("\n");
 
-		doc.append(Markdown.image(embed(experiment.projectRankingDistribution.asChart()))).append("\n\n");
-
-		doc.append(BinnedProjectPreferences.exactTopRanksBins(dataContext, 3, 30).asMarkdownTable()).append("\n");
-
 		doc.append(Markdown.unorderedList(
 			"\\#agents: " + numAgents,
 			"\\#projects: " + numProjects,
 			"\\#slots per project: " + numSlots,
 			"group sizes, min: " + groupSize.minSize() + ", max: " + groupSize.maxSize()
 		)).append("\n");
+
+		JFreeChart distribProjectsInPreferencesChart = experiment.projectRankingDistribution.asChart();
+		doc.append(Markdown.image(embed(distribProjectsInPreferencesChart))).append("\n\n");
+
+		var binnedProjectPreferences = BinnedProjectPreferences.exactTopRanksBins(dataContext, 3, 30);
+		doc.append(binnedProjectPreferences.asMarkdownTable()).append("\n");
+
 
 		return doc;
 	}
@@ -100,6 +105,11 @@ public class ExperimentReportInMarkdown
 
 
 		doc.append(Markdown.heading("Student perspective", 4)).append("\n");
+
+		var numStudentsMatched = NumberAgentsMatched.fromGroupMatching(algoResult.producedMatching()).asInt();
+		int numStudentsInDataset = algoResult.producedMatching().datasetContext().allAgents().count();
+		doc.append(Markdown.text(String.format("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset)));
+
 		doc.append(Markdown.image(embed(algoResult.studentPerspectiveMetrics.profileCurve().asChart()))).append("\n");
 		doc.append(Markdown.unorderedList(
 			"Gini: " + algoResult.studentPerspectiveMetrics.giniCoefficient().asDouble(),
@@ -117,11 +127,13 @@ public class ExperimentReportInMarkdown
 		return doc;
 	}
 
-	private String popularityInMarkdown(PopularityMatrix popularityMatrix)
+	private String summary(ExperimentResult experimentResult)
 	{
-		String doc = Markdown.heading("Algorithm popularity", 3) + "\n" +
-			Markdown.text("A matching is more popular than some other, if more agents prefer it to the other - that is, they are better off.") + "\n" +
-			Markdown.unorderedList((Object[]) popularityMatrix.asSet().toArray(Object[]::new)) + "\n";
+		String doc = Markdown.heading("Summary of results", 3) + "\n";
+
+		 doc += Markdown.heading("Algorithm popularity", 4) + "\n" +
+			 Markdown.italic("Algorithm name followed by the number of agents, in braces, that prefer it over the other") + "\n" +
+			Markdown.unorderedList((Object[]) experimentResult.popularityMatrix.asSet().toArray(Object[]::new)) + "\n";
 
 		return doc;
 	}
