@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.metric;
 import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
@@ -36,12 +36,12 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 				var allAgents = a.producedMatching().datasetContext().allAgents();
 
 				// Ranking of assigned project by Agents in matching A
-				var rankInMatchingA = AssignedProjectRankStudent.inGroupMatching(a.producedMatching())
-					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+				var rankInMatchingA = AssignedRank.ProjectToStudent.inGroupMatching(a.producedMatching())
+					.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
 
 				// Ranking of assigned project by Agents in matching B
-				var rankInMatchingB = AssignedProjectRankStudent.inGroupMatching(b.producedMatching())
-					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+				var rankInMatchingB = AssignedRank.ProjectToStudent.inGroupMatching(b.producedMatching())
+					.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
 
 
 				numAgentsPreferingA = (int) allAgents.asCollection().stream()
@@ -80,12 +80,12 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 				var allAgents = a.producedMatching().datasetContext().allAgents();
 
 				// Ranking of assigned project by Agents in matching A
-				var rankInMatchingA = AssignedProjectRankStudent.inStudentMatching(a.producedMatching())
-					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+				var rankInMatchingA = AssignedRank.ProjectToStudent.inStudentMatching(a.producedMatching())
+					.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
 
 				// Ranking of assigned project by Agents in matching B
-				var rankInMatchingB = AssignedProjectRankStudent.inStudentMatching(b.producedMatching())
-					.collect(Collectors.toMap(AssignedProjectRankStudent::student, AssignedProjectRankStudent::asInt));
+				var rankInMatchingB = AssignedRank.ProjectToStudent.inStudentMatching(b.producedMatching())
+					.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
 
 
 				numAgentsPreferingA = (int) allAgents.asCollection().stream()

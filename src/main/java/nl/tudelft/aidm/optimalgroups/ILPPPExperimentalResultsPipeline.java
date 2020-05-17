@@ -4,15 +4,15 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMat
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
-import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProfileCurveOfMatching;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroupDistribution;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudentDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.group.GroupPreferenceSatisfactionHistogram;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.GroupRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.AbstractRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankGroupHistogram;
+import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankStudentHistogram;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -56,9 +56,9 @@ public class ILPPPExperimentalResultsPipeline
 		double[] studentAUPCRs = new double[iterations];
 		double[] groupAUPCRs = new double[iterations];
 
-		GroupPreferenceSatisfactionDistribution[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionDistribution[iterations];
-		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
-		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
+		GroupPreferenceSatisfactionHistogram[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionHistogram[iterations];
+		AssignedProjectRankGroupHistogram[] groupProjectRankDistributions = new AssignedProjectRankGroupHistogram[iterations];
+		AssignedProjectRankStudentHistogram[] studentProjectRankDistributions = new AssignedProjectRankStudentHistogram[iterations];
 
 		Agents agents = datasetContext.allAgents();
 		Projects projects = datasetContext.allProjects();
@@ -91,10 +91,10 @@ public class ILPPPExperimentalResultsPipeline
 			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 			var matchingFromStudentPerspective = AgentToProjectMatching.from(matching);
 
-			ProfileCurveOfMatching studentProfileCurve = new ProjectProfileCurveStudents(matchingFromStudentPerspective);
+			AbstractRankDistributionInMatching studentProfileCurve = new StudentRankDistributionInMatching(matchingFromStudentPerspective);
 			//studentProfile.printResult();
 
-			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
+			AbstractRankDistributionInMatching groupProfileCurve = new GroupRankDistributionInMatching(matching);
 			//groupProfile.printResult();
 
 			AUPCR studentAUPCR = new AUPCRStudent(matchingFromStudentPerspective, projects, agents);
@@ -103,13 +103,13 @@ public class ILPPPExperimentalResultsPipeline
 			AUPCR groupAUPCR = new AUPCRGroup(matching, projects, agents);
 			//groupAUPCR.printResult();
 
-			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
+			GroupPreferenceSatisfactionHistogram groupPreferenceDistribution = new GroupPreferenceSatisfactionHistogram(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, projects);
+			AssignedProjectRankGroupHistogram groupProjectRankDistribution = new AssignedProjectRankGroupHistogram(matching, projects);
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, projects);
+			AssignedProjectRankStudentHistogram studentProjectRankDistribution = new AssignedProjectRankStudentHistogram(matching, projects);
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics
@@ -131,15 +131,15 @@ public class ILPPPExperimentalResultsPipeline
 		studentAUPCRAverage = studentAUPCRAverage / studentAUPCRs.length;
 		groupAUPCRAverage = groupAUPCRAverage / groupAUPCRs.length;
 
-		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
+		Histogram.AverageHistogram groupPreferenceSatisfactionDistribution = new Histogram.AverageHistogram(groupPreferenceSatisfactionDistributions);
 //		groupPreferenceSatisfactionDistribution.printResult();
 		groupPreferenceSatisfactionDistribution.printToTxtFile(String.format("outputtxt/groupPreferenceSatisfaction_%s_Group%s_Preference%s_Project%s.txt", datasetContext.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
-		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
+		Histogram.AverageHistogram groupProjectRankDistribution = new Histogram.AverageHistogram(groupProjectRankDistributions);
 //		groupProjectRankDistribution.printResult();
 		groupProjectRankDistribution.printToTxtFile(String.format("outputtxt/groupProjectRank_%s_Group%s_Preference%s_Project%s.txt", datasetContext.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 
-		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
+		Histogram.AverageHistogram studentProjectRankDistribution = new Histogram.AverageHistogram(studentProjectRankDistributions);
 //		studentProjectRankDistribution.printResult();
 		studentProjectRankDistribution.printToTxtFile(String.format( "outputtxt/studentProjectRank_%s_Group%s_Preference%s_Project%s.txt", datasetContext.identifier(), groupMatchingAlgorithm, Application.preferenceAggregatingMethod, projectAssignmentAlgorithm));
 

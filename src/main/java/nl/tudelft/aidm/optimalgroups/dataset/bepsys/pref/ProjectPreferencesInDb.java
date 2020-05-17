@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref;
 
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -23,7 +24,10 @@ public class ProjectPreferencesInDb implements ProjectPreference
 	private List<Project> preferencesAsProjectList = null;
 	private Map<Integer, Integer> preferencesMap = null;
 
-	private Boolean isIndifferent = null;
+	// Indicates the rank (inclusive) from which the agent is indifferent
+	// so all preferences of that rank and higher have the same rank, that
+	// of the value of the field.
+	private Integer isIndifferentFromRank = 0;
 
 	public ProjectPreferencesInDb(DataSource dataSource, Integer userId, CourseEdition courseEdition)
 	{
@@ -35,12 +39,32 @@ public class ProjectPreferencesInDb implements ProjectPreference
 	@Override
 	public boolean isCompletelyIndifferent()
 	{
-		if (isIndifferent == null) {
+		if (isIndifferentFromRank == 0) {
 			// force retrieval
 			asArray();
 		}
 
-		return isIndifferent;
+		return isIndifferentFromRank == 1;
+	}
+
+	@Override
+	public OptionalInt rankOf(Project project)
+	{
+		if (isCompletelyIndifferent()) {
+			return OptionalInt.empty();
+		}
+
+		var rankInArray = new RankInArray().determineRank(project.id(), asArray());
+
+		if (rankInArray.isPresent()) {
+			// Rank is present, clamp it to proper rank (indifference ranks are all 1 rank)
+			return rankInArray.getAsInt() >= isIndifferentFromRank
+				? OptionalInt.of(isIndifferentFromRank)
+				: rankInArray;
+		}
+		else {
+			return OptionalInt.empty();
+		}
 	}
 
 	@Override
@@ -76,8 +100,9 @@ public class ProjectPreferencesInDb implements ProjectPreference
 				)
 				.toArray(Integer[]::new);
 
-			// Set indifference flag by inspecting its submitted preferences
-			isIndifferent = submittedPreferencesOfAgentAsProjectIds.length == 0;
+			// Rank is 1-based. agent is indifferent between all the projects that were just appended
+			// that it did not originally submit
+			isIndifferentFromRank = submittedPreferencesOfAgentAsProjectIds.length + 1;
 		}
 
 		return preferences;

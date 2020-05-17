@@ -5,14 +5,16 @@ import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
-import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
+import nl.tudelft.aidm.optimalgroups.metric.group.BestWorstIndividualRankInGroupDistribution;
 import nl.tudelft.aidm.optimalgroups.metric.matching.NumberAgentsMatched;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import plouchtch.assertion.Assert;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExperimentReportInMarkdown
 {
@@ -110,12 +112,19 @@ public class ExperimentReportInMarkdown
 		int numStudentsInDataset = algoResult.producedMatching().datasetContext().allAgents().count();
 		doc.append(Markdown.text(String.format("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset)));
 
-		doc.append(Markdown.image(embed(algoResult.studentPerspectiveMetrics.profileCurve().asChart()))).append("\n");
+		var rankDistribution = algoResult.studentPerspectiveMetrics.rankDistribution().asChart();
+		doc.append(Markdown.image(embed(rankDistribution))).append("\n\n");
+
+		var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
+		var bestWorstIndividualRankInGroupDistribution = new BestWorstIndividualRankInGroupDistribution(groups).asChart();
+		doc.append(Markdown.image(embed(bestWorstIndividualRankInGroupDistribution))).append("\n\n");
+
 		doc.append(Markdown.unorderedList(
 			"Gini: " + algoResult.studentPerspectiveMetrics.giniCoefficient().asDouble(),
 			"AUPCR: " + algoResult.studentPerspectiveMetrics.aupcr().asDouble(),
 			"Worst rank: " + algoResult.studentPerspectiveMetrics.worstRank().asInt()
 		)).append("\n");
+
 
 		doc.append(Markdown.heading("Group perspective", 4)).append("\n");
 //			doc.append(Markdown.image(embed(algoResult.projectProfileCurveGroup.asChart())) + "\n");

@@ -1,6 +1,6 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr;
+package nl.tudelft.aidm.optimalgroups.metric.matching.aupcr;
 
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroup;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
@@ -27,7 +27,7 @@ public class AUPCRGroup extends AUPCR {
 
     @Override
     public void printResult() {
-        System.out.printf("Groups AUPCR: %f (Area Under Profile Curve Ratio)\n", this.asDouble());
+        System.out.printf("Groups AUPCR: %f\n", this.asDouble());
     }
 
     @Override
@@ -48,7 +48,7 @@ public class AUPCRGroup extends AUPCR {
         int result = 0;
         for (int r = 1; r <= projects.count(); r++) {
             for (Match<? extends Group, Project> match : matching.asList()) {
-                AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
+                AssignedRank.ProjectToGroup assignedProjectRank = new AssignedRank.ProjectToGroup(match);
                 if (r >=assignedProjectRank.asInt().orElseThrow()) {
                     result += 1;
                 }

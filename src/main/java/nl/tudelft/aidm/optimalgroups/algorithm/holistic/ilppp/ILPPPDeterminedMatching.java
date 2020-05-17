@@ -1,12 +1,12 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfaction;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.matching.group.GroupPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -40,7 +40,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 		List<Match<Group.FormedGroup, Project>> matches = matching.asList();
 
 		for (var match : matches) {
-			AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
+			AssignedRank.ProjectToGroup assignedProjectRank = new AssignedRank.ProjectToGroup(match);
 
 			int rankNumber = assignedProjectRank.asInt().orElse(-1);
 			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");

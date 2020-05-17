@@ -1,17 +1,17 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching;
+package nl.tudelft.aidm.optimalgroups.metric.matching.group;
 
-import nl.tudelft.aidm.optimalgroups.metric.Distribution;
+import nl.tudelft.aidm.optimalgroups.metric.Histogram;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-public class GroupPreferenceSatisfactionDistribution extends Distribution
+public class GroupPreferenceSatisfactionHistogram extends Histogram
 {
 
     private Matching<Group.FormedGroup, Project> matching;
 
-    public GroupPreferenceSatisfactionDistribution(Matching<Group.FormedGroup, Project> matching, int partitionAmount) {
+    public GroupPreferenceSatisfactionHistogram(Matching<Group.FormedGroup, Project> matching, int partitionAmount) {
         super(0, 1, partitionAmount);
         this.matching = matching;
     }

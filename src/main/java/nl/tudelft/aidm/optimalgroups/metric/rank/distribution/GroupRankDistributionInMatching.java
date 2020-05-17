@@ -1,6 +1,6 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve;
+package nl.tudelft.aidm.optimalgroups.metric.rank.distribution;
 
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroup;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
@@ -16,12 +16,12 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProjectProfileCurveGroup extends ProfileCurveOfMatching
+public class GroupRankDistributionInMatching extends AbstractRankDistributionInMatching
 {
 
     private final Matching<Group.FormedGroup, Project> matching;
 
-    public ProjectProfileCurveGroup(Matching<Group.FormedGroup, Project> matching) {
+    public GroupRankDistributionInMatching(Matching<Group.FormedGroup, Project> matching) {
         this.matching = matching;
     }
 
@@ -33,7 +33,7 @@ public class ProjectProfileCurveGroup extends ProfileCurveOfMatching
             this.profile = new HashMap<>();
             for (Match<Group.FormedGroup, Project> match : this.matching.asList())
             {
-                AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
+                AssignedRank.ProjectToGroup assignedProjectRank = new AssignedRank.ProjectToGroup(match);
 
                 if (assignedProjectRank.isOfIndifferentAgent())
                     continue;
@@ -51,17 +51,17 @@ public class ProjectProfileCurveGroup extends ProfileCurveOfMatching
         for (Map.Entry<Integer, Integer> entry : this.asMap().entrySet()) {
             printStream.printf("\t- Rank %d: %d group(s)\n", entry.getKey(), entry.getValue());
         }
-        printStream.printf("\t- Cumulative rank of groups: %d\n\n", this.cumulativeRanks());
+        printStream.printf("\t- Cumulative rank of groups: %d\n\n", this.sumOfRanks());
     }
 
     public JFreeChart asChart()
     {
         this.calculate();
 
-        XYSeries series = new XYSeries("Profile curve - group aggregate preference");
+        XYSeries series = new XYSeries("");
         this.profile.forEach(series::add);
 
-        var chart = ChartFactory.createXYStepAreaChart("Profile curve - group aggregate preference", "Rank", "#Groups", new XYSeriesCollection(series));
+        var chart = ChartFactory.createXYStepAreaChart("Distribution assigned project ranks in group aggregate preferences", "Rank", "# Groups", new XYSeriesCollection(series));
         return chart;
     }
 

@@ -1,8 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve;
-
-import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
-import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
+package nl.tudelft.aidm.optimalgroups.metric.rank.distribution;
 
 import java.io.PrintStream;
 import java.util.Map;
@@ -19,7 +15,7 @@ import java.util.Map;
  *         | -----------------
  * Rank -> | 1 2 3 4 5 6
  */
-public abstract class ProfileCurveOfMatching
+public abstract class AbstractRankDistributionInMatching
 {
     // Mapping of Rank -> |Agents with Rank|
     protected Map<Integer, Integer> profile = null;
@@ -35,7 +31,7 @@ public abstract class ProfileCurveOfMatching
         return this.profile;
     }
 
-    public int cumulativeRanks() {
+    public int sumOfRanks() {
         int result = 0;
         for (Map.Entry<Integer, Integer> entry : this.asMap().entrySet()) {
             int rank = entry.getKey();

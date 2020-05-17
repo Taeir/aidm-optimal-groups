@@ -42,20 +42,20 @@ public class ExperimentReportInPdf
 		return html;
 	}
 
+//	public void writePdfToFile(File file)
+//	{
+//		var html = this.asHtmlSource();
+//
+//		try (var writer = new BufferedWriter(new FileWriter(file.getAbsoluteFile(), false))) {
+//			writer.write(html);
+//		}
+//		catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//	}
+
+
 	public void writePdfToFile(File file)
-	{
-		var html = this.asHtmlSource();
-
-		try (var writer = new BufferedWriter(new FileWriter(file.getAbsoluteFile(), false))) {
-			writer.write(html);
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-
-	void toPdf(File file)
 	{
 		var html = new ExperimentReportInHtml(experiments).asHtmlSource();
 

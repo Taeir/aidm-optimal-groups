@@ -110,7 +110,7 @@ public class ExperimentReportInMarkdown
 		int numStudentsInDataset = algoResult.producedMatching().datasetContext().allAgents().count();
 		doc.append(Markdown.text(String.format("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset)));
 
-		doc.append(Markdown.image(embed(algoResult.studentPerspectiveMetrics.profileCurve().asChart()))).append("\n");
+		doc.append(Markdown.image(embed(algoResult.studentPerspectiveMetrics.rankDistribution().asChart()))).append("\n");
 		doc.append(Markdown.unorderedList(
 			"Gini: " + algoResult.studentPerspectiveMetrics.giniCoefficient().asDouble(),
 			"AUPCR: " + algoResult.studentPerspectiveMetrics.aupcr().asDouble(),

@@ -5,7 +5,8 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Distribution {
+public class Histogram
+{
 
     protected float startValue;
     protected float endValue;
@@ -14,7 +15,7 @@ public class Distribution {
 
     protected boolean calculated = false;
 
-    public Distribution(float startValue, float endValue, int partitionAmount) {
+    public Histogram(float startValue, float endValue, int partitionAmount) {
         this.partitions = new ArrayList<>(partitionAmount);
         this.startValue = startValue;
         this.endValue = endValue;
@@ -124,26 +125,27 @@ public class Distribution {
         }
     }
 
-    public static class AverageDistribution extends Distribution {
+    public static class AverageHistogram extends Histogram
+    {
 
-        Distribution[] distributions;
+        Histogram[] histograms;
         private int partitionAmount;
 
-        public AverageDistribution(Distribution[] distributions) {
-            super(distributions[0].getStartValue(), distributions[0].getEndValue(), distributions[0].asList().size());
-            this.distributions = distributions;
-            this.partitionAmount = distributions[0].asList().size();
+        public AverageHistogram(Histogram[] histograms) {
+            super(histograms[0].getStartValue(), histograms[0].getEndValue(), histograms[0].asList().size());
+            this.histograms = histograms;
+            this.partitionAmount = histograms[0].asList().size();
         }
 
         @Override
         public void printResult() {
             float[] averagePartitions = this.getResult();
 
-            System.out.printf("Average result of %s: \n", this.distributions[0].distributionName());
+            System.out.printf("Average result of %s: \n", this.histograms[0].distributionName());
             for (int i = 0; i < this.partitionAmount; i++) {
                 System.out.printf("\t\t- Partition: start: %f, end: %f, values in partition: %f\n",
-                        this.distributions[0].asList().get(i).getStart(),
-                        this.distributions[0].asList().get(i).getEnd(),
+                        this.histograms[0].asList().get(i).getStart(),
+                        this.histograms[0].asList().get(i).getEnd(),
                         averagePartitions[i]);
             }
         }
@@ -152,16 +154,16 @@ public class Distribution {
             float[] averagePartitions = new float[this.partitionAmount];
 
             int partitionIndex;
-            for (Distribution distribution : this.distributions) {
+            for (Histogram histogram : this.histograms) {
                 partitionIndex = 0;
-                for (Partition partition : distribution.asList()) {
+                for (Partition partition : histogram.asList()) {
                     averagePartitions[partitionIndex] += partition.getValues().size();
                     partitionIndex++;
                 }
             }
 
             for (int i = 0; i < this.partitionAmount; i++) {
-                averagePartitions[i] = averagePartitions[i] / this.distributions.length;
+                averagePartitions[i] = averagePartitions[i] / this.histograms.length;
             }
 
             return averagePartitions;
@@ -172,8 +174,8 @@ public class Distribution {
             float sum = 0;
             int amountOfValues = 0;
 
-            for (Distribution distribution : this.distributions) {
-                for (Partition partition : distribution.asList()) {
+            for (Histogram histogram : this.histograms) {
+                for (Partition partition : histogram.asList()) {
                     for (Float f : partition.getValues()) {
                         sum += f.floatValue();
                         amountOfValues++;

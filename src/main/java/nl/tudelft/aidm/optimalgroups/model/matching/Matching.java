@@ -1,9 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.model.matching;
 
-import nl.tudelft.aidm.optimalgroups.metric.bla.AvgRank;
-import nl.tudelft.aidm.optimalgroups.metric.bla.GiniCoefficient;
-import nl.tudelft.aidm.optimalgroups.metric.bla.WorstRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 
 import java.util.*;

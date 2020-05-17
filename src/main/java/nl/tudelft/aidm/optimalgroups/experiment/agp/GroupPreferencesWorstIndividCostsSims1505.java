@@ -7,6 +7,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributed
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PreferenceGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInPdf;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -133,6 +134,10 @@ public class GroupPreferencesWorstIndividCostsSims1505
 
 		new ExperimentReportInHtml(experimentsForInReport)
 			.writeHtmlSourceToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank.html"));
+
+
+		new ExperimentReportInPdf(experimentsForInReport)
+			.writePdfToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank.pdf"));
 
 		return;
 	}

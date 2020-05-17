@@ -1,6 +1,6 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr;
+package nl.tudelft.aidm.optimalgroups.metric.matching.aupcr;
 
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
@@ -26,7 +26,7 @@ public class AUPCRStudent extends AUPCR {
 
     @Override
     public void printResult() {
-        System.out.printf("Students AUPCR: %f (Area Under Profile Curve Ratio)\n", this.asDouble());
+        System.out.printf("Students AUPCR: %f\n", this.asDouble());
     }
 
     @Override
@@ -50,7 +50,7 @@ public class AUPCRStudent extends AUPCR {
         // TODO: move to using AssignedProjectRankStudent.inStudentMatching stream
         for (int r = 1; r <= this.projects.count(); r++) {
             for (var match : this.matching.asList()) {
-                var rank = new AssignedProjectRankStudent(match);
+                var rank = new AssignedRank.ProjectToStudent(match);
 
                 // Student rank -1 indicates no preference, do not include this student
                 if (!rank.isOfIndifferentAgent() && r >= rank.asInt().orElseThrow()) {

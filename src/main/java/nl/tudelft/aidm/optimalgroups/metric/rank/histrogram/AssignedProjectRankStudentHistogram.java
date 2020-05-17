@@ -1,17 +1,18 @@
-package nl.tudelft.aidm.optimalgroups.metric.rank;
+package nl.tudelft.aidm.optimalgroups.metric.rank.histrogram;
 
-import nl.tudelft.aidm.optimalgroups.metric.Distribution;
+import nl.tudelft.aidm.optimalgroups.metric.Histogram;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
-public class AssignedProjectRankStudentDistribution extends Distribution
+public class AssignedProjectRankStudentHistogram extends Histogram
 {
     private Matching<? extends Group, Project> matching;
 
-    public AssignedProjectRankStudentDistribution(Matching<? extends Group, Project> matching, Projects projects) {
+    public AssignedProjectRankStudentHistogram(Matching<? extends Group, Project> matching, Projects projects) {
         super(0.5f, projects.count() + 0.5f, projects.count());
         this.matching = matching;
     }
@@ -20,8 +21,8 @@ public class AssignedProjectRankStudentDistribution extends Distribution
     protected void calculate() {
         for (Match<? extends Group, Project> match : this.matching.asList()) {
 
-            AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
-            for (AssignedProjectRankStudent rank : assignedProjectRank.studentRanks()) {
+            AssignedRank.ProjectToGroup assignedProjectRank = new AssignedRank.ProjectToGroup(match);
+            for (AssignedRank.ProjectToStudent rank : assignedProjectRank.studentRanks()) {
 
                 // Dont add students without preferences to the distribution
                 if (rank.isOfIndifferentAgent())
@@ -35,6 +36,6 @@ public class AssignedProjectRankStudentDistribution extends Distribution
 
     @Override
     public String distributionName() {
-        return "Student project rank distribution";
+        return "Student project rank histogram";
     }
 }

@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.metric.Distribution;
+import nl.tudelft.aidm.optimalgroups.metric.Histogram;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 
@@ -84,7 +84,7 @@ public class Experiment
 		System.out.printf("Iteration %d\n", iteration+1);
 	}
 
-	private void printAveragePeerSatisfaction(Distribution.AverageDistribution groupPreferenceSatisfactionDistribution)
+	private void printAveragePeerSatisfaction(Histogram.AverageHistogram groupPreferenceSatisfactionDistribution)
 	{
 		System.out.println("Average group preference satisfaction: " + groupPreferenceSatisfactionDistribution.average());
 	}

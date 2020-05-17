@@ -64,6 +64,10 @@ public interface ProjectPreference
 
 	default OptionalInt rankOf(Project project)
 	{
+		if (isCompletelyIndifferent()) {
+			return OptionalInt.empty();
+		}
+
 		return new RankInArray().determineRank(project.id(), this.asArray());
 	}
 

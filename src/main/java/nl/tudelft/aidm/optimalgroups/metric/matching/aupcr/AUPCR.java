@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr;
+package nl.tudelft.aidm.optimalgroups.metric.matching.aupcr;
 
 /**
  * Area Under Profile Curve Ratio (AUPCR) metric.

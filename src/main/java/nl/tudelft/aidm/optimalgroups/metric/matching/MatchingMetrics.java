@@ -1,17 +1,25 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching;
 
-import nl.tudelft.aidm.optimalgroups.metric.bla.AvgRank;
-import nl.tudelft.aidm.optimalgroups.metric.bla.GiniCoefficient;
-import nl.tudelft.aidm.optimalgroups.metric.bla.WorstRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficient;
+import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientGroupRank;
+import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientStudentRank;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AvgAssignedRank;
+import nl.tudelft.aidm.optimalgroups.metric.rank.WorstAssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
+/**
+ * Collection of metrics available for a Matching, See the implementations
+ * that are inner classes of this interface
+ * @param <FROM>
+ * @param <TO>
+ */
 public interface MatchingMetrics<FROM,TO>
 {
 	/**
@@ -22,12 +30,12 @@ public interface MatchingMetrics<FROM,TO>
 	/**
 	 * The average rank of assigned {@link TO}s in {@link FROM}s preferences
 	 */
-	AvgRank avgRank();
+	AvgAssignedRank avgRank();
 
 	/**
 	 * The worst rank of assigned {@link TO}s in {@link FROM}s preferences
 	 */
-	WorstRank worstRank();
+	WorstAssignedRank worstRank();
 
 	/**
 	 * The AUPCR of the matching
@@ -52,15 +60,15 @@ public interface MatchingMetrics<FROM,TO>
 		}
 
 		@Override
-		public AvgRank avgRank()
+		public AvgAssignedRank avgRank()
 		{
-			return new AvgRankAssignedProjectToStudent(matching);
+			return new AvgAssignedRank.AssignedProjectToAgent(matching);
 		}
 
 		@Override
-		public WorstRank worstRank()
+		public WorstAssignedRank worstRank()
 		{
-			return new WorstRankAssignedProjectToStudents(matching);
+			return new WorstAssignedRank.ProjectToStudents(matching);
 		}
 
 		@Override
@@ -69,9 +77,9 @@ public interface MatchingMetrics<FROM,TO>
 			return new AUPCRStudent(matching);
 		}
 
-		public ProjectProfileCurveStudents profileCurve()
+		public StudentRankDistributionInMatching rankDistribution()
 		{
-			return new ProjectProfileCurveStudents(matching);
+			return new StudentRankDistributionInMatching(matching);
 		}
 	}
 
@@ -91,15 +99,15 @@ public interface MatchingMetrics<FROM,TO>
 		}
 
 		@Override
-		public AvgRank avgRank()
+		public AvgAssignedRank avgRank()
 		{
-			return new AvgRankAssignedProjectToGroup(matching);
+			return new AvgAssignedRank.AssignedProjectToGroup(matching);
 		}
 
 		@Override
-		public WorstRank worstRank()
+		public WorstAssignedRank worstRank()
 		{
-			return new WorstRankAssignedProjectToGroup(matching);
+			return new WorstAssignedRank.ProjectToGroup(matching);
 		}
 
 		@Override

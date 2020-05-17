@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching;
+package nl.tudelft.aidm.optimalgroups.metric.matching.group;
 
 import nl.tudelft.aidm.optimalgroups.metric.NumMatchingArrayElements;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;

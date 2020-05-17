@@ -1,18 +1,19 @@
-package nl.tudelft.aidm.optimalgroups.metric.rank;
+package nl.tudelft.aidm.optimalgroups.metric.rank.histrogram;
 
-import nl.tudelft.aidm.optimalgroups.metric.Distribution;
+import nl.tudelft.aidm.optimalgroups.metric.Histogram;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
-public class AssignedProjectRankGroupDistribution extends Distribution
+public class AssignedProjectRankGroupHistogram extends Histogram
 {
 
     private Matching<? extends Group, Project> matching;
 
-    public AssignedProjectRankGroupDistribution(Matching<? extends Group, Project> matching, Projects projects) {
+    public AssignedProjectRankGroupHistogram(Matching<? extends Group, Project> matching, Projects projects) {
         super(0.5f, projects.count() + 0.5f, projects.count());
         this.matching = matching;
     }
@@ -20,7 +21,7 @@ public class AssignedProjectRankGroupDistribution extends Distribution
     @Override
     protected void calculate() {
         for (Match<? extends Group, Project> match : this.matching.asList()) {
-            AssignedProjectRankGroup assignedProjectRank = new AssignedProjectRankGroup(match);
+            AssignedRank.ProjectToGroup assignedProjectRank = new AssignedRank.ProjectToGroup(match);
 
             // Dont add groups without preferences to the distribution
             if (assignedProjectRank.isOfIndifferentAgent())
@@ -33,6 +34,6 @@ public class AssignedProjectRankGroupDistribution extends Distribution
 
     @Override
     public String distributionName() {
-        return "Group project rank distribution";
+        return "Group project rank histogram";
     }
 }

@@ -1,12 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.matching;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectSlotMatching;
-import nl.tudelft.aidm.optimalgroups.metric.bla.AvgRank;
-import nl.tudelft.aidm.optimalgroups.metric.bla.GiniCoefficient;
-import nl.tudelft.aidm.optimalgroups.metric.bla.WorstRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.AvgRankAssignedProjectToGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientGroupRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.WorstRankAssignedProjectToGroup;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;

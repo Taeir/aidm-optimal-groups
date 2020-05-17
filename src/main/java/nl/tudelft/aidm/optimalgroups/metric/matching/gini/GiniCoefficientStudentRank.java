@@ -1,7 +1,7 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching;
+package nl.tudelft.aidm.optimalgroups.metric.matching.gini;
 
-import nl.tudelft.aidm.optimalgroups.metric.bla.GiniCoefficient;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
+import nl.tudelft.aidm.optimalgroups.metric.rank.WorstAssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
@@ -18,10 +18,10 @@ public class GiniCoefficientStudentRank implements GiniCoefficient
 
 	public GiniCoefficientStudentRank(Matching<Agent, Project> matching)
 	{
-		int worstRank = new WorstRankAssignedProjectToStudents(matching).asInt();
+		int worstRank = new WorstAssignedRank.ProjectToStudents(matching).asInt();
 
-		var welfare = AssignedProjectRankStudent.inStudentMatching(matching)
-			.map(AssignedProjectRankStudent::asInt)
+		var welfare = AssignedRank.ProjectToStudent.inStudentMatching(matching)
+			.map(AssignedRank.ProjectToStudent::asInt)
 			.flatMap(optionalInt -> optionalInt.stream().boxed())
 			.map(rank -> worstRank - rank +1)
 			.collect(Collectors.toList());

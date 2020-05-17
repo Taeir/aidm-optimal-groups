@@ -5,16 +5,16 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
-import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientGroupRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.GiniCoefficientStudentRank;
-import nl.tudelft.aidm.optimalgroups.metric.matching.GroupPreferenceSatisfactionDistribution;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.ProjectProfileCurveStudents;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRGroup;
-import nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankGroupDistribution;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudentDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.matching.group.GroupPreferenceSatisfactionHistogram;
+import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientGroupRank;
+import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientStudentRank;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.GroupRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRGroup;
+import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankGroupHistogram;
+import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankStudentHistogram;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
@@ -47,9 +47,9 @@ public class Application
 		double[] studentAUPCRs = new double[iterations];
 		double[] groupAUPCRs = new double[iterations];
 
-		GroupPreferenceSatisfactionDistribution[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionDistribution[iterations];
-		AssignedProjectRankGroupDistribution[] groupProjectRankDistributions = new AssignedProjectRankGroupDistribution[iterations];
-		AssignedProjectRankStudentDistribution[] studentProjectRankDistributions = new AssignedProjectRankStudentDistribution[iterations];
+		GroupPreferenceSatisfactionHistogram[] groupPreferenceSatisfactionDistributions = new GroupPreferenceSatisfactionHistogram[iterations];
+		AssignedProjectRankGroupHistogram[] groupProjectRankDistributions = new AssignedProjectRankGroupHistogram[iterations];
+		AssignedProjectRankStudentHistogram[] studentProjectRankDistributions = new AssignedProjectRankStudentHistogram[iterations];
 
 		// Perform the group making, project assignment and metric calculation inside the loop
 		for (int iteration = 0; iteration < iterations; iteration++) {
@@ -64,11 +64,11 @@ public class Application
 
 //			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
-			var studentProfileCurve = new ProjectProfileCurveStudents(matchingFromStudentPerspective);
+			var studentProfileCurve = new StudentRankDistributionInMatching(matchingFromStudentPerspective);
 			studentProfileCurve.displayChart();
 
 
-			var groupAggRankProfile = new ProjectProfileCurveGroup(matching);
+			var groupAggRankProfile = new GroupRankDistributionInMatching(matching);
 			groupAggRankProfile.displayChart();
 
 //			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);
@@ -86,13 +86,13 @@ public class Application
 			AUPCR groupAUPCR = new AUPCRGroup(matching, datasetContext.allProjects(), datasetContext.allAgents());
 			//groupAUPCR.printResult();
 
-			GroupPreferenceSatisfactionDistribution groupPreferenceDistribution = new GroupPreferenceSatisfactionDistribution(matching, 20);
+			GroupPreferenceSatisfactionHistogram groupPreferenceDistribution = new GroupPreferenceSatisfactionHistogram(matching, 20);
 			//groupPreferenceDistribution.printResult();
 
-			AssignedProjectRankGroupDistribution groupProjectRankDistribution = new AssignedProjectRankGroupDistribution(matching, datasetContext.allProjects());
+			AssignedProjectRankGroupHistogram groupProjectRankDistribution = new AssignedProjectRankGroupHistogram(matching, datasetContext.allProjects());
 			//groupProjectRankDistribution.printResult();
 
-			AssignedProjectRankStudentDistribution studentProjectRankDistribution = new AssignedProjectRankStudentDistribution(matching, datasetContext.allProjects());
+			AssignedProjectRankStudentHistogram studentProjectRankDistribution = new AssignedProjectRankStudentHistogram(matching, datasetContext.allProjects());
 			//studentProjectRankDistribution.printResult();
 
 			// Remember metrics
@@ -111,17 +111,17 @@ public class Application
 			groupAUPCRAverage += groupAUPCRs[iteration] / groupAUPCRs.length;
 		}
 
-		Distribution.AverageDistribution groupPreferenceSatisfactionDistribution = new Distribution.AverageDistribution(groupPreferenceSatisfactionDistributions);
+		Histogram.AverageHistogram groupPreferenceSatisfactionDistribution = new Histogram.AverageHistogram(groupPreferenceSatisfactionDistributions);
 		groupPreferenceSatisfactionDistribution.printToTxtFile("outputtxt/groupPreferenceSatisfaction.txt");
 		//groupPreferenceSatisfactionDistribution.printResult();
 
 		printAveragePeerSatisfaction(groupPreferenceSatisfactionDistribution);
 
-		Distribution.AverageDistribution groupProjectRankDistribution = new Distribution.AverageDistribution(groupProjectRankDistributions);
+		Histogram.AverageHistogram groupProjectRankDistribution = new Histogram.AverageHistogram(groupProjectRankDistributions);
 		groupProjectRankDistribution.printToTxtFile("outputtxt/groupProjectRank.txt");
 		//groupProjectRankDistribution.printResult();
 
-		Distribution.AverageDistribution studentProjectRankDistribution = new Distribution.AverageDistribution(studentProjectRankDistributions);
+		Histogram.AverageHistogram studentProjectRankDistribution = new Histogram.AverageHistogram(studentProjectRankDistributions);
 		studentProjectRankDistribution.printToTxtFile("outputtxt/studentProjectRank.txt");
 		//studentProjectRankDistribution.printResult();
 
@@ -175,7 +175,7 @@ public class Application
 		System.out.printf("Iteration %d\n", iteration+1);
 	}
 
-	private static void printAveragePeerSatisfaction(Distribution.AverageDistribution groupPreferenceSatisfactionDistribution)
+	private static void printAveragePeerSatisfaction(Histogram.AverageHistogram groupPreferenceSatisfactionDistribution)
 	{
 		System.out.println("Average group preference satisfaction: " + groupPreferenceSatisfactionDistribution.average());
 	}

@@ -1,6 +1,6 @@
-package nl.tudelft.aidm.optimalgroups.metric.matching.profilecurve;
+package nl.tudelft.aidm.optimalgroups.metric.rank.distribution;
 
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedProjectRankStudent;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -20,12 +20,12 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
+public class StudentRankDistributionInMatching extends AbstractRankDistributionInMatching
 {
 
     private final Matching<Agent, Project> matching;
 
-    public ProjectProfileCurveStudents(Matching<Agent, Project> matching) {
+    public StudentRankDistributionInMatching(Matching<Agent, Project> matching) {
         this.matching = matching;
     }
 
@@ -37,7 +37,7 @@ public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
             this.profile = new HashMap<>();
 
             for (var match : this.matching.asList()) {
-                var assignedProjectRank = new AssignedProjectRankStudent(match);
+                var assignedProjectRank = new AssignedRank.ProjectToStudent(match);
 
                 // Student rank -1 indicates no project preference, hence we exclude
                 // in order to not inflate our performance
@@ -55,11 +55,11 @@ public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
     {
         calculate();
 
-        XYSeries series = new XYSeries("Profile curve - student");
+        XYSeries series = new XYSeries("");
         this.profile.forEach(series::add);
 
         var chart = ChartFactory.createXYBarChart(
-            "Profile curve - students", "Rank", false, "#Students", new XYSeriesCollection(series));
+            "Distribution of ranks of assigned project in individual students' preferences", "Rank", false, "#Students", new XYSeriesCollection(series));
 
         NumberAxis numberAxis = new NumberAxis();
         numberAxis.setTickUnit(new NumberTickUnit(1));
@@ -104,6 +104,6 @@ public class ProjectProfileCurveStudents extends ProfileCurveOfMatching
         for (Map.Entry<Integer, Integer> entry : this.asMap().entrySet()) {
             printStream.printf("\t- Rank %d: %d student(s)\n", entry.getKey(), entry.getValue());
         }
-        printStream.printf("\t- Cumulative rank of students: %d\n\n", this.cumulativeRanks());
+        printStream.printf("\t- Cumulative rank of students: %d\n\n", this.sumOfRanks());
     }
 }
