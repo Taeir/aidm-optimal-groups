@@ -36,6 +36,7 @@ public class SOSM implements GroupFormingAlgorithm
     // 5) If not, randomly take students to form groups of 1 until there are enough groups to do SOSM
     // 6) Do SOSM. Done
 
+ // WARNING: incomplete/wip/unfinished implementation
 
     public SOSM(Agents students, GroupSizeConstraint groupSizeConstraint) {
         this.students = students;
@@ -266,7 +267,7 @@ public class SOSM implements GroupFormingAlgorithm
 /*
                 Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
 */
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
+                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, AggregatedProfilePreference.usingGloballyConfiguredMethod(agents));
                 System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
                 studentsInClique += clique.size();
 
@@ -434,7 +435,7 @@ public class SOSM implements GroupFormingAlgorithm
 
             //return new Group.TentativeGroup(agents, ProjectPreferenceOfAgents.getChosenMethod(agents));
 
-            return new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
+            return new Group.TentativeGroup(agents, AggregatedProfilePreference.usingGloballyConfiguredMethod(agents));
 
         }
     }

@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.group.partial.GroupsFromCliques;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -150,74 +151,17 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         return asFormedGroups().count();
     }
 
-    private void constructGroupsFromCliques() {
-        /* RUBY CODE:
-        group_list = []
-        no_group = []
-        grouped = []
-        @course_edition.approved_participants.each do |participant|
-          next if grouped.include? participant
-          equal, friends = equal_friends_lists participant
-          # if they are not equal, add this student to the no_group list
-          # and move on to the next
-          no_group.append participant unless equal
-          next unless equal
-          # if they are equal, form a group
-          group = { leader: participant, members: friends }
-          group_list.append(group)
-          grouped.append(participant)
-          friends.each do |friend|
-            grouped.append(friend)
-          end
-        end
-        [grouped, no_group, group_list]
-        */
+    private void constructGroupsFromCliques()
+    {
+        var groupsFromCliques = new GroupsFromCliques(Agents.from(availableStudents));
+        var tentativeGroups = groupsFromCliques.asCollection();
 
-        // For debugging purposes: keep amount of students in a clique
-        int studentsInClique = 0;
-        for (Agent student : this.students.asCollection())
-        {
-            if (this.unavailableStudents.contains(student))
-            {
-                continue;
-            }
+        var studentsInTentativeGroups = tentativeGroups.stream()
+            .flatMap(tentativeGroup -> tentativeGroup.members().asCollection().stream())
+            .collect(Collectors.toList());
 
-            if(useImprovedAlgo && student.groupPreferenceLength() > groupSizeConstraint.maxSize()) //Don't allow cliques larger than max group size with improved algo
-            {
-                continue;
-            }
-
-            if (students.hasEqualFriendLists(student))
-            {
-                int[] friends = student.groupPreference.asArray();
-                List<Agent> clique = Arrays.stream(friends)
-                    .mapToObj(name -> students.findByAgentId(name))
-                    .filter(Optional::isPresent).map(Optional::get)
-                    .collect(Collectors.toList());
-
-                // also add the student
-                clique.add(student);
-
-                Agents agents = Agents.from(clique);
-
-                Group.TentativeGroup tentativeGroup = new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
-//                System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Clique formed of size " + clique.size());
-                studentsInClique += clique.size();
-
-
-                // Need to remove all members that have been formed into a group, from the 'availableStudents' map
-                // however, doing so in a for(entry: map.entrySet() { ... } loop results in a concurrent modification exception
-                // and because we have more than 1 student we need to remove from the map, we also cannot use iterators with iterator.remove()
-                this.tentativelyFormedGroups.addAsFormed(tentativeGroup);
-                for (Agent studentInGroup : tentativeGroup.members().asCollection())
-                {
-                    this.availableStudents.remove(studentInGroup); // todo: more efficient remove (does keySet.removeall have the same semantics?)
-                    this.unavailableStudents.add(studentInGroup);
-                }
-            }
-        }
-
-//        System.out.println(System.currentTimeMillis() + ":\t\t- constructGroupsFromCliques: Total students in cliques: " + studentsInClique + " of a total of " + this.students.count() + " students");
+        this.unavailableStudents.addAll(studentsInTentativeGroups);
+        this.availableStudents.removeAll(studentsInTentativeGroups);
     }
 
     private void bestMatchUngrouped()
@@ -536,7 +480,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
+            return new Group.TentativeGroup(agents, AggregatedProfilePreference.usingGloballyConfiguredMethod(agents));
         }
     }
 
@@ -564,7 +508,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = g1.members().with(g2.members());
-            ProjectPreference preferences = AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents);
+            ProjectPreference preferences = AggregatedProfilePreference.usingGloballyConfiguredMethod(agents);
 
             return new Group.TentativeGroup(agents, preferences);
         }

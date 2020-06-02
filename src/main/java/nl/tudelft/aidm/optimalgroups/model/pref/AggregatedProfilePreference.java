@@ -90,7 +90,7 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 		}
 	}
 
-	public static AggregatedProfilePreference aggregateWithGloballyConfiguredAggregationMethod(Agents agents) {
+	public static AggregatedProfilePreference usingGloballyConfiguredMethod(Agents agents) {
 		if (Application.preferenceAggregatingMethod.equals("Copeland")) {
 			return new AggregatedProfilePreference.Copeland(agents);
 		} else {

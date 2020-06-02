@@ -8,6 +8,9 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 
 import javax.sql.DataSource;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
 
 public abstract class Agent implements HasProjectPrefs
 {
@@ -37,13 +40,55 @@ public abstract class Agent implements HasProjectPrefs
 		this.context = context;
 	}
 
-	public void replaceProjectPreferenceWithCombined(Agents agents) {
+	public void replaceProjectPreferenceWithCombined(Agents agents)
+	{
 		this.combinedPreference = new CombinedPreference(this.groupPreference, this.projectPreference, agents);
 		this.usingCombinedPreference = true;
 	}
 
-	public void useDatabaseProjectPreferences() {
+	public void useDatabaseProjectPreferences()
+	{
 		this.usingCombinedPreference = false;
+	}
+
+	public int groupPreferenceLength()
+	{
+		return this.groupPreference.asArray().length;
+	}
+
+	/**
+	 * Is the group proposed by the agent is mutual? That is, do the agents
+	 * that form part of the proposal have identical proposal? A.k.a. "a clique" of friends
+	 * @return True if "friends" have 'identical' peer preferences
+	 */
+	public boolean groupProposalIsMutual()
+	{
+		if(this.groupPreference.count() == 0) {
+			// No preference, therefore also no clique
+			return false;
+		}
+
+		// Function that maps the Agent's "group preferences" to a Set of agents (including himself)
+		// intuitively, this is the agent's proposal for a (partial) group formation.
+		Function<Agent, Set<Agent>> agentPreferencesToProposedGroup = (Agent x) -> {
+			var groupProposal = new HashSet<Agent>();
+			//Add agent himself to set to make comparing preferences easy
+			groupProposal.add(x);
+			groupProposal.addAll(x.groupPreference.asList());
+
+			return groupProposal;
+		};
+
+		// The proposal of the given agent
+		var proposedGroupOfAgent = agentPreferencesToProposedGroup.apply(this);
+
+		// If all the agents that are in the proposal of 'this agent' have _exactly_ the
+		// same proposals, then
+		var agentProposalIsCompletelyMutual = this.groupPreference.asList().stream()
+			.map(agentPreferencesToProposedGroup)
+			.allMatch(proposedGroupOfAgent::equals);
+
+			return agentProposalIsCompletelyMutual;
 	}
 
 	@Override
@@ -68,9 +113,7 @@ public abstract class Agent implements HasProjectPrefs
 		return "Agent (" + id + ")";
 	}
 
-	public int groupPreferenceLength() {
-		return this.groupPreference.asArray().length;
-	}
+
 
 	/**
 	 * Represents an Agent whose data is retrieved from a data source

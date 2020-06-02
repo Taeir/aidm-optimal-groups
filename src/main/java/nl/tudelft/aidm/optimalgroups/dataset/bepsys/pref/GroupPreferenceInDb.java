@@ -55,10 +55,18 @@ public class GroupPreferenceInDb implements GroupPreference
 	}
 
 	@Override
+	public Integer count()
+	{
+		return asArray().length;
+	}
+
+
+	@Override
 	public String toString()
 	{
 		return "group pref: " + Arrays.toString(asArray());
 	}
+
 
 	private List<Integer> fetchFromDb()
 	{

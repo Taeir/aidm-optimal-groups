@@ -6,9 +6,8 @@ import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public interface GroupPreference
@@ -19,11 +18,15 @@ public interface GroupPreference
 
 	List<Agent> asList();
 
+	Integer count();
+
+	/* */
 	static GroupPreference none()
 	{
 		return GroupPreference.None.instance;
 	}
 
+	/* */
 	class None implements GroupPreference
 	{
 		private static None instance = new None();
@@ -43,6 +46,12 @@ public interface GroupPreference
 		public List<Agent> asList()
 		{
 			return Collections.emptyList();
+		}
+
+		@Override
+		public Integer count()
+		{
+			return 0;
 		}
 	}
 }

@@ -40,7 +40,7 @@ public class SingleGroupPerProjectMatching implements GroupToProjectMatching<Gro
 
 		agentToProjectMatching.groupedByProject().forEach((project, agentsAsList) -> {
 			Agents agents = Agents.from(agentsAsList);
-			Group.TentativeGroup group = new Group.TentativeGroup(agents, AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents));
+			Group.TentativeGroup group = new Group.TentativeGroup(agents, AggregatedProfilePreference.usingGloballyConfiguredMethod(agents));
 
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(group);
 			result.add(new GroupToProjectMatch<>(formedGroup, project));

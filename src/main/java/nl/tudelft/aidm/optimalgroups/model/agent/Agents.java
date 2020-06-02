@@ -5,6 +5,8 @@ import plouchtch.assertion.Assert;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Collection class for Agent
@@ -18,10 +20,10 @@ public class Agents
 	private Map<Integer, Agent> idToAgentsMap;
 
 
-	public Agents(DatasetContext datsetContext, List<Agent> agents)
+	public Agents(DatasetContext datsetContext, Collection<Agent> agents)
 	{
 		this.datsetContext = datsetContext;
-		this.agents = agents;
+		this.agents = new ArrayList<>(agents);
 
 		idToAgentsMap = new HashMap<>(agents.size());
 		for (Agent agent : agents)
@@ -57,6 +59,16 @@ public class Agents
 		}
 	}
 
+	public Agents with(Agent other)
+	{
+		return this.with(Agents.from(other));
+	}
+
+	public Agents with(Collection<Agent> other)
+	{
+		return this.with(Agents.from(other));
+	}
+
 	public Agents with(Agents other)
 	{
 		Assert.that(datsetContext.equals(other.datsetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
@@ -76,44 +88,38 @@ public class Agents
 
 	/**
 	 * Checks if the agent is included in preference lists of all agents <b>(that are also in this Agents collection)</b> that the agent has included in his own preference list
-	 * TODO: introduce a class encompassing all the agents for a course edition for making this method safer to use
+	 * <br /> TODO: Move into peer preferences class
 	 * @param agent
 	 * @return
 	 */
 	public boolean hasEqualFriendLists(Agent agent)
 	{
-		var friends = new HashSet<Integer>();
-		friends.add(agent.id); //Add agent himself to set
-
-		for (int i : agent.groupPreference.asArray()) {
-			friends.add(i);
-		}
-
-		// If friends only contain himself, prevent forming a clique
-		if (friends.size() == 1) {
+		if (agent.groupPreference.count() == 0) {
+			// No preference, therefore also no clique
 			return false;
 		}
 
-		for (var friend : friends) {
-			if (idToAgentsMap.containsKey(friend) == false) {
-				// friend is not part of this 'Agents' set therefore the lists are not equal
-				return false;
-			}
+		// Function that maps the Agent's "group preferences" to a Set of agents (including himself)
+		// intuitively, this is the agent's proposal for a (partial) group formation.
+		Function<Agent, Set<Agent>> agentPreferencesToProposedGroup = (Agent x) -> {
+			var groupProposal = new HashSet<Agent>();
+			//Add agent himself to set to make comparing preferences easy
+			groupProposal.add(x);
+			groupProposal.addAll(x.groupPreference.asList());
 
-			var friendsOfFriend = new HashSet<Integer>();
-			friendsOfFriend.add(friend); // Add friend himself to list
+			return groupProposal;
+		};
 
+		// The proposal of the given agent
+		var proposedGroupOfAgent = agentPreferencesToProposedGroup.apply(agent);
 
-			for (int i : idToAgentsMap.get(friend).groupPreference.asArray()) {
-				friendsOfFriend.add(i);
-			}
+		// If all the agents that are in the proposal of 'agent' have _exactly_ the
+		// same proposals, then
+		var agentProposalIsCompletelyMutual = agent.groupPreference.asList().stream()
+			.map(agentPreferencesToProposedGroup)
+			.allMatch(proposedGroupOfAgent::equals);
 
-			if (friends.equals(friendsOfFriend) == false) {
-				return false;
-			}
-		}
-
-		return true;
+		return agentProposalIsCompletelyMutual;
 	}
 
 	public static Agents from(Agent... agents)
@@ -121,9 +127,11 @@ public class Agents
 		return Agents.from(List.of(agents));
 	}
 
-	public static Agents from(List<Agent> agents)
+	public static Agents from(Collection<Agent> agents)
 	{
-		var datasetContext = agents.get(0).context;
+		var datasetContext = agents.stream().map(agent -> agent.context)
+			.findAny().orElseThrow(() -> new RuntimeException("Cannot create Agents from an empty collection"));
+
 		return new Agents(datasetContext, agents);
 	}
 

@@ -67,7 +67,7 @@ public interface Group extends HasProjectPrefs
 		public TentativeGroup combined(TentativeGroup other)
 		{
 			Agents agents = members.with(other.members);
-			AggregatedProfilePreference pref = AggregatedProfilePreference.aggregateWithGloballyConfiguredAggregationMethod(agents);
+			AggregatedProfilePreference pref = AggregatedProfilePreference.usingGloballyConfiguredMethod(agents);
 
 			return new TentativeGroup(agents, pref);
 		}
