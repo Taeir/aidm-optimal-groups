@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
  * projects.
  *
  */
-public class BestWorstIndividualRankAttainableInGroup
+public class LeastWorstIndividualRankAttainableInGroup
 {
 	private final Group group;
 	private OptionalInt bestWorstAsInt;
 
-	public BestWorstIndividualRankAttainableInGroup(Group group)
+	public LeastWorstIndividualRankAttainableInGroup(Group group)
 	{
 		this.group = group;
 	}

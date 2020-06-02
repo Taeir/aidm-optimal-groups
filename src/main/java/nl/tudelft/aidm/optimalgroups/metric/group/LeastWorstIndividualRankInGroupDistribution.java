@@ -1,7 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.metric.group;
 
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -16,11 +15,11 @@ import java.awt.*;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class BestWorstIndividualRankInGroupDistribution
+public class LeastWorstIndividualRankInGroupDistribution
 {
 	private final Collection<? extends Group> groups;
 
-	public BestWorstIndividualRankInGroupDistribution(Collection<? extends Group> groups)
+	public LeastWorstIndividualRankInGroupDistribution(Collection<? extends Group> groups)
 	{
 		this.groups = groups;
 	}
@@ -28,7 +27,7 @@ public class BestWorstIndividualRankInGroupDistribution
 	public JFreeChart asChart()
 	{
 		var data = groups.stream()
-			.flatMapToInt(group -> new BestWorstIndividualRankAttainableInGroup(group).asInt().stream())
+			.flatMapToInt(group -> new LeastWorstIndividualRankAttainableInGroup(group).asInt().stream())
 			.boxed()
 			.collect(Collectors.groupingBy(integer -> integer, Collectors.counting()));
 

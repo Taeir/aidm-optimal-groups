@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
-import nl.tudelft.aidm.optimalgroups.metric.group.BestWorstIndividualRankInGroupDistribution;
+import nl.tudelft.aidm.optimalgroups.metric.group.LeastWorstIndividualRankInGroupDistribution;
 import nl.tudelft.aidm.optimalgroups.metric.matching.NumberAgentsMatched;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import org.apache.commons.codec.binary.Base64;
@@ -116,7 +116,7 @@ public class ExperimentReportInMarkdown
 		doc.append(Markdown.image(embed(rankDistribution))).append("\n\n");
 
 		var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
-		var bestWorstIndividualRankInGroupDistribution = new BestWorstIndividualRankInGroupDistribution(groups).asChart();
+		var bestWorstIndividualRankInGroupDistribution = new LeastWorstIndividualRankInGroupDistribution(groups).asChart();
 		doc.append(Markdown.image(embed(bestWorstIndividualRankInGroupDistribution))).append("\n\n");
 
 		doc.append(Markdown.unorderedList(

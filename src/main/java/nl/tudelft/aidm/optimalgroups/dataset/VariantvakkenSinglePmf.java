@@ -55,7 +55,11 @@ public class VariantvakkenSinglePmf implements DatasetContext
 	public String identifier()
 	{
 		var popTotal = pop220+pop110+pop88;
-		return String.format("Variantvakken [ p220-(pop %.3f%%), p110-(pop %.3f%%), p88-(pop %.3f%%) ]", pop220/popTotal, pop110/popTotal, pop88/popTotal);
+		double normPop220 = pop220 / popTotal * 100;
+		double normPop110 = pop110 / popTotal * 100;
+		double normPop88 = pop88 / popTotal * 100;
+
+		return String.format("Variantvakken [ p220-(pop %.2f%%), p110-(pop %.2f%%), p88-(pop %.2f%%) ]", normPop220, normPop110, normPop88);
 	}
 
 	@Override
