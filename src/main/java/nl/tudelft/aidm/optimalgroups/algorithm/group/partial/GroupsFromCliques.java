@@ -7,9 +7,11 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 {
@@ -29,6 +31,13 @@ public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 		}
 
 		return tentativeCliques;
+	}
+
+	public Collection<Agent> agentsInCliques()
+	{
+		return this.asList().stream()
+			.flatMap(tentativeGroup -> tentativeGroup.members().asCollection().stream())
+			.collect(Collectors.toUnmodifiableList());
 	}
 
 	private static List<Group.TentativeGroup> cliquesExtractedFrom(Agents agents, GroupSizeConstraint groupSizeConstraint)

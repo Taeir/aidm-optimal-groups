@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.group;
 
+import plouchtch.assertion.Assert;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,9 +21,12 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 		this(new ArrayList<>());
 	}
 
-	public FormedGroups(List<Group.FormedGroup> groups)
+	private FormedGroups(List<Group.FormedGroup> groups)
 	{
 		this.groups = groups;
+		this.groups.forEach(this::assertGroupIsValid);
+
+		assertNoAgentInMultipleGroups();
 	}
 
 	public Collection<Group.FormedGroup> asCollection()
@@ -29,7 +34,13 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 		return Collections.unmodifiableList(this.groups);
 	}
 
-	// make new
+	/**
+	 * Turns the given group into a FormedGroup and makes it part of this collection. <br />
+	 * This method checks if an agent is part of more than one group, and if the given group
+	 * adheres to group-size-constraints.
+	 * @param tentativeGroup The group to be added
+	 * @return The group as a formed group
+	 */
 	public Group.FormedGroup addAsFormed(Group tentativeGroup)
 	{
 		int groupId;
@@ -39,6 +50,9 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 
 		var group = new Group.FormedGroup(tentativeGroup.members(), tentativeGroup.projectPreference(), groupId);
 		groups.add(group);
+
+		assertGroupIsValid(group);
+		assertNoAgentInMultipleGroups();
 
 		return group;
 	}
@@ -57,13 +71,34 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 		return groups.size();
 	}
 
-	public int countTotalStudents()
+	public int countDistinctStudents()
 	{
-		return groups.stream().mapToInt(formedGroup -> formedGroup.members().count()).sum();
+		return (int) groups.stream()
+			.flatMap(formedGroup -> formedGroup.members.asCollection().stream())
+			.distinct()
+			.count();
 	}
 
 	public void forEach(Consumer<Group.FormedGroup> fn)
 	{
 		this.groups.forEach(fn);
+	}
+
+	private void assertNoAgentInMultipleGroups()
+	{
+		int numDistinctStudents = this.countDistinctStudents();
+		int numGrossStudents = groups.stream().mapToInt(formedGroup -> formedGroup.members().count()).sum();
+		Assert.that(numDistinctStudents == numGrossStudents).orThrowMessage("Bugcheck: some student(s) is contained in multiple groups");
+	}
+
+	private void assertGroupIsValid(Group group)
+	{
+		var datasetContext = group.members().asCollection().stream().map(agent -> agent.context).findAny().orElseThrow();
+		var groupSizeConstraint = datasetContext.groupSizeConstraint();
+
+		int numMembers = group.members().count();
+
+		Assert.that(groupSizeConstraint.minSize() <= numMembers && numMembers <= groupSizeConstraint.maxSize())
+			.orThrowMessage("Cannot form group: the group does not meet group size constaints");
 	}
 }

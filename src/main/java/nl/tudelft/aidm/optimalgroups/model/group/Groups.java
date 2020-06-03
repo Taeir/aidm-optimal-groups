@@ -1,16 +1,17 @@
 package nl.tudelft.aidm.optimalgroups.model.group;
 
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public interface Groups<G extends Group>
 {
 	Collection<G> asCollection();
-
 	void forEach(Consumer<G> fn);
-
 	int count();
 
 	abstract class ListBacked<G extends Group> implements Groups<G>

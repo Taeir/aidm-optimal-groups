@@ -6,13 +6,14 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import plouchtch.assertion.Assert;
 
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class BepSysImprovedGroups implements GroupFormingAlgorithm
 {
@@ -23,7 +24,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
     private final GroupSizeConstraint groupSizeConstraint;
 
-    private FormedGroups tentativelyFormedGroups;
+    private TentativeGroups tentativelyFormedGroups;
     private FormedGroups finalFormedGroups;
 
     private boolean useImprovedAlgo;
@@ -43,7 +44,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
         this.availableStudents.addAll(students.asCollection());
 
-        tentativelyFormedGroups = new FormedGroups();
+        tentativelyFormedGroups = new TentativeGroups();
         finalFormedGroups = new FormedGroups();
 
         this.useImprovedAlgo = useImprovedAlgo;
@@ -51,74 +52,36 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
     private void constructGroups() {
         /*
-        _, nogroup, group_list = clique_friends
-        best_match = best_match_ungrouped nogroup
-        best_match.each do |group|
-            group_list.append group
-        end
+            _, nogroup, group_list = clique_friends
+            best_match = best_match_ungrouped nogroup
+            best_match.each do |group|
+                group_list.append group
+            end
 
-        group_list = merge_groups group_list
+            group_list = merge_groups group_list
 
-        db_list = []
-        group_list.each do |group|
-            participant = group[:leader]
-            friends = group[:members]
-            db_list.append create_group_without_project participant, friends
-        end
-        db_list
+            db_list = []
+            group_list.each do |group|
+                participant = group[:leader]
+                friends = group[:members]
+                db_list.append create_group_without_project participant, friends
+            end
+            db_list
         */
 
-//        System.out.println(System.currentTimeMillis() + ": Start constructing cliques (state 1/3)");
+        //System.out.println(System.currentTimeMillis() + ": Start constructing cliques (state 1/3)");
         constructGroupsFromCliques();
-//        System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students (state 2/3)");
+
+        //System.out.println(System.currentTimeMillis() + ": Start matchings ungrouped students (state 2/3)");
         bestMatchUngrouped();
 
-        // Check if all students are in groups and that there are no students with multiple groups (sanity check)
-        Map<String, Integer> agentsInTentativelyFormedGroups = new HashMap<>();
-        this.tentativelyFormedGroups.forEach(group -> {
-            for (Agent a : group.members().asCollection()) {
-                var agentName = a.id.toString();
-                if (agentsInTentativelyFormedGroups.containsKey(agentName)) {
-                    agentsInTentativelyFormedGroups.put(agentName, agentsInTentativelyFormedGroups.get(agentName) + 1);
-                } else {
-                    agentsInTentativelyFormedGroups.put(agentName, 1);
-                }
-            }
-        });
-
-        int cumulativeTentativeGroupSize = 0;
-        for (Map.Entry<String, Integer> entry : agentsInTentativelyFormedGroups.entrySet()) {
-            cumulativeTentativeGroupSize += entry.getValue();
-        }
-
-//        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple tentatively formed groups (should be zero!): " + (cumulativeTentativeGroupSize - agentsInTentativelyFormedGroups.size()));
-
-//        System.out.println(System.currentTimeMillis() + ": Start merging groups (state 3/3)");
+        //System.out.println(System.currentTimeMillis() + ": Start merging groups (state 3/3)");
         mergeGroups();
-//        System.out.println(System.currentTimeMillis() + ": Done!");
-
-        // Check if all students are in groups and that there are no students with multiple groups (sanity check)
-        Map<String, Integer> agentsInFinalGroups = new HashMap<>();
-        this.finalFormedGroups.forEach(group -> {
-            for (Agent a : group.members().asCollection()) {
-                var agentName = a.id.toString();
-                if (agentsInFinalGroups.containsKey(agentName)) {
-                    agentsInFinalGroups.put(agentName, agentsInFinalGroups.get(agentName) + 1);
-                } else {
-                    agentsInFinalGroups.put(agentName, 1);
-                }
-            }
-        });
+        //System.out.println(System.currentTimeMillis() + ": Done!");
 
 
-        int cumulativeGroupSize = 0;
-        for (Map.Entry<String, Integer> entry : agentsInFinalGroups.entrySet()) {
-            cumulativeGroupSize += entry.getValue();
-        }
-
-//        System.out.println(System.currentTimeMillis() + ": Amount of final groups: " + this.finalFormedGroups.count());
-//        System.out.println(System.currentTimeMillis() + ": Amount of students that are grouped: " + agentsInFinalGroups.size());
-//        System.out.println(System.currentTimeMillis() + ": Amount of students in multiple groups (should be zero!): " + (cumulativeGroupSize - agentsInFinalGroups.size()));
+        //System.out.println(System.currentTimeMillis() + ": Amount of final groups: " + this.finalFormedGroups.count());
+        //System.out.println(System.currentTimeMillis() + ": Amount of students that are grouped: " + agentsInFinalGroups.size());
 
         this.done = true;
     }
@@ -154,14 +117,15 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
     private void constructGroupsFromCliques()
     {
         var groupsFromCliques = new GroupsFromCliques(Agents.from(availableStudents));
-        var tentativeGroups = groupsFromCliques.asCollection();
 
-        var studentsInTentativeGroups = tentativeGroups.stream()
-            .flatMap(tentativeGroup -> tentativeGroup.members().asCollection().stream())
-            .collect(Collectors.toList());
+        var studentsInCliqueGroups = groupsFromCliques.agentsInCliques();
 
-        this.unavailableStudents.addAll(studentsInTentativeGroups);
-        this.availableStudents.removeAll(studentsInTentativeGroups);
+        // update (un)available students
+        this.unavailableStudents.addAll(studentsInCliqueGroups);
+        this.availableStudents.removeAll(studentsInCliqueGroups);
+
+        // add clique groups to tentatively formed
+        groupsFromCliques.forEach(tentativelyFormedGroups::addAsTentative);
     }
 
     private void bestMatchUngrouped()
@@ -207,7 +171,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             if (bestGroup == null) continue; // todo: inf loop?
 
             Agents agents = Agents.from(bestGroup.members);
-            Group formedGroup = tentativelyFormedGroups.addAsFormed(bestGroup.toGroup());
+            Group formedGroup = tentativelyFormedGroups.addAsTentative(bestGroup.toGroup());
 
             for (Agent a : formedGroup.members().asCollection()) {
                 this.availableStudents.remove(a);
@@ -271,7 +235,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
         if(useImprovedAlgo)
         {
-            int amountOfStudentsToGroup = tentativelyFormedGroups.countTotalStudents() - finalFormedGroups.countTotalStudents();
+            int amountOfStudentsToGroup = tentativelyFormedGroups.countDistinctStudents() - finalFormedGroups.countDistinctStudents();
             groupConstraints = new SetOfGroupSizesThatCanStillBeCreated(amountOfStudentsToGroup, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
         }
         else

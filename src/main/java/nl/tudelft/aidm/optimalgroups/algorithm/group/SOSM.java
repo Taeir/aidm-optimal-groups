@@ -378,7 +378,7 @@ public class SOSM implements GroupFormingAlgorithm
             minGroupSlots += Math.max(groupSizeConstraint.minSize() - group.members().count(), 0);
         }
 
-        studentsToAssign = students.count() - tentativelyFormedGroups.countTotalStudents();
+        studentsToAssign = students.count() - tentativelyFormedGroups.countDistinctStudents();
 
         //If students are between boundaries, leftover students can be assigned to existing groups without breaking group size constraints
         System.out.println(minGroupSlots + " < " + studentsToAssign + " < " + maxGroupSlots);
