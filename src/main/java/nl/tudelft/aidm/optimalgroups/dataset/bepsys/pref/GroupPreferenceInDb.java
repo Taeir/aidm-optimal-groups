@@ -42,7 +42,7 @@ public class GroupPreferenceInDb implements GroupPreference
 	}
 
 	@Override
-	public List<Agent> asList()
+	public List<Agent> asListOfAgents()
 	{
 		if (asList == null) {
 			asList = Arrays.stream(asArray())
@@ -51,7 +51,7 @@ public class GroupPreferenceInDb implements GroupPreference
 				.collect(Collectors.toList());
 		}
 
-		return asList;
+		return Collections.unmodifiableList(asList);
 	}
 
 	@Override

@@ -16,7 +16,7 @@ public interface GroupPreference
 	// for now as int array purely for memory efficiency
 	int[] asArray();
 
-	List<Agent> asList();
+	List<Agent> asListOfAgents();
 
 	Integer count();
 
@@ -43,7 +43,7 @@ public interface GroupPreference
 		}
 
 		@Override
-		public List<Agent> asList()
+		public List<Agent> asListOfAgents()
 		{
 			return Collections.emptyList();
 		}

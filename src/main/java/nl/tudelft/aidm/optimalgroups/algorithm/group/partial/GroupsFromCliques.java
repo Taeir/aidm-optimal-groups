@@ -8,6 +8,7 @@ import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 			tentativeCliques = cliquesExtractedFrom(agents, agents.datsetContext.groupSizeConstraint());
 		}
 
-		return tentativeCliques;
+		return Collections.unmodifiableList(tentativeCliques);
 	}
 
 	public Collection<Agent> agentsInCliques()
@@ -64,7 +65,7 @@ public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 			}
 
 			if (student.groupProposalIsMutual()) {
-				var peers = student.groupPreference.asList();
+				var peers = student.groupPreference.asListOfAgents();
 				var proposedGroup = Agents.from(student).with(peers);
 
 				var tentativeGroup = new Group.TentativeGroup(proposedGroup, AggregatedProfilePreference.usingGloballyConfiguredMethod(proposedGroup));

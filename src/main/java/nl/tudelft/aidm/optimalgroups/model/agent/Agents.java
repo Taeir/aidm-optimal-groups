@@ -105,7 +105,7 @@ public class Agents
 			var groupProposal = new HashSet<Agent>();
 			//Add agent himself to set to make comparing preferences easy
 			groupProposal.add(x);
-			groupProposal.addAll(x.groupPreference.asList());
+			groupProposal.addAll(x.groupPreference.asListOfAgents());
 
 			return groupProposal;
 		};
@@ -115,7 +115,7 @@ public class Agents
 
 		// If all the agents that are in the proposal of 'agent' have _exactly_ the
 		// same proposals, then
-		var agentProposalIsCompletelyMutual = agent.groupPreference.asList().stream()
+		var agentProposalIsCompletelyMutual = agent.groupPreference.asListOfAgents().stream()
 			.map(agentPreferencesToProposedGroup)
 			.allMatch(proposedGroupOfAgent::equals);
 

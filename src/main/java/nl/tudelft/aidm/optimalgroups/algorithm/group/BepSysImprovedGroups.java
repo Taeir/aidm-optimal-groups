@@ -422,7 +422,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         List<Agent> friends = new ArrayList<>();
 
         // Some friends might be unavilable? If so, need to get group prefs and check
-        for (var friend : a.groupPreference.asList()) {
+        for (var friend : a.groupPreference.asListOfAgents()) {
             if (availableStudents.contains(friend)) {
                 availableStudents.remove(friend);
                 friends.add(friend);

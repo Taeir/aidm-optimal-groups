@@ -412,7 +412,7 @@ public class SOSM implements GroupFormingAlgorithm
 
     private List<Agent> getAvailableFriends(Agent a) {
         List<Agent> friends = new ArrayList<>();
-        for (var friend : a.groupPreference.asList()) {
+        for (var friend : a.groupPreference.asListOfAgents()) {
             if (availableStudents.contains(friend)) {
                 friends.add(friend);
             }
