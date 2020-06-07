@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.SetOfGroupSizesThatCanStillBeCreated;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;

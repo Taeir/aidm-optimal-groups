@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.*;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;

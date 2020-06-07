@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.group.partial;
+package nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -7,7 +7,6 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,11 +33,11 @@ public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 		return Collections.unmodifiableList(tentativeCliques);
 	}
 
-	public Collection<Agent> agentsInCliques()
+	public Agents asAgents()
 	{
 		return this.asList().stream()
 			.flatMap(tentativeGroup -> tentativeGroup.members().asCollection().stream())
-			.collect(Collectors.toUnmodifiableList());
+			.collect(Collectors.collectingAndThen(Collectors.toUnmodifiableList(), Agents::from));
 	}
 
 	private static List<Group.TentativeGroup> cliquesExtractedFrom(Agents agents, GroupSizeConstraint groupSizeConstraint)

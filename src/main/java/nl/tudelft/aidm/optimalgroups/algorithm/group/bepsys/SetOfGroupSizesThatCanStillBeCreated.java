@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.group;
+package nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 
@@ -11,7 +11,7 @@ final public class SetOfGroupSizesThatCanStillBeCreated
     /**
      * How will the algorithm create a set of group sizes with constraints?
      */
-    enum FocusMode
+    public enum FocusMode
     {
         MAX_FOCUS, // focuses on creating large groups first, then evenly reducing the size if necessary
         MIN_FOCUS // focuses on creating small groups first, then evenly increasing the size if necessary

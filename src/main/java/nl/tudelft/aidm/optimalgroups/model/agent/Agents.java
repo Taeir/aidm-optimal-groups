@@ -6,7 +6,6 @@ import plouchtch.assertion.Assert;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * Collection class for Agent
@@ -16,14 +15,17 @@ public class Agents
 	public final DatasetContext datsetContext;
 
 	// list for now
-	private List<Agent> agents;
+	private Set<Agent> agents;
 	private Map<Integer, Agent> idToAgentsMap;
 
 
 	public Agents(DatasetContext datsetContext, Collection<Agent> agents)
 	{
 		this.datsetContext = datsetContext;
-		this.agents = new ArrayList<>(agents);
+		this.agents = new HashSet<>(agents);
+
+		// Better to change the ctor signature
+		Assert.that(this.agents.size() == agents.size()).orThrowMessage("Agents contained duplicates");
 
 		idToAgentsMap = new HashMap<>(agents.size());
 		for (Agent agent : agents)
@@ -44,7 +46,7 @@ public class Agents
 
 	public Collection<Agent> asCollection()
 	{
-		return agents;
+		return Collections.unmodifiableCollection(agents);
 	}
 
 	public void useCombinedPreferences() {
@@ -75,6 +77,23 @@ public class Agents
 
 		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
 		copyAgents.addAll(other.agents);
+
+		return new Agents(datsetContext, copyAgents);
+	}
+
+	public Agents without(Collection<Agent> other)
+	{
+		return this.without(Agents.from(other));
+	}
+
+	public Agents without(Agents other)
+	{
+		if (other.count() == 0) return this;
+
+		Assert.that(datsetContext.equals(other.datsetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
+
+		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
+		copyAgents.removeAll(other.agents);
 
 		return new Agents(datsetContext, copyAgents);
 	}
@@ -130,7 +149,10 @@ public class Agents
 	public static Agents from(Collection<Agent> agents)
 	{
 		var datasetContext = agents.stream().map(agent -> agent.context)
-			.findAny().orElseThrow(() -> new RuntimeException("Cannot create Agents from an empty collection"));
+			.findAny().orElseGet(() -> {
+				System.out.print("Warning: creating Agents from empty collection, datasetContext is set to null!\n");
+				return null;
+			});
 
 		return new Agents(datasetContext, agents);
 	}

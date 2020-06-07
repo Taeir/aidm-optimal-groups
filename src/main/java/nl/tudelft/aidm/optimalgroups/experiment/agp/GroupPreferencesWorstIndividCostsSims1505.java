@@ -24,7 +24,8 @@ public class GroupPreferencesWorstIndividCostsSims1505
 
 		var algorithms = List.of(
 			new GroupProjectAlgorithm.BepSys(),
-			new GroupProjectAlgorithm.BepSys_minimizeIndividualDisutility()
+			new GroupProjectAlgorithm.BepSys_ogGroups_minimizeIndividualDisutility(),
+			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility()
 		);
 
 		var groupSize = GroupSizeConstraint.manual(4, 5);

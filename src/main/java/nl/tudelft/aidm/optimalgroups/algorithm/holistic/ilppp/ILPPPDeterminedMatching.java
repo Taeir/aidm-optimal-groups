@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;

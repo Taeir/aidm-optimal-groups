@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.SetOfGroupSizesThatCanStillBeCreated;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -53,7 +54,7 @@ public class CombinedPreferencesGreedy implements GroupFormingAlgorithm {
         List<Agent> sortedList = new ArrayList<>(this.students.asCollection());
         sortedList.sort(Comparator.comparing(Agent::groupPreferenceLength).reversed());
 
-        SetOfGroupSizesThatCanStillBeCreated groupSizes = new SetOfGroupSizesThatCanStillBeCreated(this.students.count(), groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
+        var groupSizes = new SetOfGroupSizesThatCanStillBeCreated(this.students.count(), groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
 
         // Start iterating and forming groups greedily
         for (Agent student : sortedList) {

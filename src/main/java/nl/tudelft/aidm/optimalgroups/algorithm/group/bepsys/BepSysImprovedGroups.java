@@ -1,6 +1,7 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.group;
+package nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.group.partial.GroupsFromCliques;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.GroupFormingAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCliques;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -9,10 +10,10 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
-import plouchtch.assertion.Assert;
 
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class BepSysImprovedGroups implements GroupFormingAlgorithm
@@ -118,7 +119,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
     {
         var groupsFromCliques = new GroupsFromCliques(Agents.from(availableStudents));
 
-        var studentsInCliqueGroups = groupsFromCliques.agentsInCliques();
+        var studentsInCliqueGroups = groupsFromCliques.asAgents().asCollection();
 
         // update (un)available students
         this.unavailableStudents.addAll(studentsInCliqueGroups);
@@ -133,13 +134,31 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 //        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: " + this.availableStudents.size() + " students left to group");
         List<PossibleGroup> possibleGroups = new ArrayList<>();
 
+        // todo: improve, calculate num edges in common
+        BiFunction<List<Agent>, Agent, Integer> cliquenessScore = (List<Agent> friends, Agent a) -> {
+            int score = 0;
+            for (Agent friend : friends)
+            {
+                List<Agent> friendsOfFriend = getAvailableFriends(friend);
+                if (friendsOfFriend.contains(a)) score += 1;
+                for (Agent friend2 : friends)
+                {
+                    if (friend == friend2) continue;
+                    if (friendsOfFriend.contains(friend2)) score += 1;
+                }
+            }
+            return score;
+        };
+
         // Iterate over students instead of available students to prevent ConcurrentModificationException
         // when removing from availableStudents
         for (Agent student : this.students.asCollection()) {
-            if (this.unavailableStudents.contains(student)) continue;
+            if (this.unavailableStudents.contains(student))
+                continue;
 
             List<Agent> friends = this.getAvailableFriends(student);
-            int score = this.computeScore(friends, student);
+            int score = cliquenessScore.apply(friends, student);
+
             friends.add(student); // Add self to group
             possibleGroups.add(new PossibleGroup(friends, score));
         }
@@ -148,25 +167,10 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 //        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
     }
 
-    private int computeScore(List<Agent> friends, Agent a)
-    {
-        int score = 0;
-        for (Agent friend : friends) {
-            List<Agent> friendsOfFriend = getAvailableFriends(friend);
-            if (friendsOfFriend.contains(a)) score += 1;
-            for (Agent friend2 : friends) {
-                if (friend == friend2) continue;
-                if (friendsOfFriend.contains(friend2)) score += 1;
-            }
-        }
-        return score;
-    }
-
     private void pickBestGroups(List<PossibleGroup> possibleGroups)
     {
-        possibleGroups.sort(Comparator.comparing(o -> o.score));
-
         while (possibleGroups.size() > 0) {
+            possibleGroups.sort(Comparator.comparing(PossibleGroup::score).reversed());
             PossibleGroup bestGroup = findBestGroup(possibleGroups);
             if (bestGroup == null) continue; // todo: inf loop?
 
@@ -210,7 +214,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
     }
 
     private void mergeGroups() {
-        List<Group.TentativeGroup> unmerged = new ArrayList<>();
+        List<Group.TentativeGroup> unmerged = new LinkedList<>();
 
         // todo: split groups into those that are finalized and those that are not
         //  s.t. no need to do this kind of case distinction here...
@@ -230,188 +234,72 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
         unmerged.sort(Comparator.comparingInt((Group group) -> group.members().count()));
 
-        SetOfGroupSizesThatCanStillBeCreated groupConstraints = null;
-        int groupsMax = 0;
+        int amountOfStudentsToGroup = tentativelyFormedGroups.countDistinctStudents() - finalFormedGroups.countDistinctStudents();
+        var groupConstraints = new SetOfGroupSizesThatCanStillBeCreated(amountOfStudentsToGroup, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
 
-        if(useImprovedAlgo)
-        {
-            int amountOfStudentsToGroup = tentativelyFormedGroups.countDistinctStudents() - finalFormedGroups.countDistinctStudents();
-            groupConstraints = new SetOfGroupSizesThatCanStillBeCreated(amountOfStudentsToGroup, groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
-        }
-        else
-        {
-            int henk = groupSizeConstraint.minSize();
-            int maxGroupSize = groupSizeConstraint.maxSize();
-            int minGroupSize = groupSizeConstraint.minSize();
-
-            int numberOfStudents;
-            int remainder;
-            int numberOfGroups;
-
-            // hacky: outer while loop with a groupsMax == 0 check
-            // the problem is that the original algorithm does not
-            // consider the values between minGroupSize and maxGroupSize
-            // and hence might end up in a inf loop / fail. Our band-aid fix
-            // is to detect this (groupMax == 0) and increment the minGroupSize
-            // and retry the mathematical algorithm. We do this in a temp var called
-            // 'henk' to emphasize the hacky nature of the fix
-            while (true) {
-                numberOfStudents = this.students.count();
-                groupsMax = numberOfStudents / maxGroupSize;
-                remainder = numberOfStudents % maxGroupSize;
-                numberOfGroups = groupsMax + remainder / minGroupSize;
-                remainder = remainder % minGroupSize;
-
-                while (remainder > 0) {
-                    groupsMax -= 1;
-                    remainder += maxGroupSize;
-                    numberOfGroups += remainder / henk;
-                    remainder = remainder % henk;
-
-                    if (groupsMax == 0) {
-                        henk++;
-                        break;
-                    }
-                }
-
-                if (remainder == 0)
-                    break;
-            }
-//            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + groupsMax + " groups of maximum size");
-//            System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: " + numberOfGroups + " groups in total");
-        }
-
+        /*
+            The following is a greedy merge. By group merge we mean combining (partial) groups
+            into groups that satisfy the
+         */
         while (unmerged.size() > 0) {
-            if(useImprovedAlgo)
-            {
-                Group.TentativeGroup unmergedGroup = unmerged.get(0);
-                unmerged.remove(0);
+            Group.TentativeGroup unmergedGroup = unmerged.get(0);
+            unmerged.remove(0);
 
-                int unmergedGroupSize = unmergedGroup.members().count();
+            int numMembersInUnmergedGroup = unmergedGroup.members().count();
 
-                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysImprovedGroups.PossibleGroupMerge::matchScore));
+            var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(BepSysImprovedGroups.PossibleGroupMerge::matchDisutilScore));
 
-                for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
-                    int together = unmergedGroupSize + otherUnmergedGroup.members().count();
+            for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
+                int numMembersInOtherUnmergedGroup = otherUnmergedGroup.members().count();
+                int together = numMembersInUnmergedGroup + numMembersInOtherUnmergedGroup;
 
-                    // Only add group if it is a final form
-                    if(groupConstraints.mayFormGroupOfSize(together)){
-                        possibleGroupMerges.add(new BepSysImprovedGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
-                    }
-                }
-
-                // if no candidate group merges
-                if (possibleGroupMerges.size() == 0) {
-                    for (Group otherUnmergedGroup : unmerged) {
-                        int together = unmergedGroupSize + otherUnmergedGroup.members().count();
-
-                        // try again with relaxed constraints on group creation (up to group size)
-                        if (together <= groupSizeConstraint.maxSize()) {
-                            possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
-                        }
-                    }
-                }
-
-                // if still no candidate group merges
-                if (possibleGroupMerges.size() == 0) {
-                    for (Agent a : unmergedGroup.members().asCollection()) {
-                        Agents singleAgent = Agents.from(a);
-                        unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference()));
-                    }
-                }
-
-                if (possibleGroupMerges.size() > 0)
-                {
-                    // take best scoring group (it's a priority queue)
-                    PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
-                    // remove the "other" group from unmerged
-                    boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
-                    if (!removedSomething) {
-//                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
-                    }
-
-                    Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
-                    int together = tentativeGroup.members().count();
-
-                    if(groupConstraints.mayFormGroupOfSize(together)) //Does the merged group fit in group size constraints?
-                    {
-                        groupConstraints.recordGroupFormedOfSize(together);
-                        finalFormedGroups.addAsFormed(tentativeGroup);
-                    }
-                    else
-                    {
-                        unmerged.add(tentativeGroup); // If merge can't be in final set, at least keep it
-                    }
+                // Only add group if it is a final form
+                if(groupConstraints.mayFormGroupOfSize(together)) {
+                    possibleGroupMerges.add(new BepSysImprovedGroups.PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                 }
             }
-            else
-            {
-                Group.TentativeGroup unmergedGroup = unmerged.get(0);
-                unmerged.remove(0);
 
-                int unmergedGroupSize = unmergedGroup.members().count();
+            // if no candidate group merges
+            if (possibleGroupMerges.size() == 0) {
+                for (Group otherUnmergedGroup : unmerged) {
+                    int together = numMembersInUnmergedGroup + otherUnmergedGroup.members().count();
 
-                var possibleGroupMerges = new PriorityQueue<>(Comparator.comparing(PossibleGroupMerge::matchScore));
-
-                for (Group.TentativeGroup otherUnmergedGroup : unmerged) {
-                    int together = unmergedGroupSize + otherUnmergedGroup.members().count();
-
-                    // Only keep scores if the size is equal to the maximum group size
-                    // Do we have a valid max-sizegroup and can we still create groups?
-                    if (together == groupSizeConstraint.maxSize() &&  this.finalFormedGroups.count() < groupsMax) {
+                    // try again with relaxed constraints on group creation (up to group size)
+                    if (together <= groupSizeConstraint.maxSize()) {
                         possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
                     }
                 }
+            }
 
-                // if no candidate group merges
-                if (possibleGroupMerges.size() == 0) {
-                    for (Group otherUnmergedGroup : unmerged) {
-                        int together = unmergedGroupSize + otherUnmergedGroup.members().count();
-
-                        // try again with relaxed constraints on group creation (up to group size)
-                        if (together <= groupSizeConstraint.maxSize()) {
-                            possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
-                        }
-                    }
+            // if still no candidate group merges
+            if (possibleGroupMerges.size() == 0) {
+                for (Agent a : unmergedGroup.members().asCollection()) {
+                    Agents singleAgent = Agents.from(a);
+                    unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference()));
                 }
+            }
 
-                // if still no candidate group merges
-                if (possibleGroupMerges.size() == 0) {
-                    if (unmergedGroupSize >= groupSizeConstraint.minSize()) {
-                        // satisfies min size constraint, accept the group
-                        finalFormedGroups.addAsFormed(unmergedGroup);
-                    }
-                    // Group does not meet minimal group size: split and hope for best in next iter
-                    else {
-                        // Divide all people of this group
-                        for (Agent a : unmergedGroup.members().asCollection()) {
-                            Agents singleAgent = Agents.from(a);
-                            unmerged.add(new Group.TentativeGroup(singleAgent, a.projectPreference()));
-                        }
-                    }
-                }
-
-                if (possibleGroupMerges.size() > 0)
-                {
-                    // take best scoring group (it's a priority queue)
-                    PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
-                    // remove the "other" group from unmerged
-                    boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
-                    if (!removedSomething) {
+            if (possibleGroupMerges.size() > 0)
+            {
+                // take best scoring group (it's a priority queue)
+                PossibleGroupMerge bestMerge = possibleGroupMerges.peek();
+                // remove the "other" group from unmerged
+                boolean removedSomething = unmerged.remove(bestMerge.g2); // todo: proper check for no candidates & exception
+                if (!removedSomething) {
 //                        System.out.println(System.currentTimeMillis() + ":\t\t- mergeGroups: Nothing was removed from unmerged!!!");
-                    }
+                }
 
-                    Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
+                Group.TentativeGroup tentativeGroup = bestMerge.toGroup();
+                int together = tentativeGroup.members().count();
 
-                    if (tentativeGroup.members().count() < groupSizeConstraint.maxSize()) {
-                        unmerged.add(tentativeGroup);
-                    }
-                    else if (tentativeGroup.members().count() == groupSizeConstraint.maxSize()) {
-                        finalFormedGroups.addAsFormed(tentativeGroup);
-                    }
-                    else {
-                        throw new RuntimeException("mergeGroups: Group size is somehow larger than maximum group size");
-                    }
+                if(groupConstraints.mayFormGroupOfSize(together)) //Does the merged group fit in group size constraints?
+                {
+                    groupConstraints.recordGroupFormedOfSize(together);
+                    finalFormedGroups.addAsFormed(tentativeGroup);
+                }
+                else
+                {
+                    unmerged.add(tentativeGroup); // If merge can't be in final set, at least keep it
                 }
             }
         }
@@ -432,13 +320,23 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         return friends;
     }
 
-    private class PossibleGroup {
-        public List<Agent> members;
-        public int score;
+    private static class PossibleGroup {
+        private List<Agent> members;
+        private int score;
 
         public PossibleGroup(List<Agent> members, int score) {
             this.members = members;
             this.score = score;
+        }
+
+        public int score()
+        {
+            return score;
+        }
+
+        public List<Agent> members()
+        {
+            return members;
         }
 
         public Group.TentativeGroup toGroup()
@@ -460,10 +358,10 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         }
 
         private int score = -1;
-        int matchScore()
+        int matchDisutilScore()
         {
             if (score == -1) {
-                score = computeMatchScore();
+                score = computeMatchDisutilScore();
             }
 
             return score;
@@ -477,7 +375,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             return new Group.TentativeGroup(agents, preferences);
         }
 
-        private int computeMatchScore() {
+        private int computeMatchDisutilScore() {
             /* RUBY CODE:
                 score = 0
                 g1users = g1[:members].each { |m| m } + [g1[:leader]]

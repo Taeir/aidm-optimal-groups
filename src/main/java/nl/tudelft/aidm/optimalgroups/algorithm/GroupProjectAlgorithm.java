@@ -1,7 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
 import nl.tudelft.aidm.optimalgroups.Algorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.BepSysImprovedGroups;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
@@ -14,7 +15,6 @@ import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.Objects;
-import java.util.OptionalInt;
 import java.util.function.Predicate;
 
 public interface GroupProjectAlgorithm extends Algorithm
@@ -86,19 +86,55 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 	}
 
-	class BepSys_minimizeIndividualDisutility implements GroupProjectAlgorithm
+	class BepSys_ogGroups_minimizeIndividualDisutility implements GroupProjectAlgorithm
 	{
 		@Override
 		public String name()
 		{
 			// TODO include Pref agg method
-			return "BepSys (min indiv disutil)";
+			return "BepSys OG Groups (min indiv disutil)";
 		}
 
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
 			var groups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
+
+			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects(),
+
+				// Cost assignment function: the max rank between the individuals within that group
+				(projectPreference, theProject) -> {
+					var aggPref = ((AggregatedProfilePreference) projectPreference);
+					return aggPref.agentsAggregatedFrom().asCollection().stream()
+						.map(Agent::projectPreference)
+						.filter(Predicate.not(ProjectPreference::isCompletelyIndifferent))
+						.mapToInt(pp -> pp.rankOf(theProject).orElse(0))
+						.max().orElseThrow();
+				});
+
+			return groupsToProjects;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name();
+		}
+	}
+
+	class BepSys_reworkedGroups_minimizeIndividualDisutility implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			// TODO include Pref agg method
+			return "BepSys Reworked Groups (min indiv disutil)";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var groups = new BepSysReworked(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
 
 			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects(),
 
