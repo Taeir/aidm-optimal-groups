@@ -1,19 +1,18 @@
 package nl.tudelft.aidm.optimalgroups.metric.matching.group;
 
 import nl.tudelft.aidm.optimalgroups.metric.NumMatchingArrayElements;
-import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import org.apache.commons.lang3.ArrayUtils;
 
-public class GroupPreferenceSatisfaction
+public class PeerPreferenceSatisfaction
 {
-	private Match<Group.FormedGroup, Project> match;
+	private Group.FormedGroup group;
 	private Agent student;
 
-	public GroupPreferenceSatisfaction(Match<Group.FormedGroup, Project> match, Agent student)
+	public PeerPreferenceSatisfaction(Group.FormedGroup group, Agent student)
 	{
-		this.match = match;
+		this.group = group;
 		this.student = student;
 	}
 
@@ -27,9 +26,8 @@ public class GroupPreferenceSatisfaction
 	}
 
 	private int peersInGroup() {
-		Group.FormedGroup group = match.from();
 		Integer[] groupMembers = group.members().asCollection().stream().map(agent -> agent.id).toArray(Integer[]::new);
-		Integer[] pref = student.projectPreference().asArray();
+		Integer[] pref = ArrayUtils.toObject(student.groupPreference.asArray());
 
 		NumMatchingArrayElements numMatchingArrayElements = new NumMatchingArrayElements(groupMembers, pref);
 		int count = numMatchingArrayElements.asInt();
@@ -38,6 +36,6 @@ public class GroupPreferenceSatisfaction
 	}
 
 	private int peersGiven() {
-		return this.student.projectPreference().asArray().length;
+		return this.student.groupPreference.asArray().length;
 	}
 }

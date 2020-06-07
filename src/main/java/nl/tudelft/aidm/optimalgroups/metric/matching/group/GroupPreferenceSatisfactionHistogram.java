@@ -19,8 +19,9 @@ public class GroupPreferenceSatisfactionHistogram extends Histogram
     @Override
     protected void calculate() {
         for (Match<Group.FormedGroup, Project> match : this.matching.asList()) {
-            match.from().members().forEach(student -> {
-                GroupPreferenceSatisfaction preferenceSatisfaction = new GroupPreferenceSatisfaction(match, student);
+            Group.FormedGroup group = match.from();
+            group.members().forEach(student -> {
+                PeerPreferenceSatisfaction preferenceSatisfaction = new PeerPreferenceSatisfaction(group, student);
                 boolean added = this.addValue(preferenceSatisfaction.asFloat());
             });
         }

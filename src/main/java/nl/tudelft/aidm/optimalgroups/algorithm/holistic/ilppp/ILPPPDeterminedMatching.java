@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.matching.group.GroupPreferenceSatisfaction;
+import nl.tudelft.aidm.optimalgroups.metric.matching.group.PeerPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -49,7 +49,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 				System.out.printf("\t\t-Student %s", metric.student().id);
 				System.out.printf(", rank: %s", metric.asInt());
 
-				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, metric.student()).asFraction());
+				System.out.printf("\t\t group satisfaction: %s\n", new PeerPreferenceSatisfaction(match.from(), metric.student()).asFraction());
 			});
 		}
 
@@ -114,6 +114,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 			groupedByProject.forEach((proj, agentList) -> {
 				Agents agentsWithProject = Agents.from(agentList);
 				BepSysImprovedGroups bepSysImprovedGroups = new BepSysImprovedGroups(agentsWithProject, groupSizeConstraint, true);
+				// force evaulation of the lazy
 				var groups = bepSysImprovedGroups.asCollection();
 			});
 		}
