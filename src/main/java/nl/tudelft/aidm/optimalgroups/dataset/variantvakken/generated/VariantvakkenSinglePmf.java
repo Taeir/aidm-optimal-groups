@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.dataset;
+package nl.tudelft.aidm.optimalgroups.dataset.variantvakken.generated;
 
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.ProjectPreferencesFromPmfGenerator;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;

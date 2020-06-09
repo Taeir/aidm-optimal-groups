@@ -1,14 +1,14 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.dataset.VariantvakkenSinglePmf;
+import nl.tudelft.aidm.optimalgroups.dataset.variantvakken.generated.VariantvakkenSinglePmf;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report.ExperimentReportInHtml;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VariantVakkenReport1105
+public class VariantvakkenSyntheticDataReport1105
 {
 	static List<AgentProjectAlgorithm> algorithms = List.of(
 		new AgentProjectAlgorithm.MinCostMaxFlow(),

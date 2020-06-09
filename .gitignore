@@ -9,5 +9,6 @@ build
 bin/
 lib
 outputtxt/*
+reports/
 
 !/gradle
