@@ -1,7 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.Application;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -26,7 +25,7 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 	public AggregatedProfilePreference(Agents agents)
 	{
 		this.agents = agents;
-		this.datasetContext = agents.datsetContext;
+		this.datasetContext = agents.datasetContext;
 	}
 
 	protected abstract Integer[] calculateAverageOfGroup();

@@ -4,7 +4,6 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 public class Proposal
 {
-
 	@FunctionalInterface
 	public interface Template
 	{

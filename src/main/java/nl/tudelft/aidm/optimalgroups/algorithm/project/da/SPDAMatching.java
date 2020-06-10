@@ -59,7 +59,8 @@ public class SPDAMatching implements AgentToProjectMatching
 		this.agents = datasetContext.allAgents();
 		this.projects = datasetContext.allProjects();
 
-		// todo: sanity check (capacity)
+		Assert.that(agents.count() <= projects.countAllSlots())
+			.orThrowMessage("Cannot run Student-Project DA: not enough capacity to assign all students");
 	}
 
 	@Override

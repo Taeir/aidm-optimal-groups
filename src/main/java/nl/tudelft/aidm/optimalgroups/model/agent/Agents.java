@@ -12,16 +12,16 @@ import java.util.function.Function;
  */
 public class Agents
 {
-	public final DatasetContext datsetContext;
+	public final DatasetContext datasetContext;
 
 	// list for now
 	private Set<Agent> agents;
 	private Map<Integer, Agent> idToAgentsMap;
 
 
-	public Agents(DatasetContext datsetContext, Collection<Agent> agents)
+	public Agents(DatasetContext datasetContext, Collection<Agent> agents)
 	{
-		this.datsetContext = datsetContext;
+		this.datasetContext = datasetContext;
 		this.agents = new HashSet<>(agents);
 
 		// Better to change the ctor signature
@@ -73,12 +73,12 @@ public class Agents
 
 	public Agents with(Agents other)
 	{
-		Assert.that(datsetContext.equals(other.datsetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
+		Assert.that(datasetContext.equals(other.datasetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
 
 		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
 		copyAgents.addAll(other.agents);
 
-		return new Agents(datsetContext, copyAgents);
+		return new Agents(datasetContext, copyAgents);
 	}
 
 	public Agents without(Collection<Agent> other)
@@ -90,12 +90,12 @@ public class Agents
 	{
 		if (other.count() == 0) return this;
 
-		Assert.that(datsetContext.equals(other.datsetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
+		Assert.that(datasetContext.equals(other.datasetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
 
 		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
 		copyAgents.removeAll(other.agents);
 
-		return new Agents(datsetContext, copyAgents);
+		return new Agents(datasetContext, copyAgents);
 	}
 
 	public void forEach(Consumer<Agent> fn)
@@ -163,13 +163,13 @@ public class Agents
 		if (this == o) return true;
 		if (!(o instanceof Agents)) return false;
 		Agents other = (Agents) o;
-		return datsetContext.equals(other.datsetContext) &&
+		return datasetContext.equals(other.datasetContext) &&
 			agents.equals(other.agents);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(agents, datsetContext);
+		return Objects.hash(agents, datasetContext);
 	}
 }

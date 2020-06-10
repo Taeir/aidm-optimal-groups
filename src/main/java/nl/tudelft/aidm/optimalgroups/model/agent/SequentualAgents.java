@@ -17,7 +17,7 @@ public class SequentualAgents extends Agents
 {
 	private SequentualAgents(Agents agents, SequentualProjects sequentualProjects)
 	{
-		super(agents.datsetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
+		super(agents.datasetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
 		throw new ImplementMe(); // "Sequentualization must happen in datasetContext"
 	}
 
