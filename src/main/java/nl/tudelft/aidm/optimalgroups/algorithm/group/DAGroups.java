@@ -6,7 +6,9 @@ import nl.tudelft.aidm.optimalgroups.metric.group.LeastWorstIndividualRankAttain
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import org.sql2o.GenericDatasource;
+import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,12 +32,33 @@ public class DAGroups
 		this.groupSizeConstraint = groupSizeConstraint;
 	}
 
+	List<Match<ParticipatingAgent, ParticipatingAgent>> mechanism()
+	{
+		var participatingAgents = agents.asCollection().stream()
+			.map(agent -> new ParticipatingAgent(agent, agents))
+			.collect(Collectors.toList());
+
+		var unmatched = new Stack<ParticipatingAgent>();
+		unmatched.addAll(participatingAgents);
+
+		// PHASE 1: ensure no single agents
+		while (unmatched.size() > 0) {
+			var unmatchedProposer = unmatched.pop();
+			var proposal = unmatchedProposer.makeNextProposal();
+
+//			System.out.printf("Student %s,\tproposing to: %s\n", unmatchedProposer.agent, proposal.projectProposingFor().id());
+			var answer = proposables.receiveProposal(proposalTemplate.apply(proposal));
+			switch (answer) {
+				case TentivelyAccept:
+			}
+		}
+
+		// PHASE 2: ensure all pairs and groups are merged into valid groups
+
+	}
+
 	public void bla()
 	{
-		var proposables = new Proposables<Agent, Agent>(agents.asCollection(), agent -> groupSizeConstraint.maxSize());
-		var proposers = agents.asCollection().stream()
-			.map(agent -> (Proposer<Agent, Agent>) new ParticipatingAgent(agent, agents))
-			.collect(Collectors.toList());
 
 		var matching = new Mechanism<>(proposers, proposables);
 
@@ -72,23 +95,23 @@ public class DAGroups
 	public static class ParticipatingAgent implements Proposer<Agent, Agent>, Proposable<Agent,Agent>
 	{
 		private final Agent underlying;
-		private final Agents agents;
+		private final Agents universe;
 
 		private final List<ParticipatingAgent> possibleGroup;
 
 		PriorityQueue<PotentialGroupMate> peerRanking;
 
-		public ParticipatingAgent(Agent underlying, Agents participants)
+		public ParticipatingAgent(Agent underlying, Agents universe)
 		{
 			this.underlying = underlying;
-			this.agents = participants;
+			this.universe = universe;
 
 			this.possibleGroup = new ArrayList<>();
 			this.possibleGroup.add(this);
 
 			this.peerRanking = new PriorityQueue<>();
 
-			participants.asCollection().stream()
+			universe.asCollection().stream()
 				.filter(agent -> !agent.equals(underlying))
 				.map(otherAgent -> {
 					LeastWorstDistance distanceThisToThatAgent = new LeastWorstDistance(possibleGroup);

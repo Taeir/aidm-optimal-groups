@@ -5,8 +5,7 @@ public interface Proposal<PROPOSER, PROPOSED>
 	PROPOSER proposer();
 	PROPOSED recipient();
 
-	Integer utilityIfAccepted();
-	Integer agentsExpectedUtilityAfterReject();
+
 
 
 	interface Actionable<PROPOSER, PROPOSED> extends Proposal<PROPOSER, PROPOSED>
@@ -26,6 +25,6 @@ public interface Proposal<PROPOSER, PROPOSED>
 		void tentativelyAccept();
 		void reject();
 
-		Proposal<PROPOSER, PROPOSED> proposal();
+//		Proposal<PROPOSER, PROPOSED> proposal();
 	}
 }

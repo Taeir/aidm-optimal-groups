@@ -24,15 +24,15 @@ public class Proposables<PROPOSER, PROPOSABLE> implements Iterable<Proposable<PR
 		this.proposables = asCollection;
 	}
 
-	void receiveProposal(Proposal.Actionable<PROPOSER, PROPOSABLE> proposal)
+	public Proposable.ProposalAnswer receiveProposal(Proposal.Actionable<PROPOSER, PROPOSABLE> proposal)
 	{
 		// UGLY and inefficient: FIXME!
 		var projToProposeTo = proposables.stream()
-			.filter(proposableProject -> proposableProject.underlying().equals(proposal.proposal().recipient()))
+			.filter(proposableProject -> proposableProject.underlying().equals(proposal.recipient()))
 			.findAny()
 			.get();
 
-		projToProposeTo.handleProposal(proposal);
+		return projToProposeTo.handleProposal(proposal);
 	}
 
 	@NotNull
