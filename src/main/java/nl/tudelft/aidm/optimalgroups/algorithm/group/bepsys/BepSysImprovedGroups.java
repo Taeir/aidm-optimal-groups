@@ -10,6 +10,7 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import plouchtch.assertion.Assert;
 
 
 import java.util.*;
@@ -83,6 +84,8 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
         //System.out.println(System.currentTimeMillis() + ": Amount of final groups: " + this.finalFormedGroups.count());
         //System.out.println(System.currentTimeMillis() + ": Amount of students that are grouped: " + agentsInFinalGroups.size());
+
+        Assert.that(finalFormedGroups.countDistinctStudents() == students.count()).orThrowMessage("Not all students were matched...");
 
         this.done = true;
     }
@@ -169,13 +172,13 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
     private void pickBestGroups(List<PossibleGroup> possibleGroups)
     {
+        possibleGroups.sort(Comparator.comparing(PossibleGroup::score).reversed());
         while (possibleGroups.size() > 0) {
-            possibleGroups.sort(Comparator.comparing(PossibleGroup::score).reversed());
             PossibleGroup bestGroup = findBestGroup(possibleGroups);
-            if (bestGroup == null) continue; // todo: inf loop?
+            if (bestGroup == null) continue;
 
-            Agents agents = Agents.from(bestGroup.members);
             Group formedGroup = tentativelyFormedGroups.addAsTentative(bestGroup.toGroup());
+            possibleGroups.remove(bestGroup);
 
             for (Agent a : formedGroup.members().asCollection()) {
                 this.availableStudents.remove(a);
@@ -184,14 +187,14 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         }
     }
 
-    private PossibleGroup findBestGroup(List<PossibleGroup> possibleGroups) {
+    private PossibleGroup findBestGroup(List<PossibleGroup> possibleGroups)
+    {
         PossibleGroup possiblyBestGroup = null;
         boolean available = false;
 
-        Iterator<PossibleGroup> bestGroupsIter = possibleGroups.iterator();
-        while (bestGroupsIter.hasNext())
+        while (possibleGroups.size() > 0)
         {
-            possiblyBestGroup = bestGroupsIter.next();
+            possiblyBestGroup = possibleGroups.get(0);
             available = true;
 
             // check if any of the members are already grouped
@@ -199,18 +202,18 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
             {
                 if (unavailableStudents.contains(member)) {
                     available = false;
-                    bestGroupsIter.remove();
+                    possibleGroups.remove(0);
                     break;
                 }
             }
+
+            if (available) {
+                return possiblyBestGroup;
+            }
         }
 
-        // none of the groups had a member that was available, hence no group found
-        if (!available) {
-            return null;
-        }
-
-        return possiblyBestGroup;
+        // none of the groups had a member that was available
+        return null;
     }
 
     private void mergeGroups() {
@@ -312,7 +315,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         // Some friends might be unavilable? If so, need to get group prefs and check
         for (var friend : a.groupPreference.asListOfAgents()) {
             if (availableStudents.contains(friend)) {
-                availableStudents.remove(friend);
+//                availableStudents.remove(friend);
                 friends.add(friend);
             }
         }
