@@ -1,6 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.SetOfGroupSizesThatCanStillBeCreated;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
@@ -109,20 +111,21 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 	{
 		var groupedByProject = matching.groupedByProject();
 
-		// using exceptions for control flow, bepsys group forming is not as flexible yet to do otherwise...
-		try {
-			groupedByProject.forEach((proj, agentList) -> {
-				Agents agentsWithProject = Agents.from(agentList);
-				BepSysImprovedGroups bepSysImprovedGroups = new BepSysImprovedGroups(agentsWithProject, groupSizeConstraint, true);
-				// force evaulation of the lazy
-				var groups = bepSysImprovedGroups.asCollection();
-			});
-		}
-		catch (RuntimeException ex) {
-			return false;
-		}
+		return groupedByProject.entrySet().stream()
+				.allMatch(entry -> {
+					var agentList = entry.getValue();
+					Agents agentsWithProject = Agents.from(agentList);
 
-		return true;
+					// force evaulation of the lazy
+					try {
+						new SetOfGroupSizesThatCanStillBeCreated(agentList.size(), groupSizeConstraint, SetOfGroupSizesThatCanStillBeCreated.FocusMode.MAX_FOCUS);
+						return new BepSysReworked(agentsWithProject, groupSizeConstraint).asFormedGroups().countDistinctStudents() == agentList.size();
+//						return true;
+					}
+					catch (Exception ex) {
+						return false;
+					}
+				});
 	}
 
 	final Object bestSoFarLock = new Object();
