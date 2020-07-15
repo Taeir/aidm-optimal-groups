@@ -58,9 +58,8 @@ public class ProjectPreferencesInDb implements ProjectPreference
 
 		if (rankInArray.isPresent()) {
 			// Rank is present, clamp it to proper rank (indifference ranks are all 1 rank)
-			return rankInArray.getAsInt() >= isIndifferentFromRank
-				? OptionalInt.of(isIndifferentFromRank)
-				: rankInArray;
+			var clamped = Math.min(rankInArray.getAsInt(), isIndifferentFromRank);
+			return OptionalInt.of(clamped);
 		}
 		else {
 			return OptionalInt.empty();
