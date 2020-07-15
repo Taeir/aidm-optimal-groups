@@ -24,15 +24,15 @@ public class CourseEdition implements DatasetContext
 {
 	private final static Map<Integer, CourseEdition> cachedCourseEditions = new HashMap<>();
 
-	private final DataSource dataSource;
+	protected final DataSource dataSource;
 
-	private final int courseEditionId;
-	private final Agents agents;
-	private final Projects projects;
-	private final GroupSizeConstraint groupSizeConstraint;
+	protected final int courseEditionId;
+	protected Agents agents;
+	protected final Projects projects;
+	protected final GroupSizeConstraint groupSizeConstraint;
 
 
-	private CourseEdition(DataSource dataSource, int courseEditionId)
+	protected CourseEdition(DataSource dataSource, int courseEditionId)
 	{
 		this.dataSource = dataSource;
 		this.courseEditionId = courseEditionId;
