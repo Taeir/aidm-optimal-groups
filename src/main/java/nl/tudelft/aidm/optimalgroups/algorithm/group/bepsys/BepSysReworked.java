@@ -10,6 +10,7 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import plouchtch.assertion.Assert;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -29,12 +30,10 @@ public class BepSysReworked implements GroupFormingAlgorithm
     private TentativeGroups tentativelyFormedGroups;
     private FormedGroups finalFormedGroups;
 
-    private boolean useImprovedAlgo;
-
     private boolean done = false;
 
     // Pass the list of students to make groups from
-    public BepSysReworked(Agents agents, GroupSizeConstraint groupSizeConstraint, boolean useImprovedAlgo) {
+    public BepSysReworked(Agents agents, GroupSizeConstraint groupSizeConstraint) {
         this.students = agents;
 
         this.availableStudents = new HashSet<>();
@@ -48,8 +47,6 @@ public class BepSysReworked implements GroupFormingAlgorithm
 
         tentativelyFormedGroups = new TentativeGroups();
         finalFormedGroups = new FormedGroups();
-
-        this.useImprovedAlgo = useImprovedAlgo;
     }
 
     private void constructGroups() {
@@ -82,6 +79,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
         //System.out.println(System.currentTimeMillis() + ": Done!");
 
 
+//        Assert.that(finalFormedGroups.countDistinctStudents() == students.count()).orThrowMessage("Not all students were matched...");
         //System.out.println(System.currentTimeMillis() + ": Amount of final groups: " + this.finalFormedGroups.count());
         //System.out.println(System.currentTimeMillis() + ": Amount of students that are grouped: " + agentsInFinalGroups.size());
 
@@ -189,7 +187,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
             }
 
         }
-        System.out.println(System.currentTimeMillis() + ":\t\t- bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
+        System.out.println(System.currentTimeMillis() + ":\t\tR- bestMatchUngrouped: done, " + this.availableStudents.size() + " students left to group");
     }
 
 
@@ -243,6 +241,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
                 for (Group otherUnmergedGroup : unmerged) {
                     int together = numMembersInUnmergedGroup + otherUnmergedGroup.members().count();
 
+
                     // try again with relaxed constraints on group creation (up to group size)
                     if (together <= groupSizeConstraint.maxSize()) {
                         possibleGroupMerges.add(new PossibleGroupMerge(unmergedGroup, otherUnmergedGroup));
@@ -283,8 +282,6 @@ public class BepSysReworked implements GroupFormingAlgorithm
                 }
             }
         }
-
-        System.out.print("Done");
     }
 
 

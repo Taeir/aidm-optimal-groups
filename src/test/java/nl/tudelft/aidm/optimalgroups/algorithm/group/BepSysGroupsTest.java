@@ -20,7 +20,7 @@ class BepSysGroupsTest
 		var courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(10);
 
 		var og = new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), true);
-		var reworked = new BepSysReworked(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), true);
+		var reworked = new BepSysReworked(courseEdition.allAgents(), courseEdition.groupSizeConstraint());
 
 		assertEquals(og.asFormedGroups().countDistinctStudents(), reworked.asFormedGroups().countDistinctStudents(), "Groupings do not contain same amnt of students");
 

@@ -86,6 +86,31 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 	}
 
+	class BepSys_reworked implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			// TODO include Pref agg method
+			return "BepSys (rew)";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var groups = new BepSysReworked(datasetContext.allAgents(), datasetContext.groupSizeConstraint());
+			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects());
+
+			return groupsToProjects;
+		}
+
+		@Override
+		public String toString()
+		{
+			return name();
+		}
+	}
+
 	class BepSys_ogGroups_minimizeIndividualDisutility implements GroupProjectAlgorithm
 	{
 		@Override
@@ -134,7 +159,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var groups = new BepSysReworked(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
+			var groups = new BepSysReworked(datasetContext.allAgents(), datasetContext.groupSizeConstraint());
 
 			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects(),
 

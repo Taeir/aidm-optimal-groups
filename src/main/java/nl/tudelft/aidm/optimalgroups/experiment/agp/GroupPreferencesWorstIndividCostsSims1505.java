@@ -24,8 +24,10 @@ public class GroupPreferencesWorstIndividCostsSims1505
 
 		var algorithms = List.of(
 			new GroupProjectAlgorithm.BepSys(),
+			new GroupProjectAlgorithm.BepSys_reworked(),
 			new GroupProjectAlgorithm.BepSys_ogGroups_minimizeIndividualDisutility(),
-			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility()
+			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility(),
+			new GroupProjectAlgorithm.ILPPP()
 		);
 
 		var groupSize = GroupSizeConstraint.manual(4, 5);
@@ -49,52 +51,52 @@ public class GroupPreferencesWorstIndividCostsSims1505
 //			new ILPPP_TGAlgorithm());
 
 		/* GENERATED DATA  */
-		numSlots = 1;
-		numProjects = 40;
-		numAgents = numProjects * groupSize.maxSize();
-
-		projects = Projects.generated(40, numSlots);
-		PreferenceGenerator prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
-
-		experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
-
-		/* */
-		numSlots = 3;
-		numProjects = 40;
-		numAgents = numProjects * groupSize.maxSize();
-
-		projects = Projects.generated(40, numSlots);
-		prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
-
-		experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
-
-		/* */
-		numSlots = 3;
-		numProjects = 40;
-		numAgents = numProjects * groupSize.maxSize();
-
-		projects = Projects.generated(40, numSlots);
-		prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 16);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
-
-		experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
-
-		/* */
-		numSlots = 3;
-		numProjects = 40;
-		numAgents = numProjects * groupSize.maxSize();
-
-		projects = Projects.generated(40, numSlots);
-		prefGenerator = new UniformProjectPreferencesGenerator(projects);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
-
-		experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
+//		numSlots = 1;
+//		numProjects = 40;
+//		numAgents = numProjects * groupSize.maxSize();
+//
+//		projects = Projects.generated(40, numSlots);
+//		PreferenceGenerator prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
+//		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+//
+//		experiment = new Experiment(dataContext, algorithms);
+//		experimentsForInReport.add(experiment);
+//
+//		/* */
+//		numSlots = 3;
+//		numProjects = 40;
+//		numAgents = numProjects * groupSize.maxSize();
+//
+//		projects = Projects.generated(40, numSlots);
+//		prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
+//		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+//
+//		experiment = new Experiment(dataContext, algorithms);
+//		experimentsForInReport.add(experiment);
+//
+//		/* */
+//		numSlots = 3;
+//		numProjects = 40;
+//		numAgents = numProjects * groupSize.maxSize();
+//
+//		projects = Projects.generated(40, numSlots);
+//		prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 16);
+//		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+//
+//		experiment = new Experiment(dataContext, algorithms);
+//		experimentsForInReport.add(experiment);
+//
+//		/* */
+//		numSlots = 3;
+//		numProjects = 40;
+//		numAgents = numProjects * groupSize.maxSize();
+//
+//		projects = Projects.generated(40, numSlots);
+//		prefGenerator = new UniformProjectPreferencesGenerator(projects);
+//		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+//
+//		experiment = new Experiment(dataContext, algorithms);
+//		experimentsForInReport.add(experiment);
 
 //		/* */
 //		numSlots = 3;
@@ -134,11 +136,11 @@ public class GroupPreferencesWorstIndividCostsSims1505
 //		var markdownAsString = markdown.toString();
 
 		new ExperimentReportInHtml(experimentsForInReport)
-			.writeHtmlSourceToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank.html"));
+			.writeHtmlSourceToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank1307.html"));
 
 
 		new ExperimentReportInPdf(experimentsForInReport)
-			.writePdfToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank.pdf"));
+			.writePdfToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank1307.pdf"));
 
 		return;
 	}
