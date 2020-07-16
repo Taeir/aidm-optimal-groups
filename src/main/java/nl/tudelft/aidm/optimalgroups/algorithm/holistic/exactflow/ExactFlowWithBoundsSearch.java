@@ -90,17 +90,5 @@ public class ExactFlowWithBoundsSearch implements GroupToProjectMatching<Group.F
 		throw new ImplementMe();
 	}
 
-	private static class Edge
-	{
-		public final Agent from;
-		public final Project to;
-		public final int rank;
-
-		private Edge(Agent from, Project to, int rank)
-		{
-			this.from = from;
-			this.to = to;
-			this.rank = rank;
-		}
-	}
+	private static record Edge(Agent from, Project to, int rank){}
 }

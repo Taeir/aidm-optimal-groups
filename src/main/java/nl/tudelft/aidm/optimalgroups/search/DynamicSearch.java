@@ -8,7 +8,7 @@ import java.util.function.Function;
  * @param <SOLUTION> The final solution/result - that which is returned
  * @param <CANDIDATE> The internal solution - might need postprocessing
  */
-public class DynamicSearch<CANDIDATE, METRIC, SOLUTION extends Solution<CANDIDATE, METRIC>>
+public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 {
 	final BestSolutionSoFar bestSolutionSoFar;
 

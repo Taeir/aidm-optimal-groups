@@ -4,12 +4,20 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.OptionalInt;
 
-public interface WorstAssignedRank
+public interface WorstAssignedRank extends Comparable<WorstAssignedRank>
 {
 	Integer asInt();
+
+	@Override
+	default int compareTo(@NotNull WorstAssignedRank o)
+	{
+		// Lower ranks are "higher" so inverse the int.compareTo result
+		return -(asInt().compareTo(o.asInt()));
+	}
 
 	class ProjectToGroup implements WorstAssignedRank
 	{
