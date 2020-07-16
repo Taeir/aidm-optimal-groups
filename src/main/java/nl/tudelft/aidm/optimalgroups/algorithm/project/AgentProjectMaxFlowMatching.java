@@ -1,7 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project;
 
 import com.google.ortools.graph.MinCostFlow;
-import louchtch.graphmatch.model.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.PreferencesToCostFn;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -14,7 +13,6 @@ import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"Duplicates"})
 public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
@@ -161,35 +159,33 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 
 		MinCostFlow minCostFlow = new MinCostFlow();
 
-		int vertId = 0;
-		int source = vertId++;
-		int sink = vertId++;
+		var vertexDispenser = new VertexDispenser(students.count() + projects.count() + 2);
+		var source = vertexDispenser.next();
+		var sink = vertexDispenser.next();
 
 		// Source and Sink do not need to supply/consume more than we have students
-		minCostFlow.setNodeSupply(source, students.count());
-		minCostFlow.setNodeSupply(sink, -students.count());
+		minCostFlow.setNodeSupply(source.id, students.count());
+		minCostFlow.setNodeSupply(sink.id, -students.count());
 
-		var studentVerts = new StudentVertices(students, vertId);
-		vertId += students.count();
-
-		var projectVerts = new ProjectVertices(projects, vertId);
+		var studentVerts = new StudentVertices(students, vertexDispenser);
+		var projectVerts = new ProjectVertices(projects, vertexDispenser);
 
 		var studentProjectArcs = new ArrayList<FlowArc>(students.count() * projects.count());
 
 		students.forEach(student -> {
-			Integer studentVert = studentVerts.toVertex.get(student);
-			minCostFlow.addArcWithCapacityAndUnitCost(source, studentVert, 1, 1);
+			var studentVert = studentVerts.asVertex.get(student);
+			minCostFlow.addArcWithCapacityAndUnitCost(source.id, studentVert.id, 1, 1);
 
 			var prefs = student.projectPreference();
 			student.projectPreference().forEach((Project project, int rank) -> {
 
-				var projectVert = projectVerts.vertex.get(project);
+				var projectVert = projectVerts.asVertex.get(project);
 
 				if (projectVert != null)
 				{
 					var cost = preferencesToCostFunction.costOfGettingAssigned(prefs, project);
 
-					var arc = minCostFlow.addArcWithCapacityAndUnitCost(studentVert, projectVert, 1, cost);
+					var arc = minCostFlow.addArcWithCapacityAndUnitCost(studentVert.id, projectVert.id, 1, cost);
 					studentProjectArcs.add(new FlowArc(student, project, arc));
 				}
 			});
@@ -199,8 +195,8 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 		projects.forEach(project -> {
 			int numSlots = project.slots().size();
 			int capacity = numSlots * maxGroupSize;
-			var projectVert = projectVerts.vertex.get(project);
-			minCostFlow.addArcWithCapacityAndUnitCost(projectVert, sink, capacity, 1);
+			var projectVert = projectVerts.asVertex.get(project);
+			minCostFlow.addArcWithCapacityAndUnitCost(projectVert.id, sink.id, capacity, 1);
 		});
 
 		var status = minCostFlow.solveMaxFlowWithMinCost();
@@ -218,38 +214,60 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 		this.groupedByProject = groupedByProject;
 	}
 
+	private static record Vertex(int id){}
+	private static class VertexDispenser
+	{
+		private int idOfNext;
+		private List<Vertex> existing;
+
+		public VertexDispenser(int numExpectedVertices)
+		{
+			idOfNext = 0;
+			existing = new ArrayList<>(numExpectedVertices);
+		}
+
+		private Vertex next()
+		{
+			var newVert = new Vertex(idOfNext++);
+			existing.add(newVert);
+			return newVert;
+		}
+	}
+
 	private static class StudentVertices
 	{
-		Map<Agent, Integer> toVertex;
-		Map<Integer, Agent> toAgent;
+		Map<Agent, Vertex> asVertex;
+		Map<Vertex, Agent> asAgent;
 
-		public StudentVertices(Agents agents, int id)
+		public StudentVertices(Agents agents, VertexDispenser vertexDispenser)
 		{
-			toAgent = new IdentityHashMap<>(agents.count());
-			toVertex = new IdentityHashMap<>(agents.count());
+			asAgent = new IdentityHashMap<>(agents.count());
+			asVertex = new IdentityHashMap<>(agents.count());
 
 			for (var agent : agents.asCollection()) {
-				toAgent.put(id, agent);
-				toVertex.put(agent, id);
-				id++;
+				var vertex = vertexDispenser.next();
+
+				asAgent.put(vertex, agent);
+				asVertex.put(agent, vertex);
 			}
 		}
 	}
 
 	private static class ProjectVertices
 	{
-		Map<Project, Integer> vertex;
-		Map<Integer, Project> project;
+		Map<Project, Vertex> asVertex;
+		Map<Vertex, Project> asProject;
 
-		public ProjectVertices(Projects projects, int id)
+		public ProjectVertices(Projects projects, VertexDispenser vertexDispenser)
 		{
-			this.project = new IdentityHashMap<>(projects.count());
-			this.vertex = new IdentityHashMap<>(projects.count());
+			this.asProject = new IdentityHashMap<>(projects.count());
+			this.asVertex = new IdentityHashMap<>(projects.count());
 
 			for (var project : projects.asCollection()) {
-				this.project.put(id, project);
-				vertex.put(project, id);
-				id++;
+				var vertex = vertexDispenser.next();
+
+				asProject.put(vertex, project);
+				asVertex.put(project, vertex);
 			}
 		}
 	}

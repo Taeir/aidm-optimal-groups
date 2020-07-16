@@ -162,14 +162,14 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 
 		private boolean solutionIsAcceptable(AgentProjectMaxFlowMatching m)
 		{
-			boolean noProjectsWithStudentsButLessThanMinimumSize = m.groupedByProject().values().stream().allMatch(studentsAssignedToProject -> {
+			boolean noProjectsWithoutStudentsOrWithLessThanMinimumSize = m.groupedByProject().values().stream().allMatch(studentsAssignedToProject -> {
 					// check if the following is true for each project
 					var size = studentsAssignedToProject.size();
 					return size >= groupSizeConstraint.minSize() || size == 0;
 				}
 			);
 
-			return noProjectsWithStudentsButLessThanMinimumSize && m.allStudentsAreMatched() && canFormValidGroupsWithoutRemainders(m, groupSizeConstraint);
+			return noProjectsWithoutStudentsOrWithLessThanMinimumSize && m.allStudentsAreMatched() && canFormValidGroupsWithoutRemainders(m, groupSizeConstraint);
 		}
 
 		private Optional<MatchingWithMetric> solve(Predicate<AgentProjectMaxFlowMatching> candidateSoltutionTest, GroupSizeConstraint groupSizeConstraint) {
