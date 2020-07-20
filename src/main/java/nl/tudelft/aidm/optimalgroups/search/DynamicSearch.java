@@ -54,7 +54,7 @@ public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 			return solution;
 		}
 
-		abstract Optional<SOLUTION> solve();
+		abstract public Optional<SOLUTION> solve();
 
 		abstract protected boolean candidateSolutionTest(CANDIDATE candidateSolution);
 	}
