@@ -26,7 +26,6 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 {
 
 
-
 	// determine set of 'eccentric' students E - eccentric: student with lowest satisfaction
 	// foreach s in E
 	//     try all group combinations such that nobody in that group is worse off than s
@@ -82,6 +81,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 	private final Agents agents;
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
+	private final PossibleGroups possibleGroups;
 
 	public Pessimistic(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
@@ -90,6 +90,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		this.agents = agents;
 		this.projects = projects;
 		this.groupSizeConstraint = groupSizeConstraint;
+		this.possibleGroups = new PossibleGroups();
 	}
 
 	public AgentToProjectMatching matching()
@@ -117,12 +118,18 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		@Override
 		public Optional<Solution> solve()
 		{
+			if (agents.count() < groupSizeConstraint.minSize()) {
+				// TODO Be smarter: we can check if all agents can be grouped without remainders sooner
+				return Optional.empty();
+			}
+
 			var kProjects = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
 
 			var solution = kProjects.pairingsAtK().stream()
 				.flatMap(pairing -> {
 					var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
-					return possibleGroups(pairing.agents(), pairing.project(), possibleGroupmates)
+					var possibleGrps =  possibleGroups.of(pairing.agents(), possibleGroupmates, groupSizeConstraint);
+					return possibleGrps
 						.stream()
 						.flatMap(possibleGroup -> {
 							Agents agentsWithoutGroup = agents.without(possibleGroup);
@@ -134,49 +141,6 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 				.max(Comparator.comparing(Solution::metric));
 
 			return solution;
-		}
-
-		private Set<Set<Agent>> possibleGroups(Set<Agent> include, Project kRankedProject, LinkedHashSet<Agent> possibleGroupmates)
-		{
-			// TODO OPT: always select agents that are also eccentric with same k
-			if (include.size() == groupSizeConstraint.maxSize()) {
-				return Set.of(include);
-			}
-
-			if (include.size() > groupSizeConstraint.maxSize()) {
-				return Set.of();
-			}
-
-//			Set<Object> z = new LinkedHashSet<>();
-			if (possibleGroupmates.isEmpty()) {
-				if (include.size() >= groupSizeConstraint.minSize()) {
-					return Set.of(include);
-				}
-
-				return Set.of();
-//				throw new RuntimeException("Can't form group - not enough people available");
-			}
-
-			// Just want to pop an element and add to another set without modifying those
-			// passed in through the arguments
-			var possibleGroupmatesWithout = new LinkedHashSet<>(possibleGroupmates);
-			var iter = possibleGroupmatesWithout.iterator();
-
-			Agent possibleGroupmate = iter.next();
-			iter.remove();
-
-			// include
-			var includeWith = new HashSet<>(include);
-			includeWith.add(possibleGroupmate);
-			var resultAfterInclude = possibleGroups(includeWith, kRankedProject, possibleGroupmatesWithout);
-
-			// don't include
-			var resultAfterPass = possibleGroups(include, kRankedProject, possibleGroupmatesWithout);
-
-			var combined = new HashSet<>(resultAfterInclude);
-			combined.addAll(resultAfterPass);
-
-			return combined;
 		}
 
 		@Override
@@ -248,12 +212,20 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		{
 			this.aupcr = new AUPCRStudent(matching);
 			this.rank = new WorstAssignedRank.ProjectToStudents(matching);
+			var henk  = 0;
 		}
 
 		public Metric(AUPCR aupcr, WorstAssignedRank worstAssignedRank)
 		{
 			this.aupcr = aupcr;
 			this.rank = worstAssignedRank;
+			var henk  = 0;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "Metric - worst: " + rank.asInt() + ", aupcr: " + aupcr.asDouble();
 		}
 
 		@Override
