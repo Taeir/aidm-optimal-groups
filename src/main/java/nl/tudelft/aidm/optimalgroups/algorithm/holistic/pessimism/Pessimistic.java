@@ -129,7 +129,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 				.flatMap(pairing -> {
 					var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
 					var possibleGrps =  possibleGroups.of(pairing.agents(), possibleGroupmates, groupSizeConstraint);
-					return possibleGrps
+					var nodes = possibleGrps
 						.stream()
 						.flatMap(possibleGroup -> {
 							Agents agentsWithoutGroup = agents.without(possibleGroup);
@@ -137,6 +137,8 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 							var solutionsStream = new PessimismSearchNode(agentsWithoutGroup, projectsWithout, groupSizeConstraint).solution().stream();
 							return solutionsStream;
 						});
+
+					return nodes;
 				})
 				.max(Comparator.comparing(Solution::metric));
 
