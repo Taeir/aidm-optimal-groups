@@ -16,7 +16,7 @@ public abstract class ListBasedMatching<F, T> implements Matching<F, T>
 		this(datasetContext, new ArrayList<>());
 	}
 
-	ListBasedMatching(DatasetContext datasetContext, List<Match<F,T>> backingList)
+	protected ListBasedMatching(DatasetContext datasetContext, List<Match<F,T>> backingList)
 	{
 		this.datasetContext = datasetContext;
 		this.backingList = backingList;

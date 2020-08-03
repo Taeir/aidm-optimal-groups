@@ -10,7 +10,9 @@ import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.ListBasedMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -24,7 +26,6 @@ import java.util.stream.Collectors;
 
 public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimistic.Solution>
 {
-
 
 	// determine set of 'eccentric' students E - eccentric: student with lowest satisfaction
 	// foreach s in E
@@ -82,6 +83,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
 	private final PossibleGroups possibleGroups;
+	private final GroupFactorization groupFactorization;
 
 	public Pessimistic(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
@@ -91,11 +93,16 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		this.projects = projects;
 		this.groupSizeConstraint = groupSizeConstraint;
 		this.possibleGroups = new PossibleGroups();
+
+		this.groupFactorization = new GroupFactorization(groupSizeConstraint, agents.count());
 	}
 
 	public AgentToProjectMatching matching()
 	{
-		var root = new PessimismSearchNode(agents, new DecrementableProjects(projects), groupSizeConstraint);
+		DatasetContext datsetContext = agents.datsetContext;
+		var emptySolution = new Solution(new EmptyMatching(datsetContext), new EmptyMetric());
+
+		var root = new PessimismSearchNode(emptySolution, agents, new DecrementableProjects(projects), groupSizeConstraint);
 		var solution = root.solution();
 
 		return solution.orElseThrow()
@@ -104,12 +111,15 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	public class PessimismSearchNode extends SearchNode
 	{
+		private final Solution partial;
+
 		private final Agents agents;
 		private final DecrementableProjects projects;
 		private final GroupSizeConstraint groupSizeConstraint;
 
-		PessimismSearchNode(Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
+		PessimismSearchNode(Solution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
 		{
+			this.partial = partial;
 			this.agents = agents;
 			this.projects = projects;
 			this.groupSizeConstraint = groupSizeConstraint;
@@ -118,14 +128,18 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		@Override
 		public Optional<Solution> solve()
 		{
-			if (agents.count() < groupSizeConstraint.minSize()) {
-				// TODO Be smarter: we can check if all agents can be grouped without remainders sooner
+			if (agents.count() == 0)
+			{
+				return Optional.empty();
+			}
+
+			if (!groupFactorization.isFactorableIntoValidGroups(agents.count())) {
 				return Optional.empty();
 			}
 
 			var kProjects = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
 
-			var solution = kProjects.pairingsAtK().stream()
+			var solution = kProjects.pairingsAtK().parallelStream()
 				.flatMap(pairing -> {
 					var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
 					var possibleGrps =  possibleGroups.of(pairing.agents(), possibleGroupmates, groupSizeConstraint);
@@ -134,8 +148,22 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 						.flatMap(possibleGroup -> {
 							Agents agentsWithoutGroup = agents.without(possibleGroup);
 							DecrementableProjects projectsWithout = this.projects.decremented(pairing.project());
-							var solutionsStream = new PessimismSearchNode(agentsWithoutGroup, projectsWithout, groupSizeConstraint).solution().stream();
-							return solutionsStream;
+							//
+
+							var newPartial = partial.matching().withMatches(pairing.project(), possibleGroup);
+							var subsolution = new PessimismSearchNode(
+								new Solution(newPartial, new Metric(newPartial)),
+								agentsWithoutGroup, projectsWithout, groupSizeConstraint)
+								.solution();
+
+
+							return subsolution.flatMap(s -> {
+								List<Match<Agent, Project>> matches = new ArrayList<>(s.matching().asList());
+								possibleGroup.forEach(member -> matches.add(new AgentToProjectMatch(member, pairing.project())));
+
+								var matching = new PessimismMatching(matches);
+								return Optional.of(new Solution(matching, new Metric(matching)));
+							}).stream(); // unpack the optionals
 						});
 
 					return nodes;
@@ -151,8 +179,6 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 			// I think...
 			return true;
 		}
-
-
 	}
 
 	public static class DecrementableProjects extends ListBasedProjects
@@ -201,7 +227,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		}
 	}
 
-	public static record Solution(AgentToProjectMatching matching, Pessimistic.Metric metric)
+	public static record Solution(PessimismMatching matching, Pessimistic.Metric metric)
 		implements nl.tudelft.aidm.optimalgroups.search.Solution<Pessimistic.Metric>
 	{}
 
@@ -242,25 +268,44 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		}
 	}
 
-	private static class EmptyMatching implements AgentToProjectMatching
+	private static class PessimismMatching extends ListBasedMatching<Agent, Project> implements AgentToProjectMatching
 	{
-		private final DatasetContext datasetContext;
+		public PessimismMatching(DatasetContext datasetContext, List<Match<Agent, Project>> matches)
+		{
+			super(datasetContext, matches);
+		}
 
+		public PessimismMatching(List<Match<Agent, Project>> matches)
+		{
+			super(
+				matches.stream().map(match -> match.from().context).findAny().orElseThrow(),
+				List.copyOf(matches)
+			);
+		}
+
+		public PessimismMatching withMatches(Project project, Collection<Agent> agents)
+		{
+			var matchedWithNew = new ArrayList<>(asList());
+			agents.forEach(agent -> {
+				var match = new AgentToProjectMatch(agent, project);
+				matchedWithNew.add(match);
+			});
+
+			return new PessimismMatching(datasetContext(), matchedWithNew);
+		}
+	}
+
+	private static class EmptyMatching extends PessimismMatching
+	{
 		public EmptyMatching(DatasetContext datasetContext)
 		{
-			this.datasetContext = datasetContext;
+			super(datasetContext, List.of());
 		}
 
 		@Override
 		public List<Match<Agent, Project>> asList()
 		{
 			return List.of();
-		}
-
-		@Override
-		public DatasetContext datasetContext()
-		{
-			return datasetContext;
 		}
 	}
 
