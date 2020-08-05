@@ -15,8 +15,7 @@ public interface WorstAssignedRank extends Comparable<WorstAssignedRank>
 	@Override
 	default int compareTo(@NotNull WorstAssignedRank o)
 	{
-		// Lower ranks are "higher" so inverse the int.compareTo result
-		return -(asInt().compareTo(o.asInt()));
+		return asInt().compareTo(o.asInt());
 	}
 
 	class ProjectToGroup implements WorstAssignedRank

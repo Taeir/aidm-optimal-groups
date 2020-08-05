@@ -128,46 +128,60 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		@Override
 		public Optional<Solution> solve()
 		{
-			if (agents.count() == 0)
-			{
+			// BOUND
+			// Check if the partial solution has a worse absolute worst rank than the best-so-far
+			// If it is indeed worse, do not continue searching further with this partial solution (it will never become beter)
+			if (bestSolutionSoFar.test(best -> best.metric.absoluteWorstRank.asInt() < partial.metric.absoluteWorstRank.asInt())) {
 				return Optional.empty();
 			}
 
+			// If node has no agents to group, the partial solution is considered to be done
+			if (agents.count() == 0) {
+				bestSolutionSoFar.potentiallyUpdateBestSolution(bestSoFar -> {
+					if (bestSoFar.metric().compareTo(partial.metric()) < 0) {
+						return Optional.of(partial);
+					}
+
+					return Optional.empty();
+				});
+
+				return Optional.of(partial);
+			}
+
+			// If the remaining agents cannot be partitioned into groups of valid sizes,
+			// then this search branch is to be terminated without a solution (aka empty solution)
 			if (!groupFactorization.isFactorableIntoValidGroups(agents.count())) {
 				return Optional.empty();
 			}
 
 			var kProjects = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
 
-			var solution = kProjects.pairingsAtK().parallelStream()
+			var solution = kProjects.pairingsAtK()
+				.stream()
+
 				.flatMap(pairing -> {
 					var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
 					var possibleGrps =  possibleGroups.of(pairing.agents(), possibleGroupmates, groupSizeConstraint);
-					var nodes = possibleGrps
-						.stream()
-						.flatMap(possibleGroup -> {
-							Agents agentsWithoutGroup = agents.without(possibleGroup);
-							DecrementableProjects projectsWithout = this.projects.decremented(pairing.project());
-							//
-
-							var newPartial = partial.matching().withMatches(pairing.project(), possibleGroup);
-							var subsolution = new PessimismSearchNode(
-								new Solution(newPartial, new Metric(newPartial)),
-								agentsWithoutGroup, projectsWithout, groupSizeConstraint)
-								.solution();
-
-
-							return subsolution.flatMap(s -> {
-								List<Match<Agent, Project>> matches = new ArrayList<>(s.matching().asList());
-								possibleGroup.forEach(member -> matches.add(new AgentToProjectMatch(member, pairing.project())));
-
-								var matching = new PessimismMatching(matches);
-								return Optional.of(new Solution(matching, new Metric(matching)));
-							}).stream(); // unpack the optionals
-						});
-
-					return nodes;
+					return possibleGrps.stream()
+						.map(possibleGroup -> new PairingWithPossibleGroup(pairing, possibleGroup));
 				})
+
+				.map(pairingWithPossibleGroup -> {
+					var possibleGroup = pairingWithPossibleGroup.possibleGroup();
+					var pairing = pairingWithPossibleGroup.pairing();
+
+					Agents agentsWithoutGroup = agents.without(possibleGroup);
+					DecrementableProjects projectsWithout = this.projects.decremented(pairing.project());
+
+					var newPartial = partial.matching().withMatches(pairing.project(), possibleGroup);
+					return new PessimismSearchNode(Solution.fromMatching(newPartial), agentsWithoutGroup, projectsWithout, groupSizeConstraint);
+				})
+
+				.map(SearchNode::solution)
+
+				// Unpack optionals - filter out empty/invalid solutions
+				.flatMap(Optional::stream)
+
 				.max(Comparator.comparing(Solution::metric));
 
 			return solution;
@@ -180,6 +194,8 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 			return true;
 		}
 	}
+
+	private static record PairingWithPossibleGroup(ProjectAgentsPairing pairing, Set<Agent> possibleGroup) {}
 
 	public static class DecrementableProjects extends ListBasedProjects
 	{
@@ -229,42 +245,48 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	public static record Solution(PessimismMatching matching, Pessimistic.Metric metric)
 		implements nl.tudelft.aidm.optimalgroups.search.Solution<Pessimistic.Metric>
-	{}
+	{
+		public static Solution fromMatching(PessimismMatching matching) {
+			return new Solution(matching, new Metric(matching));
+		}
+	}
 
 	public static class Metric implements Comparable<Metric>
 	{
 		private final AUPCR aupcr;
-		private final WorstAssignedRank rank;
+		private final WorstAssignedRank absoluteWorstRank;
 
 		public Metric(AgentToProjectMatching matching)
 		{
 			this.aupcr = new AUPCRStudent(matching);
-			this.rank = new WorstAssignedRank.ProjectToStudents(matching);
+			this.absoluteWorstRank = new WorstAssignedRank.ProjectToStudents(matching);
 			var henk  = 0;
 		}
 
 		public Metric(AUPCR aupcr, WorstAssignedRank worstAssignedRank)
 		{
 			this.aupcr = aupcr;
-			this.rank = worstAssignedRank;
+			this.absoluteWorstRank = worstAssignedRank;
 			var henk  = 0;
 		}
 
 		@Override
 		public String toString()
 		{
-			return "Metric - worst: " + rank.asInt() + ", aupcr: " + aupcr.asDouble();
+			return "Metric - worst: " + absoluteWorstRank.asInt() + ", aupcr: " + aupcr.asDouble();
 		}
 
 		@Override
 		public int compareTo(Pessimistic.Metric o)
 		{
 			// Check which solution has minimized the worst rank better
-			var rankComparison = rank.compareTo(o.rank);
+			// Smaller rank is better, we also want to "maximize" the metric
+			// and AUPCR is also "higher is better". So inverse the compareTo
+			var rankComparison = -(absoluteWorstRank.compareTo(o.absoluteWorstRank));
 
-			// If the worst ranks are tied, look at AUPCR as tie breaker
-			if (rankComparison != 0) return rankComparison;
-			else return aupcr.compareTo(o.aupcr);
+			// If the worst-ranks are tied, use AUPCR as tie breaker
+			if (rankComparison == 0) return aupcr.compareTo(o.aupcr);
+			else return rankComparison;
 		}
 	}
 

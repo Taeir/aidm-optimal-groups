@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.search;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  *
@@ -10,7 +11,7 @@ import java.util.function.Function;
  */
 public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 {
-	final BestSolutionSoFar bestSolutionSoFar;
+	protected final BestSolutionSoFar bestSolutionSoFar;
 
 	public DynamicSearch(SOLUTION emptySolution)
 	{
@@ -30,9 +31,14 @@ public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 		{
 			bestSoFarSection.apply(this.bestSolutionSeen)
 				.ifPresent(newBest -> {
-					System.out.printf("New best solution found: %s (was: %s", newBest.metric(), bestSolutionSeen.metric());
+					System.out.printf("New best solution found: %s (was: %s)\n", newBest.metric(), bestSolutionSeen.metric());
 					this.bestSolutionSeen = newBest;
 				});
+		}
+
+		public synchronized boolean test(Predicate<SOLUTION> predicate)
+		{
+			return predicate.test(bestSolutionSeen);
 		}
 	}
 
