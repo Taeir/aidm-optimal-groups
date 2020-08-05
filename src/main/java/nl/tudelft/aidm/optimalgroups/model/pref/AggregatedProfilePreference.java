@@ -15,7 +15,7 @@ import java.util.*;
  */
 public abstract class AggregatedProfilePreference implements ProjectPreference
 {
-	protected Agents agents;
+	protected final Agents agents;
 
 	protected Integer[] avgPreferenceAsArray;
 	protected List<Project> avgPreferenceAsProjectList;

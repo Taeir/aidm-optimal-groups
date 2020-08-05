@@ -67,16 +67,16 @@ public class ProjectPreferencesInDb implements ProjectPreference
 	}
 
 	@Override
-	public Integer[] asArray()
+	public synchronized Integer[] asArray()
 	{
 		if (preferences == null)
 		{
-			var submittedPreferencesOfAgentAsProjectIds = fetchFromDb().stream()
+			var submittedProjectPreferenceOfAgentAsArrayOfIds = fetchFromDb().stream()
 				.mapToInt(Integer::intValue)
 				.toArray();
 
 			var projectsInSubmittedPreferences = Projects.from(
-				Arrays.stream(submittedPreferencesOfAgentAsProjectIds).boxed()
+				Arrays.stream(submittedProjectPreferenceOfAgentAsArrayOfIds).boxed()
 					.map(Project.ProjectsWithDefaultSlotAmount::new).collect(Collectors.toList())
 			);
 
@@ -89,19 +89,18 @@ public class ProjectPreferencesInDb implements ProjectPreference
 			// or 2) ensure that the shuffle is deterministic for the submitted preferences (the chosen option).
 			// Side note: it might have been better to move the "add missing projects to prefs" somewhere else...
 			ArrayList<Project> shuffledMissingProjects = new ArrayList<>(projectsNotInPreferences.asCollection());
-			var rnd = new Random(Arrays.hashCode(submittedPreferencesOfAgentAsProjectIds));
+			var rnd = new Random(Arrays.hashCode(submittedProjectPreferenceOfAgentAsArrayOfIds));
 			Collections.shuffle(shuffledMissingProjects, rnd);
 
 			// Join the two lists/arrays using streams into a single array - Java has no native Array.join
 			preferences = Stream.concat(
-					Arrays.stream(submittedPreferencesOfAgentAsProjectIds).boxed(),
+					Arrays.stream(submittedProjectPreferenceOfAgentAsArrayOfIds).boxed(),
 					shuffledMissingProjects.stream().map(Project::id)
-				)
-				.toArray(Integer[]::new);
+				).toArray(Integer[]::new);
 
 			// Rank is 1-based. agent is indifferent between all the projects that were just appended
 			// that it did not originally submit
-			isIndifferentFromRank = submittedPreferencesOfAgentAsProjectIds.length + 1;
+			isIndifferentFromRank = submittedProjectPreferenceOfAgentAsArrayOfIds.length + 1;
 		}
 
 		return preferences;
@@ -111,17 +110,17 @@ public class ProjectPreferencesInDb implements ProjectPreference
 	public synchronized List<Project> asListOfProjects()
 	{
 		if (preferencesAsProjectList == null) {
-			var projectIdsInOrder = asArray();
-
 			var allProjects = courseEdition.allProjects();
-			var projectList = new ArrayList<Project>(projectIdsInOrder.length);
 
-			for (var projId : projectIdsInOrder) {
-				projectList.add(allProjects.findWithId(projId).get());
+			var linearlyOrderedProjectPref = asArray();
+			var projectPrefAsList = new ArrayList<Project>(linearlyOrderedProjectPref.length);
+
+			for (var projId : linearlyOrderedProjectPref) {
+				var proj = allProjects.findWithId(projId);
+				proj.ifPresent(projectPrefAsList::add);
 			}
 
-			preferencesAsProjectList = Collections.unmodifiableList(projectList);
-
+			preferencesAsProjectList = Collections.unmodifiableList(projectPrefAsList);
 		}
 
 		return preferencesAsProjectList;
