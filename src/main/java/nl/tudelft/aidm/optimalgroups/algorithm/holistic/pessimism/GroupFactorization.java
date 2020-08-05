@@ -29,8 +29,8 @@ public class GroupFactorization
 			int a = groupSizeConstraint.maxSize();
 			int b = groupSizeConstraint.minSize();
 
-			for (int i = 0; i <= numStudentsMax / a; i++) {
-				for (int j = 0; j <= (numStudentsMax - i * a) / b; j++) {
+			for (int i = 0; i <= numStudents / a; i++) {
+				for (int j = 0; j <= (numStudents - i * a) / b; j++) {
 					int n = a * i + b * j;
 					if (n == numStudents) {
 						isFactorable[numStudents] = true;
