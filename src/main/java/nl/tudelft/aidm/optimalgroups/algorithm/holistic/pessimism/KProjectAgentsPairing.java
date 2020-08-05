@@ -80,8 +80,13 @@ record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 			var existingResultForProj = agentsWithK[l].get(lProj);
 			if (existingResultForProj == null) {
 				HashSet<Agent> agentsInclude = new HashSet<>(Set.of(thisAgent));
-				ProjectAgentsPairing pairing = new ProjectAgentsPairing(lProj, agentsInclude, lPossibleGroupmates);
-				agentsWithK[l].put(lProj, pairing);
+				try {
+					ProjectAgentsPairing pairing = new ProjectAgentsPairing(lProj, agentsInclude, lPossibleGroupmates);
+					agentsWithK[l].put(lProj, pairing);
+				}
+				catch (Throwable e) {
+					System.out.printf("woops");
+				}
 			}
 			else {
 				existingResultForProj.agents().add(thisAgent);
