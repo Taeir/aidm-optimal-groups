@@ -5,15 +5,19 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.Pessimistic;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -168,9 +172,12 @@ public interface GroupProjectAlgorithm extends Algorithm
 					var aggPref = ((AggregatedProfilePreference) projectPreference);
 					return aggPref.agentsAggregatedFrom().asCollection().stream()
 						.map(Agent::projectPreference)
-						.filter(Predicate.not(ProjectPreference::isCompletelyIndifferent))
+//						.filter(Predicate.not(ProjectPreference::isCompletelyIndifferent))
 						.mapToInt(pp -> pp.rankOf(theProject).orElse(0))
-						.max().orElseThrow();
+						.max().orElseThrow(() -> {
+							System.out.printf("henk");
+							return new RuntimeException();
+						});
 				});
 
 			return groupsToProjects;
@@ -233,7 +240,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			return "BepSys groups into Randomised Serial Dictatorship (IA with Random lottery)";
+			return "BepSys groups into Randomised Serial Dictatorship (IA with lottery)";
 		}
 
 		@Override
@@ -249,6 +256,24 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String toString()
 		{
 			return name();
+		}
+	}
+
+	class PessimisticHeuristic implements GroupProjectAlgorithm
+	{
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			Pessimistic p = new Pessimistic(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			var agentsToProjects = p.matching();
+
+			return FormedGroupToProjectMatching.from(agentsToProjects);
+		}
+
+		@Override
+		public String name()
+		{
+			return "Heuristic maxmin search'";
 		}
 	}
 }

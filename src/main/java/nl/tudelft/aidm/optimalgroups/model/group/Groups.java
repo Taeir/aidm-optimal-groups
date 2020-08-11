@@ -11,7 +11,9 @@ import java.util.stream.Stream;
 public interface Groups<G extends Group>
 {
 	Collection<G> asCollection();
+
 	void forEach(Consumer<G> fn);
+
 	int count();
 
 	abstract class ListBacked<G extends Group> implements Groups<G>
