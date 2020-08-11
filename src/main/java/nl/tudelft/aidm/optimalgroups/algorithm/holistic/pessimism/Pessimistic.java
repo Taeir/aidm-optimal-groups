@@ -14,7 +14,6 @@ import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.ListBasedMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
-import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.search.DynamicSearch;
@@ -23,6 +22,9 @@ import plouchtch.lang.exception.ImplementMe;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimistic.Solution>
@@ -105,23 +107,30 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 		var root = new PessimismSearchNode(emptySolution, agents, new DecrementableProjects(projects), groupSizeConstraint);
 
-		var thread = new Thread(root::solution);
-		thread.start();
-
+		// Run the algorithm with time constraints, after timeout we check best solution found up to that moment
 		try {
-			thread.join(Duration.ofMinutes(5).toMillis());
-			thread.interrupt();
+			final ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+			// Threads of a parallel stream run in a pool, not as children of this thread
+			// Hence, we provide a pool context which we control so that we can force shutdown
+			forkJoinPool.execute(root::solution);
+			forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
+			forkJoinPool.shutdownNow();
 		}
 		catch (Exception e) {
 			Thread.currentThread().interrupt();
 		}
 
+		// Use the 'test' function to extract best solution and put it
+		// into this hacky list as we need an 'effectively final' variable
+		// to capture in the lambda function passed to test()
 		List<Solution> hacky = new ArrayList<>(1);
 		bestSolutionSoFar.test(bestSoFar -> {
 			hacky.add(bestSoFar);
 			return true;
 		});
 
+		// Should contrain the best-so-far solution
 		return hacky.get(0).matching;
 	}
 
