@@ -223,52 +223,6 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	private static record PairingWithPossibleGroup(ProjectAgentsPairing pairing, Set<Agent> possibleGroup) {}
 
-	public static class DecrementableProjects extends ListBasedProjects
-	{
-		private final Map<Project, Integer> projectSlotUtilization;
-
-		private final Projects projects;
-		private List<Project> projectsAvailable;
-
-		public DecrementableProjects(Projects projects)
-		{
-			this(projects, emptyUtilization(projects));
-		}
-
-		public DecrementableProjects decremented(Project project)
-		{
-			IdentityHashMap<Project, Integer> updatedUtilization = new IdentityHashMap<>(projectSlotUtilization);
-			updatedUtilization.merge(project, 1, (currUtil, decrement) -> currUtil - decrement);
-
-			return new DecrementableProjects(projects, updatedUtilization);
-		}
-
-		@Override
-		protected List<Project> projectList()
-		{
-			if (projectsAvailable == null)
-				this.projectsAvailable = projects.asCollection().stream()
-				.filter(project -> projectSlotUtilization.get(project) < project.slots().size())
-				.collect(Collectors.toList());
-
-			return projectsAvailable;
-		}
-
-		private DecrementableProjects(Projects projects, Map<Project, Integer> projectSlotUtilization)
-		{
-			this.projects = projects;
-			this.projectSlotUtilization = projectSlotUtilization;
-		}
-
-		private static Map<Project, Integer> emptyUtilization(Projects projects)
-		{
-			Map<Project, Integer> utilization = new IdentityHashMap<>(projects.count());
-			projects.forEach(project -> utilization.put(project, 0));
-
-			return utilization;
-		}
-	}
-
 	public static record Solution(PessimismMatching matching, Pessimistic.Metric metric)
 		implements nl.tudelft.aidm.optimalgroups.search.Solution<Pessimistic.Metric>
 	{
