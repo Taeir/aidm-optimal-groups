@@ -35,46 +35,16 @@ public class ExperimentWithPessimism090820
 		var groupSize = GroupSizeConstraint.manual(4, 5);
 
 		/* CE 10 */
-		DatasetContext dataContext = CourseEdition.fromLocalBepSysDbSnapshot(10);
-
-		int numSlots = 5;
-		int numProjects = dataContext.allProjects().count();
-		int numAgents = dataContext.allAgents().count();
-
-		var projects = dataContext.allProjects();
-
-		var experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
-
-
-//		algorithms = List.of(
-//			new BepSys_TGAlgorithm(),
-//			new CombinedPrefs_TGAlgorithm(),
-//			new ILPPP_TGAlgorithm());
+//		experimentsForInReport.add(experimentCE10(algorithms));
 
 		/* GENERATED DATA  */
-		numSlots = 1;
-		numProjects = 40;
-		numAgents = numProjects * groupSize.maxSize();
-
-		projects = Projects.generated(40, numSlots);
-		PreferenceGenerator prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
-
-		experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
+		experimentsForInReport.add(experimentSingleSlotTightMatchingCE10Like(algorithms, groupSize));
 
 		/* */
-		numSlots = 3;
-		numProjects = 40;
-		numAgents = numProjects * groupSize.maxSize();
+		experimentsForInReport.add(experimentThreeSlotsCE10Like(algorithms, groupSize));
 
-		projects = Projects.generated(40, numSlots);
-		prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
-
-		experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
+		/* */
+		experimentsForInReport.add(experimentThreeSlotsUniformPrefs40p(algorithms, groupSize));
 
 		/* */
 //		numSlots = 3;
@@ -87,18 +57,6 @@ public class ExperimentWithPessimism090820
 //
 //		experiment = new Experiment(dataContext, algorithms);
 //		experimentsForInReport.add(experiment);
-
-		/* */
-		numSlots = 3;
-		numProjects = 40;
-		numAgents = numProjects * groupSize.maxSize();
-
-		projects = Projects.generated(40, numSlots);
-		prefGenerator = new UniformProjectPreferencesGenerator(projects);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
-
-		experiment = new Experiment(dataContext, algorithms);
-		experimentsForInReport.add(experiment);
 
 //		/* */
 //		numSlots = 3;
@@ -141,6 +99,61 @@ public class ExperimentWithPessimism090820
 			.writeHtmlSourceToFile(new File("reports/Pessimism090820.html"));
 
 		return;
+	}
+
+	private static Experiment experimentThreeSlotsUniformPrefs40p(List<GroupProjectAlgorithm> algorithms, GroupSizeConstraint groupSize)
+	{
+		var numSlots = 3;
+		var numProjects = 40;
+		var numAgents = numProjects * groupSize.maxSize();
+
+		var projects = Projects.generated(40, numSlots);
+		var prefGenerator = new UniformProjectPreferencesGenerator(projects);
+		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+
+		var experiment = new Experiment(dataContext, algorithms);
+		return experiment;
+	}
+
+	private static Experiment experimentThreeSlotsCE10Like(List<GroupProjectAlgorithm> algorithms, GroupSizeConstraint groupSize)
+	{
+		var numSlots = 3;
+		var numProjects = 40;
+		var numAgents = numProjects * groupSize.maxSize();
+
+		var projects = Projects.generated(40, numSlots);
+		var prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
+		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+
+		var experiment = new Experiment(dataContext, algorithms);
+		return experiment;
+	}
+
+	private static Experiment experimentSingleSlotTightMatchingCE10Like(List<GroupProjectAlgorithm> algorithms, GroupSizeConstraint groupSize)
+	{
+		var numSlots = 1;
+		var numProjects = 40;
+		var numAgents = numProjects * groupSize.maxSize();
+
+		var projects = Projects.generated(40, numSlots);
+		var prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
+		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+
+		var experiment = new Experiment(dataContext, algorithms);
+		return experiment;
+	}
+
+	private static Experiment experimentCE10(List<GroupProjectAlgorithm> algorithms)
+	{
+		DatasetContext dataContext = CourseEdition.fromLocalBepSysDbSnapshot(10);
+
+		var numSlots = 5;
+		var numProjects = dataContext.allProjects().count();
+		var numAgents = dataContext.allAgents().count();
+
+		var projects = dataContext.allProjects();
+
+		return new Experiment(dataContext, algorithms);
 	}
 
 
