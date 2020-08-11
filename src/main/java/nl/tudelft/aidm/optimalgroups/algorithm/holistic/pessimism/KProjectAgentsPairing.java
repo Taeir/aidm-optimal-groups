@@ -11,8 +11,15 @@ import java.util.stream.Collectors;
 
 record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 {
+	public record Edge(Agent from, Project to, int rank){}
+
 	public static KProjectAgentsPairing from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
+//		if (groupSizeConstraint.maxSize() / groupSizeConstraint.minSize() < 2)
+//			if (agents.count() <= groupSizeConstraint.maxSize()) {
+//				return new KProjectAgentsPairing();
+//			}
+
 		List<Edge> edges = new ArrayList<>(agents.count() * projects.count());
 		Map<Agent, List<Edge>> edgesFrom = new IdentityHashMap<>();
 		Map<Project, List<Edge>> edgesTo = new IdentityHashMap<>();
@@ -40,14 +47,17 @@ record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 		//				.ifPresent(rank -> cum260[rank] += 1);
 		//		});
 
-		int k = 1;
+		int k = 0;
 		for (var thisAgent : agents.asCollection())
 		{
-			int l = projects.count();
+			int l = agents.datsetContext.allProjects().count() + 1;
 			Project lProj = null;
 			Set<Agent> lPossibleGroupmates = null;
 
+			// Note: the current assumption is that prefs have no ties
+			// but rankOf() can return same rank for different projects (indifferences)
 			var prefs = thisAgent.projectPreference().asListOfProjects();
+
 			for (int i = prefs.size(); i >= 1; i--)
 			{
 				final var rankThisAgent = i;
@@ -77,16 +87,20 @@ record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 				}
 			}
 
+			if (l >= agentsWithK.length) {
+				// Didn't find anything so try another agent
+				continue;
+			}
+
 			var existingResultForProj = agentsWithK[l].get(lProj);
 			if (existingResultForProj == null) {
+				if (lProj == null) {
+					System.out.printf("DBG: woops");
+				}
+
 				HashSet<Agent> agentsInclude = new HashSet<>(Set.of(thisAgent));
-				try {
-					ProjectAgentsPairing pairing = new ProjectAgentsPairing(lProj, agentsInclude, lPossibleGroupmates);
-					agentsWithK[l].put(lProj, pairing);
-				}
-				catch (Throwable e) {
-					System.out.printf("woops");
-				}
+				ProjectAgentsPairing pairing = new ProjectAgentsPairing(lProj, agentsInclude, lPossibleGroupmates);
+				agentsWithK[l].put(lProj, pairing);
 			}
 			else {
 				existingResultForProj.agents().add(thisAgent);
@@ -94,6 +108,11 @@ record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 			}
 
 			k = Math.max(l, k);
+		}
+
+		// Hacky fix: k = 0 implies nothing found - no grouping possible
+		if (k == 0) {
+			return new KProjectAgentsPairing(Collections.emptyList(), 0);
 		}
 
 		return new KProjectAgentsPairing(agentsWithK[k].values(), k);
