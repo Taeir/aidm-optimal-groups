@@ -64,12 +64,12 @@ public class PossibleGroups
 
 		// When the "must be included" set is larger than a full group, must pick a subset
 		if (include.size() > groupSizeConstraint.maxSize()) {
-			// Could we be smarter here than branch-and-bounding on all choices?
+			// Generate all possible subsets (that are also valid groups) of the "include" set
+			// Could we be smarter here than letting the matching algo branch-and-bound over all these groups?
 			PossibleGroupsProblemInstance def = new PossibleGroupsProblemInstance(Set.of(), new LinkedHashSet<>(include), groupSizeConstraint);
 			return possibleGroups(def);
 		}
 
-//			Set<Object> z = new LinkedHashSet<>();
 		if (possibleGroupmates.isEmpty()) {
 			if (include.size() >= groupSizeConstraint.minSize()) {
 				return Result.withSingleGroup(include);

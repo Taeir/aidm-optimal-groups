@@ -21,6 +21,7 @@ import nl.tudelft.aidm.optimalgroups.search.DynamicSearch;
 import org.apache.commons.math3.util.Pair;
 import plouchtch.lang.exception.ImplementMe;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -103,10 +104,25 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		var emptySolution = new Solution(new EmptyMatching(datsetContext), new EmptyMetric());
 
 		var root = new PessimismSearchNode(emptySolution, agents, new DecrementableProjects(projects), groupSizeConstraint);
-		var solution = root.solution();
 
-		return solution.orElseThrow()
-			.matching;
+		var thread = new Thread(root::solution);
+		thread.start();
+
+		try {
+			thread.join(Duration.ofMinutes(5).toMillis());
+			thread.interrupt();
+		}
+		catch (Exception e) {
+			Thread.currentThread().interrupt();
+		}
+
+		List<Solution> hacky = new ArrayList<>(1);
+		bestSolutionSoFar.test(bestSoFar -> {
+			hacky.add(bestSoFar);
+			return true;
+		});
+
+		return hacky.get(0).matching;
 	}
 
 	public class PessimismSearchNode extends SearchNode
@@ -157,7 +173,8 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 			var kProjects = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
 
 			var solution = kProjects.pairingsAtK()
-				.stream()
+//				.stream()
+				.parallelStream()
 
 				.flatMap(pairing -> {
 					var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
