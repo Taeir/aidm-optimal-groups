@@ -46,8 +46,11 @@ public class LeastWorstIndividualRankAttainableInGroup
 				members.stream()
 					.map(Agent::projectPreference)
 					.flatMapToInt(projectPreference -> projectPreference.rankOf(project).stream())
-					.max().orElse(0) // 0 if all agents turn out to be (magically) indifferent
+					.max()
+					.orElse(0) // 0 if all agents turn out to be (magically) indifferent, or have not ranked the project
 			)
+			// An unranked project (rank 0, see the orElse(0) above) is not the best we can do, so ignore it
+			.filter(value -> value > 0)
 			.min();
 
 		this.bestWorstAsInt = bestWorst;
