@@ -18,7 +18,7 @@ public class GroupFactorization
 
 	// TODO: weak references solution if to be used in production environment
 	public static Map<GroupSizeConstraint, GroupFactorization> sharedInstances = new HashMap<>();
-	public static synchronized GroupFactorization sharedInstance(GroupSizeConstraint groupSizeConstraint)
+	public static synchronized GroupFactorization cachedInstanceFor(GroupSizeConstraint groupSizeConstraint)
 	{
 		return sharedInstances.computeIfAbsent(groupSizeConstraint,
 			key -> new GroupFactorization(groupSizeConstraint, 1000)

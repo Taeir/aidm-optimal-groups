@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.Pessimistic;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SerialDictatorshipWithProjClosures;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -274,6 +275,25 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String name()
 		{
 			return "Heuristic maxmin search'";
+		}
+	}
+
+	class SDPCWithSlots implements GroupProjectAlgorithm
+	{
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var sdpc = new SerialDictatorshipWithProjClosures(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			var matchingStudentsToProjects = sdpc.doIt();
+
+			return FormedGroupToProjectMatching.from(matchingStudentsToProjects);
+		}
+
+		@Override
+		public String name()
+		{
+			return "SDPC (extended for multi-group project capacities)";
 		}
 	}
 }

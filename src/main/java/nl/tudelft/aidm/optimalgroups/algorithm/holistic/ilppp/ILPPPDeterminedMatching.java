@@ -1,8 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.SetOfGroupSizesThatCanStillBeCreated;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.GroupFactorization;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
@@ -23,7 +20,6 @@ import org.sql2o.GenericDatasource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.FormedGroup>
 {
@@ -99,7 +95,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 				.allMatch(entry -> {
 					var agentList = entry.getValue();
 
-					var factorization = GroupFactorization.sharedInstance(groupSizeConstraint);
+					var factorization = GroupFactorization.cachedInstanceFor(groupSizeConstraint);
 					return factorization.isFactorableIntoValidGroups(agentList.size());
 
 					// force evaulation of the lazy

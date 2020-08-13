@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExperimentWithPessimism090820
+public class Experiment_BepSys_Pessimism_SDPC_120820
 {
 	public static void main(String[] args)
 	{
@@ -23,11 +23,12 @@ public class ExperimentWithPessimism090820
 
 		var algorithms = List.of(
 			new GroupProjectAlgorithm.BepSys_reworked(),
-			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility(),
+//			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility(),
 //			new GroupProjectAlgorithm.CombinedPrefs(),
 //			new GroupProjectAlgorithm.RSD(),
 //			new GroupProjectAlgorithm.ILPPP(),
-			new GroupProjectAlgorithm.PessimisticHeuristic()
+//			new GroupProjectAlgorithm.PessimisticHeuristic(),
+			new GroupProjectAlgorithm.SDPCWithSlots()
 		);
 
 			/*new ILPPP_TGAlgorithm()*/ // will not succeed on CE10
@@ -35,16 +36,16 @@ public class ExperimentWithPessimism090820
 		var groupSize = GroupSizeConstraint.manual(4, 5);
 
 		/* CE 10 */
-//		experimentsForInReport.add(experimentCE10(algorithms));
+		experimentsForInReport.add(experimentCE10(algorithms));
 
 		/* GENERATED DATA  */
-		experimentsForInReport.add(experimentSingleSlotTightMatchingCE10Like(algorithms, groupSize));
+//		experimentsForInReport.add(experimentSingleSlotTightMatchingCE10Like(algorithms, groupSize));
 
 		/* */
-		experimentsForInReport.add(experimentThreeSlotsCE10Like(algorithms, groupSize));
+//		experimentsForInReport.add(experimentThreeSlotsCE10Like(algorithms, groupSize));
 
 		/* */
-		experimentsForInReport.add(experimentThreeSlotsUniformPrefs40p(algorithms, groupSize));
+//		experimentsForInReport.add(experimentThreeSlotsUniformPrefs40p(algorithms, groupSize));
 
 		/* */
 //		numSlots = 3;
@@ -96,7 +97,7 @@ public class ExperimentWithPessimism090820
 //		var markdownAsString = markdown.toString();
 
 		new ExperimentReportInHtml(experimentsForInReport)
-			.writeHtmlSourceToFile(new File("reports/Pessimism090820.html"));
+			.writeHtmlSourceToFile(new File("reports/Experiment_BepSys_Pessimism_SDPC_120820.html"));
 
 		return;
 	}

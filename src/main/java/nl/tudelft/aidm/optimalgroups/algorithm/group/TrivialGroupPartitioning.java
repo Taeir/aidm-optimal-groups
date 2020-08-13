@@ -8,10 +8,8 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import plouchtch.assertion.Assert;
-import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class TrivialGroupPartitioning extends Groups.ListBacked<Group.FormedGroup> implements GroupFormingAlgorithm
 {
@@ -22,7 +20,7 @@ public class TrivialGroupPartitioning extends Groups.ListBacked<Group.FormedGrou
 
 	public TrivialGroupPartitioning(Agents agents)
 	{
-		this(agents, GroupFactorization.sharedInstance(agents.datsetContext.groupSizeConstraint()));
+		this(agents, GroupFactorization.cachedInstanceFor(agents.datsetContext.groupSizeConstraint()));
 	}
 
 	public TrivialGroupPartitioning(Agents agents, GroupFactorization groupFactorization)
