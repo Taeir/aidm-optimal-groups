@@ -10,6 +10,11 @@ import java.util.stream.Collectors;
 
 public class AgentPerspectiveGroupProjectMatching extends ListBasedMatching<Agent, Project> implements AgentToProjectMatching
 {
+	public static AgentPerspectiveGroupProjectMatching from(Matching<? extends Group, Project> matching)
+	{
+		return new AgentPerspectiveGroupProjectMatching(matching);
+	}
+
 	public AgentPerspectiveGroupProjectMatching(Matching<? extends Group, Project> groupPerspectiveMatching)
 	{
 		super(groupPerspectiveMatching.datasetContext(),

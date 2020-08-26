@@ -22,6 +22,7 @@ public abstract class ListBasedMatching<F, T> implements Matching<F, T>
 		this.backingList = backingList;
 	}
 
+	// Todo: make immutable
 	public void add(Match<F,T> match)
 	{
 		this.backingList.add(match);

@@ -18,6 +18,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.search.DynamicSearch;
 import org.apache.commons.math3.util.Pair;
+import plouchtch.assertion.Assert;
 import plouchtch.lang.exception.ImplementMe;
 
 import java.time.Duration;
@@ -36,33 +37,33 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 	//     decrease slots of project p by 1
 
 
-	public static void thingy(String[] args)
-	{
-		int k = 8;
-
-		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		int minGroupSize = ce.groupSizeConstraint().minSize();
-
-		var result = ce.allAgents().asCollection().stream()
-			.map(agent -> agent.projectPreference().asListOfProjects())
-			.map(projectPreference -> topNElements(projectPreference, k))
-			.flatMap(Collection::stream)
-			.collect(Collectors.groupingBy(project -> project)).entrySet().stream()
-			.map(entry -> Pair.create(entry.getKey(), entry.getValue().size() / minGroupSize))
-			.filter(pair -> pair.getValue() > 0)
-			.sorted(Comparator.comparing((Pair<Project, Integer> pair) -> pair.getValue()))
-	//			.mapToInt(pair -> pair.getValue())
-	//			.sum();
-//			.count();
-				.collect(Collectors.toList());
-
-//		ce = new CourseEditionModNoPeerPref(ce);
-		var bepSysMatchingWhenNoPeerPrefs = new GroupProjectAlgorithm.BepSys().determineMatching(ce);
-
-		var metrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(bepSysMatchingWhenNoPeerPrefs));
-
-		return;
-	}
+//	public static void thingy(String[] args)
+//	{
+//		int k = 8;
+//
+//		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+//		int minGroupSize = ce.groupSizeConstraint().minSize();
+//
+//		var result = ce.allAgents().asCollection().stream()
+//			.map(agent -> agent.projectPreference().asListOfProjects())
+//			.map(projectPreference -> topNElements(projectPreference, k))
+//			.flatMap(Collection::stream)
+//			.collect(Collectors.groupingBy(project -> project)).entrySet().stream()
+//			.map(entry -> Pair.create(entry.getKey(), entry.getValue().size() / minGroupSize))
+//			.filter(pair -> pair.getValue() > 0)
+//			.sorted(Comparator.comparing((Pair<Project, Integer> pair) -> pair.getValue()))
+//	//			.mapToInt(pair -> pair.getValue())
+//	//			.sum();
+////			.count();
+//				.collect(Collectors.toList());
+//
+////		ce = new CourseEditionModNoPeerPref(ce);
+//		var bepSysMatchingWhenNoPeerPrefs = new GroupProjectAlgorithm.BepSys().determineMatching(ce);
+//
+//		var metrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(bepSysMatchingWhenNoPeerPrefs));
+//
+//		return;
+//	}
 
 	public static void main(String[] args)
 	{
@@ -131,7 +132,22 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		});
 
 		// Should contrain the best-so-far solution
-		return hacky.get(0).matching;
+		var matching = hacky.get(0).matching;
+
+		// Check all students matched
+		Assert.that(agents.count() == matching.countDistinctStudents())
+			.orThrowMessage("Not all agents were matched");
+
+		// Check if all size constraints met as well
+		var matchingGroupedByProject = matching.groupedByProject();
+		for (var projectWithMatches : matchingGroupedByProject.entrySet()) {
+			var project = projectWithMatches.getKey();
+			var matches = projectWithMatches.getValue();
+			Assert.that(groupFactorization.isFactorableIntoValidGroups(matches.size()))
+				.orThrowMessage("Students matched to a project cannot be partitioned into groups");
+		}
+
+		return matching;
 	}
 
 	public class PessimismSearchNode extends SearchNode

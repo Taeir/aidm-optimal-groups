@@ -35,6 +35,11 @@ public interface AgentToProjectMatching extends Matching<Agent, Project>
 			);
 	}
 
+	default int countDistinctStudents()
+	{
+		return (int) this.asList().stream().map(Match::from).distinct().count();
+	}
+
 //	@Override
 //	default GiniCoefficient giniCoefficient()
 //	{
