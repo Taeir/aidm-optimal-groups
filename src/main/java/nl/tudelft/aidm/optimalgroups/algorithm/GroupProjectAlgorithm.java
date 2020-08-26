@@ -293,7 +293,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			return "SDPC (extended for multi-group project capacities)";
+			return "SDPC (project slots)";
 		}
 	}
 }
