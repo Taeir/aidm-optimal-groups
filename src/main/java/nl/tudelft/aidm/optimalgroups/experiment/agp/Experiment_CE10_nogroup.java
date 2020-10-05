@@ -16,7 +16,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupPreferencesWorstIndividCostsSims1505
+public class Experiment_CE10_nogroup
 {
 	public static void main(String[] args)
 	{
@@ -26,8 +26,8 @@ public class GroupPreferencesWorstIndividCostsSims1505
 			new GroupProjectAlgorithm.BepSys(),
 			new GroupProjectAlgorithm.BepSys_reworked(),
 			new GroupProjectAlgorithm.BepSys_ogGroups_minimizeIndividualDisutility(),
-			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility(),
-			new GroupProjectAlgorithm.ILPPP()
+			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility()
+//			,new GroupProjectAlgorithm.ILPPP()
 		);
 
 		var groupSize = GroupSizeConstraint.manual(4, 5);
@@ -136,11 +136,11 @@ public class GroupPreferencesWorstIndividCostsSims1505
 //		var markdownAsString = markdown.toString();
 
 		new ExperimentReportInHtml(experimentsForInReport)
-			.writeHtmlSourceToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank1307.html"));
+			.writeHtmlSourceToFile(new File("reports/NoGroupPrefs.html"));
 
 
 		new ExperimentReportInPdf(experimentsForInReport)
-			.writePdfToFile(new File("reports/BepsysVsBepsysMinMaxIndividRank1307.pdf"));
+			.writePdfToFile(new File("reports/NoGroupPrefs.pdf"));
 
 		return;
 	}
