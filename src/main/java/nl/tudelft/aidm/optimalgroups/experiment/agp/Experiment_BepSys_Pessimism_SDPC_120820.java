@@ -22,13 +22,14 @@ public class Experiment_BepSys_Pessimism_SDPC_120820
 		var experimentsForInReport = new ArrayList<Experiment>();
 
 		var algorithms = List.of(
-			new GroupProjectAlgorithm.BepSys_reworked(),
+//			new GroupProjectAlgorithm.BepSys_reworked(),
 //			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility(),
 //			new GroupProjectAlgorithm.CombinedPrefs(),
 //			new GroupProjectAlgorithm.RSD(),
 //			new GroupProjectAlgorithm.ILPPP(),
-//			new GroupProjectAlgorithm.PessimisticHeuristic(),
-			new GroupProjectAlgorithm.SDPCWithSlots()
+			new GroupProjectAlgorithm.PessimisticHeuristic(),
+			new GroupProjectAlgorithm.SDPCWithSlots(),
+			new GroupProjectAlgorithm.SDPCWithSlotsPessimismOrdering()
 		);
 
 			/*new ILPPP_TGAlgorithm()*/ // will not succeed on CE10
@@ -39,13 +40,13 @@ public class Experiment_BepSys_Pessimism_SDPC_120820
 		experimentsForInReport.add(experimentCE10(algorithms));
 
 		/* GENERATED DATA  */
-//		experimentsForInReport.add(experimentSingleSlotTightMatchingCE10Like(algorithms, groupSize));
+		experimentsForInReport.add(experimentSingleSlotTightMatchingCE10Like(algorithms, groupSize));
 
 		/* */
-//		experimentsForInReport.add(experimentThreeSlotsCE10Like(algorithms, groupSize));
+		experimentsForInReport.add(experimentThreeSlotsCE10Like(algorithms, groupSize));
 
 		/* */
-//		experimentsForInReport.add(experimentThreeSlotsUniformPrefs40p(algorithms, groupSize));
+		experimentsForInReport.add(experimentThreeSlotsUniformPrefs40p(algorithms, groupSize));
 
 		/* */
 //		numSlots = 3;
@@ -97,7 +98,7 @@ public class Experiment_BepSys_Pessimism_SDPC_120820
 //		var markdownAsString = markdown.toString();
 
 		new ExperimentReportInHtml(experimentsForInReport)
-			.writeHtmlSourceToFile(new File("reports/Experiment_BepSys_Pessimism_SDPC_120820.html"));
+			.writeHtmlSourceToFile(new File("reports/Experiment_BepSys_Pessimism_SDPC_ordered_180820.html"));
 
 		return;
 	}

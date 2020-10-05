@@ -9,18 +9,27 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.Pessimistic;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SerialDictatorshipWithProjClosures;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
+import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.dataset.ManualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentPerspectiveGroupProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.*;
 
 public interface GroupProjectAlgorithm extends Algorithm
 {
@@ -294,6 +303,32 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String name()
 		{
 			return "SDPC (project slots)";
+		}
+	}
+
+	class SDPCWithSlotsPessimismOrdering implements GroupProjectAlgorithm
+	{
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var pessimism = new PessimisticHeuristic().determineMatching(datasetContext);
+			var ranks = AssignedRank.ProjectToStudent.inGroupMatching(pessimism);
+
+			var agentsSorted = ranks.sorted(comparing(projectToStudent -> -projectToStudent.asInt()
+					// student is completely indifferent - make him last
+					.orElse(Integer.MAX_VALUE))
+				)
+				.map(AssignedRank.ProjectToStudent::student)
+				.collect(Collectors.collectingAndThen(Collectors.toList(), Agents::from));
+
+			DatasetContext d = new ManualDatasetContext("Reordered " + datasetContext.identifier(), datasetContext.allProjects(), agentsSorted, datasetContext.groupSizeConstraint());
+			return new SDPCWithSlots().determineMatching(d);
+		}
+
+		@Override
+		public String name()
+		{
+			return "SPDC (project slots, pessimism ordered)";
 		}
 	}
 }
