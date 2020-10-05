@@ -21,6 +21,8 @@ dependencies {
     implementation 'com.github.PhilipeLouchtch:GraphMatch-Java:c063147'
     implementation 'com.github.PhilipeLouchtch:plouchtch-lib-java:14987f7'
 
+    compile files('lib/Jdrasil.jar')
+
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
