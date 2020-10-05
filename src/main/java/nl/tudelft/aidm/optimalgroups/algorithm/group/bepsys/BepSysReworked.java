@@ -17,6 +17,11 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * This is a refactored, streamlined, cleanedup version of "BepSys Improved".
+ * In experiments, it behaves almost identical to it, and can successfully handle more cases
+ * (some corner case bugs were elimited) but also ever so slightly worse...
+ */
 @SuppressWarnings("DuplicatedCode")
 public class BepSysReworked implements GroupFormingAlgorithm
 {
