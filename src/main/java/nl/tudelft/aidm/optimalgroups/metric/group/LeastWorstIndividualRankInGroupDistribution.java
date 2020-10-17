@@ -5,6 +5,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.SymbolAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -35,11 +36,8 @@ public class LeastWorstIndividualRankInGroupDistribution
 		data.forEach(series::add);
 
 		var chart = ChartFactory.createXYBarChart(
-			"Distribution of Best-Worst-Invididual-Rank-In-Group ranks", "Best worst individual rank", false, "#Groups", new XYSeriesCollection(series));
+			"Distribution of Least-Worst project ranks in groups", "Rank of Least worst project in group", false, "# Groups", new XYSeriesCollection(series));
 
-		NumberAxis numberAxis = new NumberAxis();
-		numberAxis.setTickUnit(new NumberTickUnit(1));
-		numberAxis.setAutoRangeIncludesZero(false);
 
 
 		XYPlot plot = (XYPlot) chart.getPlot();
@@ -50,11 +48,24 @@ public class LeastWorstIndividualRankInGroupDistribution
 
 		StandardXYBarPainter painter = new StandardXYBarPainter();
 		((XYBarRenderer) plot.getRenderer()).setBarPainter(painter);
-		plot.getRenderer().setSeriesOutlinePaint(0, Color.BLACK);
-		plot.getRenderer().setSeriesOutlineStroke(0, new BasicStroke(5));
+//		plot.getRenderer().setSeriesOutlinePaint(0, Color.BLACK);
+//		plot.getRenderer().setSeriesOutlineStroke(0, new BasicStroke(5));
 
 //        plot.setBackgroundPaint(ChartColor.LIGHT_RED);
+
+		NumberAxis numberAxis = new NumberAxis();
+		numberAxis.setTickUnit(new NumberTickUnit(1));
+		numberAxis.setAutoRangeIncludesZero(false);
+		numberAxis.setLabel("Rank of Least worst project in group");
+
 		plot.setDomainAxis(numberAxis);
+
+
+		numberAxis = new NumberAxis();
+		numberAxis.setTickUnit(new NumberTickUnit(1));
+		numberAxis.setAutoRangeIncludesZero(false);
+		numberAxis.setLabel("# Groups");
+		plot.setRangeAxis(numberAxis);
 //        plot.set
 
 		return chart;
