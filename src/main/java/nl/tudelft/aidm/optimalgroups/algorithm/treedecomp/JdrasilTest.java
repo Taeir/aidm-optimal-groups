@@ -6,9 +6,7 @@ import jdrasil.graph.TreeDecomposer;
 import jdrasil.graph.TreeDecomposition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.graph.Graph;
-
-import java.util.Objects;
+import nl.tudelft.aidm.optimalgroups.model.graph.BipartitieAgentsProjectGraph;
 
 public class JdrasilTest
 {
@@ -17,7 +15,7 @@ public class JdrasilTest
 	{
 		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(10);
 
-		Graph datasetAsGraph = Graph.from(datasetContext);
+		BipartitieAgentsProjectGraph datasetAsGraph = BipartitieAgentsProjectGraph.from(datasetContext);
 
 		jdrasil.graph.Graph<Integer> jdrasilGraph = GraphFactory.emptyGraph();
 
@@ -26,7 +24,7 @@ public class JdrasilTest
 //			jdrasilGraph.addVertex(vert.id());
 		}
 
-		for (var edge : datasetAsGraph.edges()) {
+		for (var edge : datasetAsGraph.edges().all()) {
 //			Objects.requireNonNull(edge);
 //			jdrasilGraph.addDirectedEdge(edge.v().id(), edge.w().id());
 //			if (edge.rank() <= 5) {

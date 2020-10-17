@@ -5,15 +5,12 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.*;
-import java.util.function.Consumer;
 
-public class DatasetAsGraph implements Graph
+public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 {
 	private final DatasetContext datasetContext;
 
-	private final Set<Edge> edges;
-	private final Set<Vertex> verticesSet;
-
+	private final Edges edges;
 	private final Vertices vertices;
 
 //	private final IdentityHashMap<Agent, Vertex<Agent>> agentVertices;
@@ -31,38 +28,21 @@ public class DatasetAsGraph implements Graph
 		int numProjects = datasetContext.allProjects().count();
 
 		this.vertices = new Vertices(numAgents + numProjects);
-		this.edges = new HashSet<>(numAgents * numProjects);
+		this.edges = new DatasetEdges();
 
 //		datasetContext.allProjects().forEach(project -> projectVertices.put(project, vertices.vertexOf(project)));
-
-
-		datasetContext.allAgents().forEach(agent -> {
-
-			Vertex<Agent> agentVertex = vertices.vertexOf(agent);
-
-			agent.projectPreference().forEach((Project project, int rank) -> {
-				Vertex<Project> projectVertex = vertices.vertexOf(project);
-if (rank <= 5) edges.add(new Edge(agentVertex, projectVertex, rank));
-			});
-
-//			agentVertices.put(agent, agentVertex);
-		});
-
-		var verticesArray = vertices.vertices;
-		this.verticesSet = new HashSet<>(verticesArray.length);
-		verticesSet.addAll(Arrays.asList(verticesArray));
 	}
 
 	@Override
-	public Set<Edge> edges()
+	public Edges edges()
 	{
-		return Collections.unmodifiableSet(edges);
+		return edges;
 	}
 
 	@Override
 	public Set<Vertex> vertices()
 	{
-		return Collections.unmodifiableSet(verticesSet);
+		return vertices.asSet();
 	}
 
 	@Override
@@ -84,12 +64,14 @@ if (rank <= 5) edges.add(new Edge(agentVertex, projectVertex, rank));
 	{
 		private int idOfNext;
 		private final Vertex[] vertices;
+		private final Set<Vertex> asSet;
 		private final Map<Object, Object> existing = new IdentityHashMap<>();
 
 		public Vertices(int capacity)
 		{
 			idOfNext = 0;
 			vertices = new Vertex[capacity];
+			asSet = new HashSet<>(capacity);
 		}
 
 		public <T> Vertex<T> vertexOf(int id) {
@@ -103,8 +85,63 @@ if (rank <= 5) edges.add(new Edge(agentVertex, projectVertex, rank));
 			return (Vertex<T>) existing.computeIfAbsent(obj, o -> {
 				var vert = new Vertex<>(idOfNext++, o);
 				vertices[vert.id()] = vert;
+				asSet.add(vert);
 				return vert;
 			});
+		}
+
+		public Set<Vertex> asSet()
+		{
+			return Collections.unmodifiableSet(asSet);
+		}
+	}
+
+	public class DatasetEdges implements Edges
+	{
+		private Set<WeightedEdge> edges;
+
+		private Map<Agent, Set<WeightedEdge>> edgesFromAgent;
+		private Map<Project, Set<WeightedEdge>> edgesToProject;
+
+		public DatasetEdges()
+		{
+			edges = new HashSet<>(datasetContext.allAgents().count() * datasetContext.allProjects().count());
+			edgesFromAgent = new IdentityHashMap<>(datasetContext.allProjects().count());
+			edgesToProject = new IdentityHashMap<>(datasetContext.allAgents().count());
+
+			datasetContext.allAgents().forEach(agent ->
+			{
+				Vertex<Agent> agentVertex = vertices.vertexOf(agent);
+
+				agent.projectPreference().forEach((Project project, int rank) -> {
+					Vertex<Project> projectVertex = vertices.vertexOf(project);
+
+					WeightedEdge edge = new WeightedEdge(agentVertex, projectVertex, rank);
+
+					edges.add(edge);
+
+					edgesFromAgent.computeIfAbsent(agent, __ -> new HashSet<>()).add(edge);
+					edgesToProject.computeIfAbsent(project, __ -> new HashSet<>()).add(edge);
+				});
+			});
+		}
+
+		@Override
+		public Set<WeightedEdge> all()
+		{
+			return Collections.unmodifiableSet(edges);
+		}
+
+		@Override
+		public Set<WeightedEdge> from(Agent agent)
+		{
+			return edgesFromAgent.getOrDefault(agent, Collections.emptySet());
+		}
+
+		@Override
+		public Set<WeightedEdge> to(Project project)
+		{
+			return edgesToProject.getOrDefault(project, Collections.emptySet());
 		}
 	}
 }
