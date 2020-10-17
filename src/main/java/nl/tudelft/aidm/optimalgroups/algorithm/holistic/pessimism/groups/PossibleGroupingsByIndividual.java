@@ -1,13 +1,13 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 
 import java.util.*;
 
-public class PossibleGroups
+public class PossibleGroupingsByIndividual implements PossibleGroupings
 {
-	private record PossibleGroupsProblemInstance(Set<Agent> include, LinkedHashSet<Agent> possibleGroupmates, GroupSizeConstraint groupSizeConstraint){}
+	private record ProblemInstance(Set<Agent> include, LinkedHashSet<Agent> possibleGroupmates, GroupSizeConstraint groupSizeConstraint){}
 	private record Result(Set<Set<Agent>> possibleGroups)
 	{
 		public static final Result empty = new Result(Set.of());
@@ -17,16 +17,17 @@ public class PossibleGroups
 		}
 	}
 
-	private HashMap<PossibleGroupsProblemInstance, Result> cached;
+	private HashMap<ProblemInstance, Result> cached;
 
-	public PossibleGroups()
+	public PossibleGroupingsByIndividual()
 	{
 		cached = new HashMap<>();
 	}
 
+	@Override
 	public Set<Set<Agent>> of(Set<Agent> include, LinkedHashSet<Agent> possibleGroupmates, GroupSizeConstraint groupSizeConstraint)
 	{
-		var problemDef = new PossibleGroupsProblemInstance(include, possibleGroupmates, groupSizeConstraint);
+		var problemDef = new ProblemInstance(include, possibleGroupmates, groupSizeConstraint);
 		var result = cached.get(problemDef);
 
 		if (result == null) {
@@ -46,7 +47,7 @@ public class PossibleGroups
 		return result.possibleGroups();
 	}
 
-	private Result possibleGroups(PossibleGroupsProblemInstance problemDef)
+	private Result possibleGroups(ProblemInstance problemDef)
 	{
 		Result result = cached.get(problemDef);
 		if (result != null) {
@@ -66,7 +67,7 @@ public class PossibleGroups
 		if (include.size() > groupSizeConstraint.maxSize()) {
 			// Generate all possible subsets (that are also valid groups) of the "include" set
 			// Could we be smarter here than letting the matching algo branch-and-bound over all these groups?
-			PossibleGroupsProblemInstance def = new PossibleGroupsProblemInstance(Set.of(), new LinkedHashSet<>(include), groupSizeConstraint);
+			ProblemInstance def = new ProblemInstance(Set.of(), new LinkedHashSet<>(include), groupSizeConstraint);
 			return possibleGroups(def);
 		}
 
@@ -90,10 +91,10 @@ public class PossibleGroups
 		// include
 		var includeWith = new HashSet<>(include);
 		includeWith.add(possibleGroupmate);
-		var resultAfterInclude = possibleGroups(new PossibleGroupsProblemInstance(includeWith, possibleGroupmatesWithout, groupSizeConstraint));
+		var resultAfterInclude = possibleGroups(new ProblemInstance(includeWith, possibleGroupmatesWithout, groupSizeConstraint));
 
 		// don't include
-		var resultAfterPass = possibleGroups(new PossibleGroupsProblemInstance(include, possibleGroupmatesWithout, groupSizeConstraint));
+		var resultAfterPass = possibleGroups(new ProblemInstance(include, possibleGroupmatesWithout, groupSizeConstraint));
 
 		var combined = new HashSet<>(resultAfterInclude.possibleGroups);
 		combined.addAll(resultAfterPass.possibleGroups);

@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupings;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupingsByIndividual;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
@@ -17,16 +18,12 @@ import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.search.DynamicSearch;
-import org.apache.commons.math3.util.Pair;
 import plouchtch.assertion.Assert;
 import plouchtch.lang.exception.ImplementMe;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimistic.Solution>
 {
@@ -78,15 +75,10 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		return;
 	}
 
-	public static <T> List<T> topNElements(List<T> list, int n)
-	{
-		return list.subList(0, n);
-	}
-
 	private final Agents agents;
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
-	private final PossibleGroups possibleGroups;
+	private final PossibleGroupings possibleGroups;
 	private final GroupFactorization groupFactorization;
 
 	public Pessimistic(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
@@ -96,7 +88,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		this.agents = agents;
 		this.projects = projects;
 		this.groupSizeConstraint = groupSizeConstraint;
-		this.possibleGroups = new PossibleGroups();
+		this.possibleGroups = new PossibleGroupingsByIndividual();
 
 		this.groupFactorization = new GroupFactorization(groupSizeConstraint, agents.count());
 	}
@@ -203,6 +195,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 				.flatMap(pairing -> {
 					var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
+					// TODO HERE: group agents by "type"
 					var possibleGrps =  possibleGroups.of(pairing.agents(), possibleGroupmates, groupSizeConstraint);
 					return possibleGrps.stream()
 						.map(possibleGroup -> new PairingWithPossibleGroup(pairing, possibleGroup));
@@ -212,11 +205,11 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 					var possibleGroup = pairingWithPossibleGroup.possibleGroup();
 					var pairing = pairingWithPossibleGroup.pairing();
 
-					Agents agentsWithoutGroup = agents.without(possibleGroup);
+					Agents remainingAgents = agents.without(possibleGroup);
 					DecrementableProjects projectsWithout = this.projects.decremented(pairing.project());
 
 					var newPartial = partial.matching().withMatches(pairing.project(), possibleGroup);
-					return new PessimismSearchNode(Solution.fromMatching(newPartial), agentsWithoutGroup, projectsWithout, groupSizeConstraint);
+					return new PessimismSearchNode(Solution.fromMatching(newPartial), remainingAgents, projectsWithout, groupSizeConstraint);
 				})
 
 				.map(SearchNode::solution)

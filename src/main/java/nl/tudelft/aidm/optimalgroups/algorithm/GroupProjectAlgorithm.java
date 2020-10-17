@@ -81,7 +81,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String name()
 		{
 			// TODO include Pref agg method
-			return "BepSys";
+			return "BepSys (OG)";
 		}
 
 		@Override
@@ -302,7 +302,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			return "SDPC (project slots)";
+			return "SDPC-S (project slots)";
 		}
 	}
 

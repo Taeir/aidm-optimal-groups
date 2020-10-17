@@ -9,7 +9,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import java.util.*;
 import java.util.stream.Collectors;
 
-record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
+public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK, int k)
 {
 	public record Edge(Agent from, Project to, int rank){}
 
@@ -26,6 +26,10 @@ record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 
 		agents.asCollection().forEach(agent -> {
 			agent.projectPreference().forEach((Project project, int rank) -> {
+				if (projects.findWithId(project.id()).isEmpty()) {
+					return;
+				}
+
 				var edge = new Edge(agent, project, rank);
 
 				edges.add(edge);
@@ -39,13 +43,6 @@ record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 		{
 			agentsWithK[i] = new IdentityHashMap<>();
 		}
-
-		//		int[] cum260 = new int[43];
-		//		var proj260 = projects.findWithId(260).orElseThrow();
-		//		agents.forEach(agent -> {
-		//			agent.projectPreference().rankOf(proj260)
-		//				.ifPresent(rank -> cum260[rank] += 1);
-		//		});
 
 		int k = 0;
 		for (var thisAgent : agents.asCollection())
@@ -68,8 +65,10 @@ record KProjectAgentsPairing(Collection<ProjectAgentsPairing>pairingsAtK, int k)
 
 				// Prefs is a List representation of ProjPrefs and is 0-based
 				var proj = prefs.get(rankThisAgent - 1);
+				var edgesToProj = edgesTo.get(proj);
+				if (edgesToProj == null) continue;
 
-				var possibleGroupmates = edgesTo.get(proj).stream()
+				var possibleGroupmates = edgesToProj.stream()
 					// Do not include 'this' agent as a possible group mate
 					.filter(edge -> edge.from() != thisAgent)
 					// Consider only agents who rank 'proj' better or eq
