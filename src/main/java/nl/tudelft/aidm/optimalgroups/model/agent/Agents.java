@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 /**
  * Collection class for Agent
+ * TODO: Refactor into interface
  */
 public class Agents
 {
@@ -22,7 +23,9 @@ public class Agents
 	public Agents(DatasetContext datsetContext, Collection<Agent> agents)
 	{
 		this.datsetContext = datsetContext;
-		this.agents = new HashSet<>(agents);
+
+		// Ensure agents are ordered in same way as given (yes, an Agent's interface and specific ordered impl would be nicer)
+		this.agents = new LinkedHashSet<>(agents);
 
 		// Better to change the ctor signature
 		Assert.that(this.agents.size() == agents.size()).orThrowMessage("Agents contained duplicates");

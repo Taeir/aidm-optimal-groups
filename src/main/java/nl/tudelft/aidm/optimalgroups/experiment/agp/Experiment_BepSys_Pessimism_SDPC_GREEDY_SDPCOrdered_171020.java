@@ -4,7 +4,6 @@ import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributedProjectPreferencesGenerator;
-import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PreferenceGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -15,7 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Experiment_BepSys_Pessimism_SDPC_120820
+public class Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020
 {
 	public static void main(String[] args)
 	{
@@ -27,9 +26,10 @@ public class Experiment_BepSys_Pessimism_SDPC_120820
 //			new GroupProjectAlgorithm.CombinedPrefs(),
 //			new GroupProjectAlgorithm.RSD(),
 //			new GroupProjectAlgorithm.ILPPP(),
-			new GroupProjectAlgorithm.PessimisticHeuristic(),
+//			new GroupProjectAlgorithm.PessimisticHeuristic(),
 			new GroupProjectAlgorithm.SDPCWithSlots(),
-			new GroupProjectAlgorithm.SDPCWithSlotsPessimismOrdering()
+			new GroupProjectAlgorithm.Greedy_SDPC_Pessimism_inspired(),
+			new GroupProjectAlgorithm.SDPCWithSlots_potential_numgroupmates_ordered()
 		);
 
 			/*new ILPPP_TGAlgorithm()*/ // will not succeed on CE10
@@ -98,7 +98,7 @@ public class Experiment_BepSys_Pessimism_SDPC_120820
 //		var markdownAsString = markdown.toString();
 
 		new ExperimentReportInHtml(experimentsForInReport)
-			.writeHtmlSourceToFile(new File("reports/Experiment_BepSys_Pessimism_SDPC_ordered_180820.html"));
+			.writeHtmlSourceToFile(new File("reports/Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020.html"));
 
 		return;
 	}
