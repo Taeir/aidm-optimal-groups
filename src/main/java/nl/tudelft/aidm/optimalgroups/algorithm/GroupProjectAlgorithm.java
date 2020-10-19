@@ -6,6 +6,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.Pessimistic;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCOrderedByPotentialGroupmates;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCPessimism;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SerialDictatorshipWithProjClosures;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
@@ -306,29 +308,41 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 	}
 
-	class SDPCWithSlotsPessimismOrdering implements GroupProjectAlgorithm
+	class SDPCWithSlots_potential_numgroupmates_ordered implements GroupProjectAlgorithm
 	{
+
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var pessimism = new PessimisticHeuristic().determineMatching(datasetContext);
-			var ranks = AssignedRank.ProjectToStudent.inGroupMatching(pessimism);
+			var sdpc = new SDPCOrderedByPotentialGroupmates(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			var matchingStudentsToProjects = sdpc.doIt();
 
-			var agentsSorted = ranks.sorted(comparing(projectToStudent -> -projectToStudent.asInt()
-					// student is completely indifferent - make him last
-					.orElse(Integer.MAX_VALUE))
-				)
-				.map(AssignedRank.ProjectToStudent::student)
-				.collect(Collectors.collectingAndThen(Collectors.toList(), Agents::from));
-
-			DatasetContext d = new ManualDatasetContext("Reordered " + datasetContext.identifier(), datasetContext.allProjects(), agentsSorted, datasetContext.groupSizeConstraint());
-			return new SDPCWithSlots().determineMatching(d);
+			return FormedGroupToProjectMatching.from(matchingStudentsToProjects);
 		}
 
 		@Override
 		public String name()
 		{
-			return "SPDC (project slots, pessimism ordered)";
+			return "SDPC-S (ordered by num potential groupmates) ";
+		}
+	}
+
+	class Greedy_SDPC_Pessimism_inspired implements GroupProjectAlgorithm
+	{
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var sdpc = new nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCPessimism(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			var matchingStudentsToProjects = sdpc.doIt();
+
+			return FormedGroupToProjectMatching.from(matchingStudentsToProjects);
+		}
+
+		@Override
+		public String name()
+		{
+			return "Greedy (SDPC and Pessimism inspired)";
 		}
 	}
 }
