@@ -1,11 +1,12 @@
-package nl.tudelft.aidm.optimalgroups.model.agent;
+package nl.tudelft.aidm.optimalgroups.model.dataset.sequentual;
 
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.dataset.RelabledCourseEditionContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;
-import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
 import plouchtch.lang.exception.ImplementMe;
 
 import java.util.ArrayList;
@@ -15,10 +16,12 @@ import java.util.List;
 
 public class SequentualAgents extends Agents
 {
-	private SequentualAgents(Agents agents, SequentualProjects sequentualProjects)
+	private final DatasetContext originalDatasetContext;
+
+	SequentualAgents(Agents agents, SequentualDataset datasetContext, SequentualProjects sequentualProjects)
 	{
-		super(agents.datsetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
-		throw new ImplementMe(); // "Sequentualization must happen in datasetContext"
+		super(datasetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
+		originalDatasetContext = agents.datsetContext;
 	}
 
 	private static List<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects)
@@ -42,11 +45,6 @@ public class SequentualAgents extends Agents
 		return resequenced;
 	}
 
-	public static SequentualAgents from(Agents agents, SequentualProjects sequentualProjects)
-	{
-		return new SequentualAgents(agents, sequentualProjects);
-	}
-
 	public static class SequentualAgent extends Agent
 	{
 		private final Agent original;
@@ -63,12 +61,6 @@ public class SequentualAgents extends Agents
 
 			// fixme
 			return new SequentualAgent(newId, agent, sequentualProjectsPreference, agent.groupPreference, new RelabledCourseEditionContext());
-		}
-
-		@Override
-		public ProjectPreference projectPreference()
-		{
-			throw new RuntimeException("Group preferences not yet reampped to sequenced agents");
 		}
 
 		@Override

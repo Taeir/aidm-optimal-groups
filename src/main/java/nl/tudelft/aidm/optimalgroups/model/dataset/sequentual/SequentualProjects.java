@@ -1,5 +1,8 @@
-package nl.tudelft.aidm.optimalgroups.model.project;
+package nl.tudelft.aidm.optimalgroups.model.dataset.sequentual;
 
+import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import plouchtch.assertion.Assert;
 
 import java.util.*;

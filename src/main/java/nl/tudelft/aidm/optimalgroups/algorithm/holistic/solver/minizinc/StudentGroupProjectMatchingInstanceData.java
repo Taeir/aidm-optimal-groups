@@ -2,28 +2,29 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.agent.SequentualAgents;
-import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
+import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
+import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDataset;
+import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class StudToGroupTopicMatchingInstanceData implements JsonDatafile
+public class StudentGroupProjectMatchingInstanceData implements JsonDatafile
 {
 	private final GroupSizeConstraint groupSizeConstraint;
 
 	private final int topicCapacity;
 
-	private final Agents agents;
+	private final SequentualAgents agents;
 	private final SequentualProjects projects;
 
-
-	public StudToGroupTopicMatchingInstanceData(GroupSizeConstraint groupSizeConstraint, SequentualAgents agents, SequentualProjects projects, int topicCapacity)
+	public StudentGroupProjectMatchingInstanceData(SequentualDataset sequentualDataset, int topicCapacity)
 	{
-		this.groupSizeConstraint = groupSizeConstraint;
-		this.agents = agents;
-		this.projects = projects;
+		this.groupSizeConstraint = sequentualDataset.groupSizeConstraint();
+		this.agents = sequentualDataset.allAgents();
+		this.projects = sequentualDataset.allProjects();
+
 		this.topicCapacity = topicCapacity;
 	}
 
@@ -31,12 +32,12 @@ public class StudToGroupTopicMatchingInstanceData implements JsonDatafile
 	{
 		String json =
 				jsonObject(
-					keyValue("min group size", groupSizeConstraint.minSize()),
-					keyValue("max group size", groupSizeConstraint.maxSize()),
-					keyValue("topic capacity", topicCapacity),
+					keyValue("'min group size'", groupSizeConstraint.minSize()),
+					keyValue("'max group size'", groupSizeConstraint.maxSize()),
+					keyValue("'topic capacity'", topicCapacity),
 
-					keyValue("#students", agents.count()),
-					keyValue("#topics", projects.count()),
+					keyValue("'#students'", agents.count()),
+					keyValue("'#topics'", projects.count()),
 
 					"\"STUDENT_TOPIC_PREF\": " + preferencesProfile(agents)
 				);
@@ -45,7 +46,7 @@ public class StudToGroupTopicMatchingInstanceData implements JsonDatafile
 	}
 
 	/*
-		Manual serialization is good enough for now, might use Gson later if needed
+		Manual serialization is good enough for now, switch to using Gson later if needed
 	*/
 
 	private static String jsonObject(String... data)

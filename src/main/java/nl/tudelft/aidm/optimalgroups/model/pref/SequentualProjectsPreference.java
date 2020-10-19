@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import nl.tudelft.aidm.optimalgroups.model.project.SequentualProjects;
+import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 import plouchtch.assertion.Assert;
 
 import java.util.Arrays;
