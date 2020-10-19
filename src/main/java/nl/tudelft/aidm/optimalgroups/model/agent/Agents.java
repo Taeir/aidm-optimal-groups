@@ -93,7 +93,7 @@ public class Agents
 	{
 		if (other.count() == 0) return this;
 
-		Assert.that(datsetContext.equals(other.datsetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
+		Assert.that(datsetContext.equals(other.datsetContext)).orThrowMessage("Cannot remove Agents: datasetcontext mismatch");
 
 		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
 		copyAgents.removeAll(other.agents);
