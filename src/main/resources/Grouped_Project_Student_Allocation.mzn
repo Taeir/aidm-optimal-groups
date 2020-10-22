@@ -10,13 +10,13 @@ int: 'min group size';
 int: 'max group size';
 int: 'topic capacity';
 
-array[0..25] of bool: can_form_groups = array1d(0..25, [ true, false, false, false, true, true, false, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true ]);
+int: 'max students with topic' = 'topic capacity' * 'max group size';
+array[0..('max students with topic')] of bool: can_form_groups = array1d(0..25, [ true, false, false, false, true, true, false, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true ]);
 
 int: max_disutil = 4;
 
 % META
 int: '#students';
-int: 'max groups' = floor('#students' / 'min group size');
 
 % STUDENTS
 set of int: STUDENT = 1..'#students';
@@ -117,22 +117,17 @@ solve minimize obj :: int_search(MATCH_DISUTIL_BY_STUDENT, dom_w_deg, indomain_m
 
 % output ["\nStudent's disutilities of matching:\n "] ++ ["| s(\(s)) = \(MATCH_DISUTIL_BY_STUDENT[s]) " | s in STUDENT] ++ ["|\n"];
 
-output ["\nNum students by disutil:\n "] ++ ["| d(\(d)) = \(card(MATCH_STUDENTS_BY_DISUTIL[d])) " | d in TOPIC] ++ ["|\n"];
+% output ["\nNum students by disutil:\n "] ++ ["| d(\(d)) = \(card(MATCH_STUDENTS_BY_DISUTIL[d])) " | d in TOPIC] ++ ["|\n"];
 
-output ["\nNum students in topic:\n "] ++ ["| t(\(t)) = \(card(TOPIC_STUDENT_MATCHING[t])) " | t in TOPIC] ++ ["|\n"];
+% output ["\nNum students in topic:\n "] ++ ["| t(\(t)) = \(card(TOPIC_STUDENT_MATCHING[t])) " | t in TOPIC] ++ ["|\n"];
 
-output [ "\n", 
-    "obj \t= \(obj)\n",
-    "sum \t= \(sum(MATCH_DISUTIL_BY_STUDENT))\n",
-%     "mean \t= \(mean)\n", 
-    "max \t= \(max(MATCH_DISUTIL_BY_STUDENT))\n"
-%     "aupcr \t= \(aupcr) (= \(aupc) / \(total_area))\n"
-    %"std_dev \t= \(std_dev)\n"
-];
+% output [ "\n", 
+%     "obj \t= \(obj)\n",
+%     "sum \t= \(sum(MATCH_DISUTIL_BY_STUDENT))\n",
+% %     "mean \t= \(mean)\n", 
+%     "max \t= \(max(MATCH_DISUTIL_BY_STUDENT))\n"
+% %     "aupcr \t= \(aupcr) (= \(aupc) / \(total_area))\n"
+%     %"std_dev \t= \(std_dev)\n"
+% ];
 
-% DBG prefs
-% output [
-%     "index \t= \([i | i in TOPIC])\n",
-%     "prefs \t= \([STUDENT_TOPIC_PREF[1,i] | i in 1..'#topics'])\n",
-%     "disutil \t= \([MATCH_DISUTIL_BY_STUDENT[1,t] | t in TOPIC])\n"
-% ]
+output ["STUDENT_TOPIC_MATCHING = ", show(STUDENT_TOPIC_MATCHING)]
