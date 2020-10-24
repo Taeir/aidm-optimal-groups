@@ -15,22 +15,23 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020
+public class Experiment_BepSys_Pessimism_SDPC_MinizincMIP_241020
 {
 	public static void main(String[] args)
 	{
 		var experimentsForInReport = new ArrayList<Experiment>();
 
 		var algorithms = List.of(
-//			new GroupProjectAlgorithm.BepSys_reworked(),
+			new GroupProjectAlgorithm.BepSys_reworked(),
 //			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility(),
 //			new GroupProjectAlgorithm.CombinedPrefs(),
 //			new GroupProjectAlgorithm.RSD(),
 //			new GroupProjectAlgorithm.ILPPP(),
 //			new GroupProjectAlgorithm.PessimisticHeuristic(),
 			new GroupProjectAlgorithm.SDPCWithSlots(),
-			new GroupProjectAlgorithm.Greedy_SDPC_Pessimism_inspired(),
-			new GroupProjectAlgorithm.SDPCWithSlots_potential_numgroupmates_ordered()
+			new GroupProjectAlgorithm.MinizincMIP()
+//			new GroupProjectAlgorithm.Greedy_SDPC_Pessimism_inspired(),
+//			new GroupProjectAlgorithm.SDPCWithSlots_potential_numgroupmates_ordered()
 		);
 
 			/*new ILPPP_TGAlgorithm()*/ // will not succeed on CE10
@@ -48,6 +49,9 @@ public class Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020
 
 		/* */
 		experimentsForInReport.add(experimentThreeSlotsUniformPrefs40p(algorithms, groupSize));
+
+		/* */
+		experimentsForInReport.add(experimentCE10Like500Slots5(algorithms, groupSize));
 
 		/* */
 //		numSlots = 3;
@@ -99,9 +103,17 @@ public class Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020
 //		var markdownAsString = markdown.toString();
 
 		new ExperimentReportInHtml(experimentsForInReport)
-			.writeHtmlSourceToFile(new File("reports/Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020.html"));
+			.writeHtmlSourceToFile(new File("reports/Experiment_BepSys_Pessimism_SDPC_MinizincMIP_241020.html"));
 
 		return;
+	}
+
+	private static Experiment experimentCE10Like500Slots5(List<GroupProjectAlgorithm> algorithms, GroupSizeConstraint groupSize)
+	{
+		var dataContext = ThesisDatasets.CE10Like(500);
+
+		var experiment = new Experiment(dataContext, algorithms);
+		return experiment;
 	}
 
 	private static Experiment experimentThreeSlotsUniformPrefs40p(List<GroupProjectAlgorithm> algorithms, GroupSizeConstraint groupSize)

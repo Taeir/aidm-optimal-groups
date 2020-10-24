@@ -13,7 +13,6 @@ int: 'topic capacity';
 int: 'max students with topic' = 'topic capacity' * 'max group size';
 array[0..('max students with topic')] of bool: can_form_groups = array1d(0..25, [ true, false, false, false, true, true, false, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true ]);
 
-int: max_disutil = 4;
 
 % META
 int: '#students';
@@ -24,6 +23,9 @@ set of int: STUDENT = 1..'#students';
 % TOPICS
 int: '#topics';
 set of int: TOPIC = 1..'#topics';
+
+
+int: max_disutil = floor('#topics'/2);
 
 % STUDENT TOPIC PREFS
 array[STUDENT, 1..'#topics'] of TOPIC: STUDENT_TOPIC_PREF;
@@ -45,7 +47,8 @@ constraint forall(t in TOPIC) (
     can_form_groups[card(TOPIC_STUDENT_MATCHING[t])]
 );
 
-constraint assert('max group size' - 'min group size' == 1, "Unsupported min-max groupsize delta");
+constraint assert('max group size' == 5, "Unsupported group-size upperbound (must be 5)");
+constraint assert('min group size' == 4, "Unsupported group-size lowerbound (must be 4)");
 
 %%%%%% MATCH_DISUTIL_BY_STUDENT: the disutility of each student of the proposed matching
 array[STUDENT] of var int: MATCH_DISUTIL_BY_STUDENT;
@@ -130,4 +133,4 @@ solve minimize obj :: int_search(MATCH_DISUTIL_BY_STUDENT, dom_w_deg, indomain_m
 %     %"std_dev \t= \(std_dev)\n"
 % ];
 
-output ["STUDENT_TOPIC_MATCHING = ", show(STUDENT_TOPIC_MATCHING)]
+output [ show(STUDENT_TOPIC_MATCHING)]

@@ -1,10 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver;
 
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDataset;
+import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
@@ -12,7 +11,6 @@ import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.StudentGroupProjectMatchingInstanceData;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 import org.sql2o.GenericDatasource;
 import plouchtch.lang.exception.ImplementMe;
 
@@ -38,7 +36,7 @@ public class CPDeterminedMatching implements GroupToProjectMatching<Group.Formed
 
 	public void doIt()
 	{
-		var seqDataset = SequentualDataset.from(courseEdition);
+		var seqDataset = SequentualDatasetContext.from(courseEdition);
 
 		var instanceData = new StudentGroupProjectMatchingInstanceData(seqDataset, 5);
 

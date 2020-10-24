@@ -20,7 +20,7 @@ public class SequentualProjects extends ListBasedProjects
 	private final Projects original;
 	private final List<Project> projectsInMonotonicSequence;
 
-	private final Map<Project, SequencedProject> origToNewMap;
+	private final Map<Project, SequentualProject> origToNewMap;
 
 	public static SequentualProjects from(Projects projects)
 	{
@@ -37,7 +37,7 @@ public class SequentualProjects extends ListBasedProjects
 		this.original = original;
 
 		projectsInMonotonicSequence = remapToSequentual(original);
-		origToNewMap = oldToNewMapping(original.asCollection(), projectsInMonotonicSequence);
+		origToNewMap = correspondanceBetweenOriginalAndSequential(original.asCollection(), projectsInMonotonicSequence);
 	}
 
 	/**
@@ -47,15 +47,23 @@ public class SequentualProjects extends ListBasedProjects
 	{
 		return original;
 	}
-
-	public SequencedProject correspondingSequentualProject(Project project)
+	public SequentualProject correspondingSequentualProjectOf(Project project)
 	{
-		SequencedProject resequenced = origToNewMap.get(project);
+		SequentualProject resequenced = origToNewMap.get(project);
 
 		Assert.that(resequenced != null)
 			.orThrow(() -> new RuntimeException(String.format("Project %s is not an 'original' in SequentualProjects", project)));
 
 		return resequenced;
+	}
+
+	public Project correspondingOriginalProjectOf(Project project)
+	{
+		Assert.that(project instanceof SequentualProject)
+			.orThrowMessage("Cannot determine original project of given remapped one, given is not a SequentualProject");
+
+		return ((SequentualProject) project).original();
+//		return projectsInMonotonicSequence.get(project.id());
 	}
 
 	@Override
@@ -64,11 +72,11 @@ public class SequentualProjects extends ListBasedProjects
 		return projectsInMonotonicSequence;
 	}
 
-	public static class SequencedProject extends Project.ProjectsWithDefaultSlotAmount
+	public static class SequentualProject extends Project.ProjectsWithDefaultSlotAmount
 	{
 		private final Project originalProject;
 
-		public SequencedProject(int id, Project originalProject)
+		public SequentualProject(int id, Project originalProject)
 		{
 			super(id);
 			this.originalProject = originalProject;
@@ -103,7 +111,7 @@ public class SequentualProjects extends ListBasedProjects
 		int sequenceNumber = START_INDEX;
 		for (var proj :	originalSorted) {
 
-			var remappedProj = new SequencedProject(sequenceNumber, proj);
+			var remappedProj = new SequentualProject(sequenceNumber, proj);
 			remappedProjects.add(remappedProj);
 
 			sequenceNumber += 1;
@@ -112,9 +120,9 @@ public class SequentualProjects extends ListBasedProjects
 		return remappedProjects;
 	}
 
-	private static Map<Project, SequencedProject> oldToNewMapping(Collection<Project> original, List<Project> remapped)
+	private static Map<Project, SequentualProject> correspondanceBetweenOriginalAndSequential(Collection<Project> original, List<Project> remapped)
 	{
-		var mapping = new HashMap<Project, SequencedProject>();
+		var mapping = new HashMap<Project, SequentualProject>();
 
 		var originalSorted = new ArrayList<>(original);
 		originalSorted.sort(Comparator.comparing(Project::id));
@@ -122,7 +130,7 @@ public class SequentualProjects extends ListBasedProjects
 		for (int i = 0; i < originalSorted.size(); i++)
 		{
 			var originalProjectInOrder = originalSorted.get(i);
-			var remappedProj = (SequencedProject) remapped.get(i);
+			var remappedProj = (SequentualProject) remapped.get(i);
 
 			Assert.that(remappedProj.originalProject == originalProjectInOrder)
 				.orThrow(RuntimeException.class, "Original project to remapped mismatch :/");

@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.Pessimistic;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.GroupedProjectMinizincAllocation;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCOrderedByPotentialGroupmates;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCPessimism;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SerialDictatorshipWithProjClosures;
@@ -343,6 +344,23 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String name()
 		{
 			return "Greedy (SDPC and Pessimism inspired)";
+		}
+	}
+
+	class MinizincMIP implements GroupProjectAlgorithm
+	{
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var matching = new GroupedProjectMinizincAllocation(datasetContext, 5).matching();
+
+			return FormedGroupToProjectMatching.from(matching);
+		}
+
+		@Override
+		public String name()
+		{
+			return "MiniZinc MIP (COIN-BC)";
 		}
 	}
 }

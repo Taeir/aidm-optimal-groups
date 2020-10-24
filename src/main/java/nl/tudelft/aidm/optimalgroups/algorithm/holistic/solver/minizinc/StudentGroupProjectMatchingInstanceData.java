@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDataset;
+import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 
 import java.util.Arrays;
@@ -19,11 +19,11 @@ public class StudentGroupProjectMatchingInstanceData implements JsonDatafile
 	private final SequentualAgents agents;
 	private final SequentualProjects projects;
 
-	public StudentGroupProjectMatchingInstanceData(SequentualDataset sequentualDataset, int topicCapacity)
+	public StudentGroupProjectMatchingInstanceData(SequentualDatasetContext sequentualDatasetContext, int topicCapacity)
 	{
-		this.groupSizeConstraint = sequentualDataset.groupSizeConstraint();
-		this.agents = sequentualDataset.allAgents();
-		this.projects = sequentualDataset.allProjects();
+		this.groupSizeConstraint = sequentualDatasetContext.groupSizeConstraint();
+		this.agents = sequentualDatasetContext.allAgents();
+		this.projects = sequentualDatasetContext.allProjects();
 
 		this.topicCapacity = topicCapacity;
 	}

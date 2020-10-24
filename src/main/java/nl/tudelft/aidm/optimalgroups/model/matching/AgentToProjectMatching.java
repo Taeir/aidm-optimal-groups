@@ -1,8 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.model.matching;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import plouchtch.assertion.Assert;
 
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -40,21 +42,28 @@ public interface AgentToProjectMatching extends Matching<Agent, Project>
 		return (int) this.asList().stream().map(Match::from).distinct().count();
 	}
 
-//	@Override
-//	default GiniCoefficient giniCoefficient()
-//	{
-//		return new GiniCoefficientStudentRank(this);
-//	}
-//
-//	@Override
-//	default AvgRank avgRank()
-//	{
-//		return new AvgRankAssignedProjectToStudent(this);
-//	}
-//
-//	@Override
-//	default WorstRank worstRank()
-//	{
-//		return new WorstRankAssignedProjectToStudents(this);
-//	}
+	/**
+	 * Default, simple implementation of AgentToProjectMatching
+	 */
+	class Simple extends ListBasedMatching<Agent, Project> implements AgentToProjectMatching
+	{
+		public Simple(DatasetContext datasetContext)
+		{
+			super(datasetContext);
+		}
+
+		protected Simple(DatasetContext datasetContext, List<Match<Agent, Project>> backingList)
+		{
+			super(datasetContext, backingList);
+		}
+
+		@Override
+		public void add(Match<Agent, Project> match)
+		{
+			Assert.that(match.from().context.equals(datasetContext())).orThrowMessage("Cannot include match in matching, datasetcontext mismatch");
+			// Projects are context-less ...
+//			Assert.that(match.to().context.equals(datasetContext())).orThrowMessage("Cannot include match in matching, datasetcontext mismatch");
+			super.add(match);
+		}
+	}
 }

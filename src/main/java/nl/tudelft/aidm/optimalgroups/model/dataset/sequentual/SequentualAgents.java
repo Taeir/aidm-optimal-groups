@@ -3,11 +3,9 @@ package nl.tudelft.aidm.optimalgroups.model.dataset.sequentual;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.dataset.RelabledCourseEditionContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;
-import plouchtch.lang.exception.ImplementMe;
+import plouchtch.assertion.Assert;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,13 +16,21 @@ public class SequentualAgents extends Agents
 {
 	private final DatasetContext originalDatasetContext;
 
-	SequentualAgents(Agents agents, SequentualDataset datasetContext, SequentualProjects sequentualProjects)
+	SequentualAgents(Agents agents, SequentualDatasetContext datasetContext, SequentualProjects sequentualProjects)
 	{
-		super(datasetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
+		super(datasetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects, datasetContext));
 		originalDatasetContext = agents.datasetContext;
 	}
 
-	private static List<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects)
+	public Agent correspondingOriginalAgentOf(Agent agent)
+	{
+		Assert.that(agent instanceof SequentualAgent)
+			.orThrowMessage("Cannot determine original agent of given remapped one, given is not a SequentualAgent");
+
+		return ((SequentualAgent) agent).original;
+	}
+
+	private static List<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects, SequentualDatasetContext datasetContext)
 	{
 		var originalSorted = new ArrayList<>(original);
 		originalSorted.sort(Comparator.comparing(agent -> agent.id));
@@ -36,7 +42,7 @@ public class SequentualAgents extends Agents
 		int sequenceNumber = START_INDEX;
 		for (var agent : originalSorted) {
 
-			var reseq = SequentualAgent.fromOriginal(sequenceNumber, agent, sequentualProjects);
+			var reseq = SequentualAgent.fromOriginal(sequenceNumber, agent, sequentualProjects, datasetContext);
 			resequenced.add(reseq);
 
 			sequenceNumber += 1;
@@ -45,22 +51,21 @@ public class SequentualAgents extends Agents
 		return resequenced;
 	}
 
-	public static class SequentualAgent extends Agent
+	private static class SequentualAgent extends Agent
 	{
 		private final Agent original;
 
-		protected SequentualAgent(Integer id, Agent original, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
+		protected SequentualAgent(Integer id, Agent original, SequentualProjectsPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
 		{
 			super(id, projectPreference, groupPreference, context);
 			this.original = original;
 		}
 
-		public static SequentualAgent fromOriginal(Integer newId, Agent agent, SequentualProjects sequentualProjects)
+		public static SequentualAgent fromOriginal(Integer newId, Agent agent, SequentualProjects sequentualProjects, SequentualDatasetContext context)
 		{
 			var sequentualProjectsPreference = SequentualProjectsPreference.fromOriginal(agent.projectPreference(), sequentualProjects);
 
-			// fixme
-			return new SequentualAgent(newId, agent, sequentualProjectsPreference, agent.groupPreference, new RelabledCourseEditionContext());
+			return new SequentualAgent(newId, agent, sequentualProjectsPreference, agent.groupPreference, context);
 		}
 
 		@Override

@@ -24,7 +24,7 @@ public class SequentualProjectsPreference implements ProjectPreference
 
 		projectPreference.forEach((int projectId, int rank) -> {
 			var origProject = new Project.ProjectsWithDefaultSlotAmount(projectId);
-			var remapped = sequentualProjects.correspondingSequentualProject(origProject);
+			var remapped = sequentualProjects.correspondingSequentualProjectOf(origProject);
 
 			// Warn developer when a non-default slots implementation is used because this function then needs to be rewritten
 			Assert.that(remapped.original() instanceof Project.ProjectWithStaticSlotAmount)
