@@ -39,7 +39,7 @@ public class SDPCPessimism
 	public AgentToProjectMatching doIt()
 	{
 		var remaningAgents = new LinkedList<>(agents.asCollection());
-		var partialMatching = new SDPCPartialMatching(agents.datsetContext);
+		var partialMatching = new SDPCPartialMatching(agents.datasetContext);
 
 		int n = agents.count();
 		for (int t = 1; t <= n; t++)
@@ -107,7 +107,7 @@ public class SDPCPessimism
 
 		public static WorstBestPairings from(Agents agents, Projects projects, SDPCPartialMatching partialMatching, GroupSizeConstraint groupSizeConstraint)
 		{
-			int numProjectsInDatasetContext = agents.datsetContext.allProjects().count();
+			int numProjectsInDatasetContext = agents.datasetContext.allProjects().count();
 			Map<Project, List<Agent>> alreadyAssignedToProject = partialMatching.groupedByProject();
 
 			List<WorstBestPairings.Edge> edges = new ArrayList<>(agents.count() * projects.count());

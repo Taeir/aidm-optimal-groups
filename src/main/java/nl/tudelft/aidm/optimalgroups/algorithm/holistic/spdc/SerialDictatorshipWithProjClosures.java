@@ -11,7 +11,6 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.apache.commons.math3.util.Pair;
 import plouchtch.assertion.Assert;
-import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -35,7 +34,7 @@ public class SerialDictatorshipWithProjClosures
 	public AgentToProjectMatching doIt()
 	{
 		var indexableAgents = new ArrayList<>(agents.asCollection());
-		var partialMatching = new SDPCPartialMatching(agents.datsetContext);
+		var partialMatching = new SDPCPartialMatching(agents.datasetContext);
 
 		int n = agents.count();
 		for (int t = 1; t <= n; t++)

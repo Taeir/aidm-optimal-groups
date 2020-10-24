@@ -21,7 +21,7 @@ public class SequentualAgents extends Agents
 	SequentualAgents(Agents agents, SequentualDataset datasetContext, SequentualProjects sequentualProjects)
 	{
 		super(datasetContext, mapAgentIdsToSequence(agents.asCollection(), sequentualProjects));
-		originalDatasetContext = agents.datsetContext;
+		originalDatasetContext = agents.datasetContext;
 	}
 
 	private static List<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects)

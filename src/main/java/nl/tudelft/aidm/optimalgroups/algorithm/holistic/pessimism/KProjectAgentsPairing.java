@@ -47,7 +47,7 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 		int k = 0;
 		for (var thisAgent : agents.asCollection())
 		{
-			int l = agents.datsetContext.allProjects().count() + 1;
+			int l = agents.datasetContext.allProjects().count() + 1;
 			Project lProj = null;
 			Set<Agent> lPossibleGroupmates = null;
 

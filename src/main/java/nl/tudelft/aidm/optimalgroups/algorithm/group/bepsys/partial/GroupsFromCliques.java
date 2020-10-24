@@ -27,7 +27,7 @@ public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 	protected List<Group.TentativeGroup> asList()
 	{
 		if (tentativeCliques == null) {
-			tentativeCliques = cliquesExtractedFrom(agents, agents.datsetContext.groupSizeConstraint());
+			tentativeCliques = cliquesExtractedFrom(agents, agents.datasetContext.groupSizeConstraint());
 		}
 
 		return Collections.unmodifiableList(tentativeCliques);

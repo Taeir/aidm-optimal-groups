@@ -7,8 +7,6 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.graph.BipartitieAgentsProjectGraph;
 import nl.tudelft.aidm.optimalgroups.model.graph.DatasetAsGraph;
-import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.*;
@@ -33,7 +31,7 @@ public class SDPCOrderedByPotentialGroupmates extends SerialDictatorshipWithProj
 	private static Agents ordered(Agents agents, int k)
 	{
 		var agentList = new ArrayList<>(agents.asCollection());
-		BipartitieAgentsProjectGraph graph = new DatasetAsGraph(agents.datsetContext);
+		BipartitieAgentsProjectGraph graph = new DatasetAsGraph(agents.datasetContext);
 
 		var sortedList = agentList.stream()
 			.map(agent -> {

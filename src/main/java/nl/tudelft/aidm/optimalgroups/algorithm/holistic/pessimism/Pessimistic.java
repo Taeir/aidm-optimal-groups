@@ -83,7 +83,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	public Pessimistic(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
-		super(new Solution(new EmptyMatching(agents.datsetContext), new EmptyMetric()));
+		super(new Solution(new EmptyMatching(agents.datasetContext), new EmptyMetric()));
 
 		this.agents = agents;
 		this.projects = projects;
@@ -95,7 +95,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	public AgentToProjectMatching matching()
 	{
-		DatasetContext datsetContext = agents.datsetContext;
+		DatasetContext datsetContext = agents.datasetContext;
 		var emptySolution = new Solution(new EmptyMatching(datsetContext), new EmptyMetric());
 
 		var root = new PessimismSearchNode(emptySolution, agents, new DecrementableProjects(projects), groupSizeConstraint);

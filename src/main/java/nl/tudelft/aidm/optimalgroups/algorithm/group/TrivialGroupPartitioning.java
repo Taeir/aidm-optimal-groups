@@ -20,7 +20,7 @@ public class TrivialGroupPartitioning extends Groups.ListBacked<Group.FormedGrou
 
 	public TrivialGroupPartitioning(Agents agents)
 	{
-		this(agents, GroupFactorization.cachedInstanceFor(agents.datsetContext.groupSizeConstraint()));
+		this(agents, GroupFactorization.cachedInstanceFor(agents.datasetContext.groupSizeConstraint()));
 	}
 
 	public TrivialGroupPartitioning(Agents agents, GroupFactorization groupFactorization)
@@ -36,7 +36,7 @@ public class TrivialGroupPartitioning extends Groups.ListBacked<Group.FormedGrou
 		if (groups == null) {
 			var groupsTemp = new FormedGroups();
 
-			var gsc = agents.datsetContext.groupSizeConstraint();
+			var gsc = agents.datasetContext.groupSizeConstraint();
 			var factorization = groupFactorization.forGivenNumberOfStudents(agents.count());
 
 			Assert.that(factorization.isFactorable())
