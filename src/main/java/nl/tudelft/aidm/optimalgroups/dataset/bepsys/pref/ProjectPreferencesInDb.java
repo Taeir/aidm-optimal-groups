@@ -24,6 +24,8 @@ public class ProjectPreferencesInDb implements ProjectPreference
 	private List<Project> preferencesAsProjectList = null;
 	private Map<Integer, Integer> preferencesMap = null;
 
+	private final IdentityHashMap<Project, OptionalInt> rankOfProject;
+
 	// Indicates the rank (inclusive) from which the agent is indifferent
 	// so all preferences of that rank and higher have the same rank, that
 	// of the value of the field.
@@ -34,6 +36,7 @@ public class ProjectPreferencesInDb implements ProjectPreference
 		this.dataSource = dataSource;
 		this.userId = userId;
 		this.courseEdition = courseEdition;
+		this.rankOfProject = new IdentityHashMap<>();
 	}
 
 	@Override
@@ -47,23 +50,46 @@ public class ProjectPreferencesInDb implements ProjectPreference
 		return isIndifferentFromRank == 1;
 	}
 
+	// PREMATURE OPTIMIZATION: bypass rankOf
+//	@Override
+//	public void forEach(ProjectPreferenceObjectRankConsumer iter)
+//	{
+//		List<Project> projectList = asListOfProjects();
+//		for (int rankInList = 1; rankInList <= projectList.size(); rankInList++)
+//		{
+//			int index = rankInList - 1;
+//			var proj = projectList.get(index);
+//
+//			var rank = Math.min(rankInList, isIndifferentFromRank);
+//			iter.apply(proj, Optional);
+//		}
+//	}
+
 	@Override
 	public OptionalInt rankOf(Project project)
 	{
-		if (isCompletelyIndifferent()) {
-			return OptionalInt.empty();
-		}
+		// Cache results - pessimism makes heavy use of this fn
+		return rankOfProject.computeIfAbsent(project, proj -> {
 
-		var rankInArray = new RankInArray().determineRank(project.id(), asArray());
+			if (isCompletelyIndifferent())
+			{
+				return OptionalInt.empty();
+			}
 
-		if (rankInArray.isPresent()) {
-			// Rank is present, clamp it to proper rank (indifference ranks are all 1 rank)
-			var clamped = Math.min(rankInArray.getAsInt(), isIndifferentFromRank);
-			return OptionalInt.of(clamped);
-		}
-		else {
-			return OptionalInt.empty();
-		}
+			var rankInArray = new RankInArray().determineRank(proj.id(), asArray());
+
+			if (rankInArray.isPresent())
+			{
+				// Rank is present, clamp it to proper rank (indifference ranks are all 1 rank)
+				var clamped = Math.min(rankInArray.getAsInt(), isIndifferentFromRank);
+				return OptionalInt.of(clamped);
+			}
+			else
+			{
+				return OptionalInt.empty();
+			}
+
+		});
 	}
 
 	@Override

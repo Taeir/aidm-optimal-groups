@@ -26,7 +26,7 @@ public class Experiment_BepSys_Pessimism_SDPC_CE04_021020
 //			new GroupProjectAlgorithm.CombinedPrefs(),
 //			new GroupProjectAlgorithm.RSD(),
 //			new GroupProjectAlgorithm.ILPPP(),
-			new GroupProjectAlgorithm.PessimisticHeuristic(),
+			new GroupProjectAlgorithm.Pessimism(),
 			new GroupProjectAlgorithm.SDPCWithSlots()
 //			new GroupProjectAlgorithm.SDPCWithSlotsPessimismOrdering()
 		);

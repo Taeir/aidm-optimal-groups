@@ -21,10 +21,12 @@ public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 	public class BestSolutionSoFar
 	{
 		private SOLUTION bestSolutionSeen;
+		private boolean hasNonEmptySolution;
 
 		public BestSolutionSoFar(SOLUTION emptySolution)
 		{
 			this.bestSolutionSeen = emptySolution;
+			this.hasNonEmptySolution = false;
 		}
 
 		public synchronized void potentiallyUpdateBestSolution(Function<SOLUTION, Optional<SOLUTION>> bestSoFarSection)
@@ -33,12 +35,23 @@ public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 				.ifPresent(newBest -> {
 					System.out.printf("New best solution found: %s (was: %s)\n", newBest.metric(), bestSolutionSeen.metric());
 					this.bestSolutionSeen = newBest;
+					this.hasNonEmptySolution = true;
 				});
 		}
 
 		public synchronized boolean test(Predicate<SOLUTION> predicate)
 		{
 			return predicate.test(bestSolutionSeen);
+		}
+
+		public synchronized SOLUTION currentBest()
+		{
+			return bestSolutionSeen;
+		}
+
+		public boolean hasNonEmptySolution()
+		{
+			return hasNonEmptySolution;
 		}
 	}
 

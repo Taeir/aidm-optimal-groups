@@ -46,8 +46,8 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 				numAgentsPreferingA = (int) allAgents.asCollection().stream()
 					.filter(agent -> {
-						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
-						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+						int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
 						// All agents who prefer matching A to B (rank the assigned project in matching A higher than in B)
 						return rankInA < rankInB;
 					})
@@ -55,8 +55,8 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 				numAgentsPreferingB = (int) allAgents.asCollection().stream()
 					.filter(agent -> {
-						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
-						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+						int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
 						return rankInB < rankInA;
 					})
 					.count();
@@ -90,8 +90,8 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 				numAgentsPreferingA = (int) allAgents.asCollection().stream()
 					.filter(agent -> {
-						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
-						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+						int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
 						// All agents who prefer matching A to B (rank the assigned project in matching A higher than in B)
 						return rankInA < rankInB;
 					})
@@ -99,8 +99,8 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 
 				numAgentsPreferingB = (int) allAgents.asCollection().stream()
 					.filter(agent -> {
-						int rankInB = rankInMatchingB.get(agent).orElse(Integer.MAX_VALUE);
-						int rankInA = rankInMatchingA.get(agent).orElse(Integer.MAX_VALUE);
+						int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+						int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
 						return rankInB < rankInA;
 					})
 					.count();

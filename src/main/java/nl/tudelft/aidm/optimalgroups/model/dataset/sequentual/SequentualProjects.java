@@ -47,6 +47,7 @@ public class SequentualProjects extends ListBasedProjects
 	{
 		return original;
 	}
+
 	public SequentualProject correspondingSequentualProjectOf(Project project)
 	{
 		SequentualProject resequenced = origToNewMap.get(project);

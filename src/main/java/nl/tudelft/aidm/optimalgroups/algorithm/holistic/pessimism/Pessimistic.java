@@ -108,23 +108,20 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 			// Hence, we provide a pool context which we control so that we can force shutdown
 			forkJoinPool.execute(root::solution);
 			forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
+			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
+				// Give an extension...
+				forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
+			}
 			forkJoinPool.shutdownNow();
 		}
 		catch (Exception e) {
 			Thread.currentThread().interrupt();
 		}
 
-		// Use the 'test' function to extract best solution and put it
-		// into this hacky list as we need an 'effectively final' variable
-		// to capture in the lambda function passed to test()
-		List<Solution> hacky = new ArrayList<>(1);
-		bestSolutionSoFar.test(bestSoFar -> {
-			hacky.add(bestSoFar);
-			return true;
-		});
+		Assert.that(bestSolutionSoFar.hasNonEmptySolution())
+			.orThrowMessage("Pessimism-search did not find a single valid solution :");
 
-		// Should contrain the best-so-far solution
-		var matching = hacky.get(0).matching;
+		var matching = bestSolutionSoFar.currentBest().matching;
 
 		// Check all students matched
 		Assert.that(agents.count() == matching.countDistinctStudents())

@@ -272,7 +272,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 	}
 
-	class PessimisticHeuristic implements GroupProjectAlgorithm
+	class Pessimism implements GroupProjectAlgorithm
 	{
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
@@ -286,7 +286,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			return "Heuristic maxmin search'";
+			return "MinMax BnB 'Pessimism'";
 		}
 	}
 

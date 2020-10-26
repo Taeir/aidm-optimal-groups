@@ -1,38 +1,43 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
+import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 import plouchtch.assertion.Assert;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalInt;
 
 public class SequentualProjectsPreference implements ProjectPreference
 {
-	private static ProjectPreference projectPreference;
-	private static SequentualProjects sequentualProjects;
-
 	private final Integer[] preferenceProfile;
 	private List<Project> preferenceProfileAsProjectList = null;
 
 	public static SequentualProjectsPreference fromOriginal(ProjectPreference projectPreference, SequentualProjects sequentualProjects)
 	{
-		SequentualProjectsPreference.projectPreference = projectPreference;
-		SequentualProjectsPreference.sequentualProjects = sequentualProjects;
 		var originalProfile = projectPreference.asArray();
 		var remappedProfile = new Integer[originalProfile.length];
 
-		projectPreference.forEach((int projectId, int rank) -> {
-			var origProject = new Project.ProjectsWithDefaultSlotAmount(projectId);
+//		projectPreference.forEach((Project project, OptionalInt rank) -> {
+//			var origProject = project;
+//
+//			// rank 1 = index 0
+//			for (int i = 0; i < ori; i++)
+//			{
+//
+//			}
+//			remappedProfile[rank-1] = remapped.id();
+//		});
+
+		var originalProfileAsList = projectPreference.asListOfProjects();
+		for (int i = 0; i < originalProfileAsList.size(); i++)
+		{
+
+			Project origProject = originalProfileAsList.get(i);
 			var remapped = sequentualProjects.correspondingSequentualProjectOf(origProject);
-
-			// Warn developer when a non-default slots implementation is used because this function then needs to be rewritten
-			Assert.that(remapped.original() instanceof Project.ProjectWithStaticSlotAmount)
-				.orThrow(() -> new RuntimeException("ProjectPreferences cannot be remapped to seqentual projects, non-'withDefaultSlots' implementation is used. Needs new implementation!"));
-
-			// rank 1 = index 0
-			remappedProfile[rank-1] = remapped.id();
-		});
+			remappedProfile[i] = remapped.id();
+		}
 
 		return new SequentualProjectsPreference(remappedProfile);
 	}

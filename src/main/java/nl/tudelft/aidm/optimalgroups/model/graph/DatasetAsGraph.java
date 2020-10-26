@@ -113,10 +113,10 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 			{
 				Vertex<Agent> agentVertex = vertices.vertexOf(agent);
 
-				agent.projectPreference().forEach((Project project, int rank) -> {
+				agent.projectPreference().forEach((Project project, OptionalInt rank) -> {
 					Vertex<Project> projectVertex = vertices.vertexOf(project);
 
-					WeightedEdge edge = new WeightedEdge(agentVertex, projectVertex, rank);
+					WeightedEdge edge = new WeightedEdge(agentVertex, projectVertex, rank.orElse(1));
 
 					edges.add(edge);
 

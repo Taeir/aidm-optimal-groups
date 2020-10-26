@@ -15,21 +15,22 @@ public interface ProjectPreference
 
 	List<Project> asListOfProjects();
 
-	default void forEach(ProjectPreferenceIdRankConsumer iter)
-	{
-		Integer[] prefArray = asArray();
-		for (int i = 0; i < prefArray.length; i++)
-		{
-			iter.apply(prefArray[i], i+1);
-		}
-	}
+//	default void forEach(ProjectPreferenceIdRankConsumer iter)
+//	{
+//		Integer[] prefArray = asArray();
+//		for (int i = 0; i < prefArray.length; i++)
+//		{
+//			iter.apply(prefArray[i], i+1);
+//		}
+//	}
 
 	default void forEach(ProjectPreferenceObjectRankConsumer iter)
 	{
 		List<Project> projectList = asListOfProjects();
-		for (int i = 1; i <= projectList.size(); i++)
+		for (Project proj : projectList)
 		{
-			iter.apply(projectList.get(i-1), i);
+			var rank = rankOf(proj);
+			iter.apply(proj, rank);
 		}
 	}
 
@@ -91,22 +92,22 @@ public interface ProjectPreference
 		return preferencesMap;
 	}
 
-	interface ProjectPreferenceIdRankConsumer
-	{
-		/**
-		 * @param projectId the id of the project that has the given rank
-		 * @param rank Rank of the preference, 1 being highest
-		 */
-		void apply(int projectId, int rank);
-	}
+//	interface ProjectPreferenceIdRankConsumer
+//	{
+//		/**
+//		 * @param projectId the id of the project that has the given rank
+//		 * @param rank Rank of the preference, 1 being highest
+//		 */
+//		void apply(int projectId, int rank);
+//	}
 
 	interface ProjectPreferenceObjectRankConsumer
 	{
 		/**
 		 * @param project The project with the given rank
-		 * @param rank Rank in preference, 1 being highest
+		 * @param rank Rank in preference, 1 being highest - empty if indifferent
 		 */
-		void apply(Project project, int rank);
+		void apply(Project project, OptionalInt rank);
 	}
 
 }

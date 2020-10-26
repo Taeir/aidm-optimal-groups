@@ -74,7 +74,8 @@ public interface WorstAssignedRank extends Comparable<WorstAssignedRank>
 				.map(AssignedRank.ProjectToStudent::asInt)
 				.filter(OptionalInt::isPresent)
 				.mapToInt(OptionalInt::getAsInt)
-				.max().orElseThrow();
+				.max()
+				.orElse(0); // all are indifferent
 
 			return worst;
 		}

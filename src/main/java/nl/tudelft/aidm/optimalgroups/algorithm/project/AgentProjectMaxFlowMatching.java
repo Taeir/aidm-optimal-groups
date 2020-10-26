@@ -177,7 +177,7 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 			minCostFlow.addArcWithCapacityAndUnitCost(source.id, studentVert.id, 1, 1);
 
 			var prefs = student.projectPreference();
-			student.projectPreference().forEach((Project project, int rank) -> {
+			student.projectPreference().forEach((Project project, OptionalInt rank) -> {
 
 				var projectVert = projectVerts.asVertex.get(project);
 

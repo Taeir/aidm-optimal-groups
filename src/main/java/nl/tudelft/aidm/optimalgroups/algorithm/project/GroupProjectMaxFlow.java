@@ -14,10 +14,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedGroup>
 {
@@ -130,7 +127,7 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 			groups.forEach(group -> {
 
 				var projectPreference = group.content().projectPreference();
-				projectPreference.forEach((Project project, int rank) -> {
+				projectPreference.forEach((Project project, OptionalInt rank) -> {
 
 					projects.slotVerticesForProject(project.id()).forEach(projectSlotVertex -> {
 						var costOfAssignment = preferencesToCostFn.costOfGettingAssigned(projectPreference, project);

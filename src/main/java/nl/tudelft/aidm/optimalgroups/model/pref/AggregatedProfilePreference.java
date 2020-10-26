@@ -79,16 +79,6 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 		return this.avgPreferenceMap;
 	}
 
-	@Override
-	public void forEach(ProjectPreferenceIdRankConsumer iter)
-	{
-		Integer[] prefs = asArray();
-		for (int i = 0; i < prefs.length; i++)
-		{
-			iter.apply(prefs[i], i+1);
-		}
-	}
-
 	public static AggregatedProfilePreference usingGloballyConfiguredMethod(Agents agents) {
 		if (Application.preferenceAggregatingMethod.equals("Copeland")) {
 			return new AggregatedProfilePreference.Copeland(agents);

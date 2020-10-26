@@ -7,114 +7,94 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK, int k)
 {
 	public record Edge(Agent from, Project to, int rank){}
 
+	private static class ProjectEdges
+	{
+		private Set<Agent>[] edgesPerRankBucket;
+		private Project project;
+
+		public ProjectEdges(int expectedMaxRank, Project project)
+		{
+			this.edgesPerRankBucket = new Set[expectedMaxRank];// ArrayList<>(expectedMaxRank);
+			this.project = project;
+		}
+
+		public void add(Edge edge)
+		{
+			var bin = edgesPerRankBucket[edge.rank];
+			if (bin == null) {
+				bin = new HashSet<>();
+				edgesPerRankBucket[edge.rank] = bin;
+			}
+
+			bin.add(edge.from);
+		}
+
+		public Optional<ProjectAgentsPairing> pairingForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
+		{
+			var potentialGroupmates = new HashSet<Agent>();
+
+			for (int rank = 1; rank <= rankBoundInclusive; rank++)
+			{
+				int indexOfRank = rank - 1;
+				var agentsWithRank = edgesPerRankBucket[indexOfRank];
+
+				if (agentsWithRank == null) continue;
+
+				if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize()) {
+					// We've reached the "pivot point", so the 'rank' is the 'k'
+					return Optional.of(new ProjectAgentsPairing(rank, project, agentsWithRank, potentialGroupmates));
+				}
+
+				potentialGroupmates.addAll(agentsWithRank);
+			}
+
+			return Optional.empty();
+		}
+	}
+
 	public static KProjectAgentsPairing from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
-//		if (groupSizeConstraint.maxSize() / groupSizeConstraint.minSize() < 2)
-//			if (agents.count() <= groupSizeConstraint.maxSize()) {
-//				return new KProjectAgentsPairing();
-//			}
+		var maxRank = agents.datasetContext.allProjects().count() + 1;
 
-		List<Edge> edges = new ArrayList<>(agents.count() * projects.count());
-		Map<Agent, List<Edge>> edgesFrom = new IdentityHashMap<>();
-		Map<Project, List<Edge>> edgesTo = new IdentityHashMap<>();
+		var bestPairings = new KProjectAgentsPairing(Collections.emptyList(), maxRank + 1);
 
-		agents.asCollection().forEach(agent -> {
-			agent.projectPreference().forEach((Project project, int rank) -> {
-				if (projects.findWithId(project.id()).isEmpty()) {
-					return;
-				}
+		for (var project : projects.asCollection())
+		{
+			final var edgesToProject = new ProjectEdges(maxRank, project);
 
+			agents.forEach(agent -> {
+				var rank = agent.projectPreference().rankOf(project).orElse(1);
 				var edge = new Edge(agent, project, rank);
 
-				edges.add(edge);
-				edgesFrom.computeIfAbsent(agent, __ -> new ArrayList<>()).add(edge);
-				edgesTo.computeIfAbsent(project, __ -> new ArrayList<>()).add(edge);
+				edgesToProject.add(edge);
 			});
-		});
 
-		Map<Project, ProjectAgentsPairing>[] agentsWithK = new IdentityHashMap[projects.count() + 1];
-		for (int i = 0; i < agentsWithK.length; i++)
-		{
-			agentsWithK[i] = new IdentityHashMap<>();
-		}
+			var potentialPairing = edgesToProject.pairingForProject(bestPairings.k(), groupSizeConstraint);
 
-		int k = 0;
-		for (var thisAgent : agents.asCollection())
-		{
-			int l = agents.datasetContext.allProjects().count() + 1;
-			Project lProj = null;
-			Set<Agent> lPossibleGroupmates = null;
+			if (potentialPairing.isPresent()) {
+				ProjectAgentsPairing pairing = potentialPairing.get();
 
-			// Note: the current assumption is that prefs have no ties
-			// but rankOf() can return same rank for different projects (indifferences)
-			var prefs = thisAgent.projectPreference().asListOfProjects();
+				if (bestPairings.k() > pairing.kRank()) {
+					var pairings = new ArrayList<ProjectAgentsPairing>();
+					pairings.add(pairing);
 
-			for (int i = prefs.size(); i >= 1; i--)
-			{
-				final var rankThisAgent = i;
-
-				// opt: skip if rank being examined is better (<) than the 'k' found so far
-//				if (rankThisAgent <= k)
-//					continue;
-
-				// Prefs is a List representation of ProjPrefs and is 0-based
-				var proj = prefs.get(rankThisAgent - 1);
-				var edgesToProj = edgesTo.get(proj);
-				if (edgesToProj == null) continue;
-
-				var possibleGroupmates = edgesToProj.stream()
-					// Do not include 'this' agent as a possible group mate
-					.filter(edge -> edge.from() != thisAgent)
-					// Consider only agents who rank 'proj' better or eq
-					.filter(edge -> edge.rank() <= rankThisAgent)
-					.map(Edge::from)
-					.collect(Collectors.toSet());
-
-				// Possible group size = |possible group mates| + 1 (the agent himself)
-				int possibleGroupSize = possibleGroupmates.size() + 1;
-				if (possibleGroupSize >= groupSizeConstraint.minSize() && rankThisAgent < l)
-				{
-					l = rankThisAgent;
-					lProj = proj;
-					lPossibleGroupmates = possibleGroupmates;
-				}
-			}
-
-			if (l >= agentsWithK.length) {
-				// Didn't find anything so try another agent
-				continue;
-			}
-
-			var existingResultForProj = agentsWithK[l].get(lProj);
-			if (existingResultForProj == null) {
-				if (lProj == null) {
-					System.out.printf("DBG: woops");
+					bestPairings = new KProjectAgentsPairing(pairings, pairing.kRank());
 				}
 
-				HashSet<Agent> agentsInclude = new HashSet<>(Set.of(thisAgent));
-				ProjectAgentsPairing pairing = new ProjectAgentsPairing(lProj, agentsInclude, lPossibleGroupmates);
-				agentsWithK[l].put(lProj, pairing);
+				else if (bestPairings.k() == pairing.kRank()) {
+					bestPairings.pairingsAtK().add(pairing);
+				}
 			}
-			else {
-				existingResultForProj.agents().add(thisAgent);
-				existingResultForProj.possibleGroupmates().remove(thisAgent);
-			}
-
-			k = Math.max(l, k);
 		}
 
-		// Hacky fix: k = 0 implies nothing found - no grouping possible
-		if (k == 0) {
-			return new KProjectAgentsPairing(Collections.emptyList(), 0);
-		}
-
-		return new KProjectAgentsPairing(agentsWithK[k].values(), k);
+		return bestPairings;
 	}
 
 }

@@ -115,12 +115,12 @@ public class SDPCPessimism
 			Map<Project, List<WorstBestPairings.Edge>> edgesTo = new IdentityHashMap<>();
 
 			agents.asCollection().forEach(agent -> {
-				agent.projectPreference().forEach((Project project, int rank) -> {
+				agent.projectPreference().forEach((Project project, OptionalInt rank) -> {
 					if (projects.findWithId(project.id()).isEmpty()) {
 						return;
 					}
 
-					var edge = new WorstBestPairings.Edge(agent, project, rank);
+					var edge = new WorstBestPairings.Edge(agent, project, rank.orElse(1));
 
 					edges.add(edge);
 					edgesFrom.computeIfAbsent(agent, __ -> new ArrayList<>()).add(edge);
@@ -194,7 +194,7 @@ public class SDPCPessimism
 					}
 
 					HashSet<Agent> agentsInclude = new HashSet<>(Set.of(thisAgent));
-					ProjectAgentsPairing pairing = new ProjectAgentsPairing(lProj, agentsInclude, lPossibleGroupmates);
+					ProjectAgentsPairing pairing = new ProjectAgentsPairing(l, lProj, agentsInclude, lPossibleGroupmates);
 					agentsWithK[l].put(lProj, pairing);
 				}
 				else {

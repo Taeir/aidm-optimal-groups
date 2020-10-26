@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PossibleGroupingsByIndividual implements PossibleGroupings
 {
@@ -17,32 +18,29 @@ public class PossibleGroupingsByIndividual implements PossibleGroupings
 		}
 	}
 
-	private HashMap<ProblemInstance, Result> cached;
+	private Map<ProblemInstance, Result> cached;
 
 	public PossibleGroupingsByIndividual()
 	{
-		cached = new HashMap<>();
+		cached = new ConcurrentHashMap<>();
 	}
 
 	@Override
 	public Set<Set<Agent>> of(Set<Agent> include, LinkedHashSet<Agent> possibleGroupmates, GroupSizeConstraint groupSizeConstraint)
 	{
 		var problemDef = new ProblemInstance(include, possibleGroupmates, groupSizeConstraint);
-		var result = cached.get(problemDef);
+		var result = cached.computeIfAbsent(problemDef, this::possibleGroups);
 
-		if (result == null) {
-			// Mandatory include can form a group already - optimal case, don't even try generating powersets
-//			if (include.size() >= groupSizeConstraint.minSize() && include.size() <= groupSizeConstraint.maxSize()) {
-//				result = new Result(Set.of(include));
-//			}
-//			else {
-				result = possibleGroups(problemDef);
-//			}
-			cached.put(problemDef, result);
-		}
-		else {
-			return result.possibleGroups;
-		}
+//		if (result == null) {
+//			// Mandatory include can form a group already - optimal case, don't even try generating powersets
+////			if (include.size() >= groupSizeConstraint.minSize() && include.size() <= groupSizeConstraint.maxSize()) {
+////				result = new Result(Set.of(include));
+////			}
+////			else {
+//				result = possibleGroups(problemDef);
+////			}
+//			cached.put(problemDef, result);
+//		}
 
 		return result.possibleGroups();
 	}

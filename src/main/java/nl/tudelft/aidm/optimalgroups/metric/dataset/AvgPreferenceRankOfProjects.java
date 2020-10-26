@@ -71,8 +71,10 @@ public class AvgPreferenceRankOfProjects
 
 		// collect rankings per project
 		prefProfiles.forEach(profile -> {
-			profile.forEach((Project project, int rank) -> {
-				projectToRanksMap.get(project).add(rank);
+			profile.forEach((Project project, OptionalInt rank) -> {
+				if (rank.isPresent()) {
+					projectToRanksMap.get(project).add(rank.getAsInt());
+				}
 			});
 		});
 
