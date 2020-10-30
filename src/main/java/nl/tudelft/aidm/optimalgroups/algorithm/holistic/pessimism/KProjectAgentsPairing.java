@@ -5,6 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
+import plouchtch.assertion.Assert;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,7 +22,7 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 
 		public ProjectEdges(int expectedMaxRank, Project project)
 		{
-			this.edgesPerRankBucket = new Set[expectedMaxRank];// ArrayList<>(expectedMaxRank);
+			this.edgesPerRankBucket = new Set[expectedMaxRank+1];// ArrayList<>(expectedMaxRank);
 			this.project = project;
 		}
 
@@ -40,10 +41,14 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 		{
 			var potentialGroupmates = new HashSet<Agent>();
 
+			// Indifferent agents are potential group mates of everyone
+			if (edgesPerRankBucket[0] != null) {
+				potentialGroupmates.addAll(edgesPerRankBucket[0]);
+			}
+
 			for (int rank = 1; rank <= rankBoundInclusive; rank++)
 			{
-				int indexOfRank = rank - 1;
-				var agentsWithRank = edgesPerRankBucket[indexOfRank];
+				var agentsWithRank = edgesPerRankBucket[rank];
 
 				if (agentsWithRank == null) continue;
 
@@ -61,40 +66,52 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 
 	public static KProjectAgentsPairing from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
+		Assert.that(agents.count() >= groupSizeConstraint.minSize())
+			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
+
 		var maxRank = agents.datasetContext.allProjects().count() + 1;
 
-		var bestPairings = new KProjectAgentsPairing(Collections.emptyList(), maxRank + 1);
+		var worstBestRank = maxRank;
+//		var bestPairings = new KProjectAgentsPairing(Collections.emptyList(), maxRank + 1);
+
+		var bestSubmissiveKPerAgent = new IdentityHashMap<Agent, Integer>(agents.count());
+		var pairingsByK = new KProjectAgentsPairing[maxRank];
 
 		for (var project : projects.asCollection())
 		{
 			final var edgesToProject = new ProjectEdges(maxRank, project);
 
 			agents.forEach(agent -> {
-				var rank = agent.projectPreference().rankOf(project).orElse(1);
+				var rank = agent.projectPreference().rankOf(project)
+					.orElse(0); // indifferent agents are ok with everything
+
 				var edge = new Edge(agent, project, rank);
 
 				edgesToProject.add(edge);
 			});
 
-			var potentialPairing = edgesToProject.pairingForProject(bestPairings.k(), groupSizeConstraint);
+			var potentialPairingMaybe = edgesToProject.pairingForProject(worstBestRank, groupSizeConstraint);
 
-			if (potentialPairing.isPresent()) {
-				ProjectAgentsPairing pairing = potentialPairing.get();
+			if (potentialPairingMaybe.isPresent())
+			{
+				ProjectAgentsPairing pairing = potentialPairingMaybe.get();
+				int k = pairing.kRank();
 
-				if (bestPairings.k() > pairing.kRank()) {
-					var pairings = new ArrayList<ProjectAgentsPairing>();
-					pairings.add(pairing);
-
-					bestPairings = new KProjectAgentsPairing(pairings, pairing.kRank());
+				for(var agent : pairing.agents()) {
+					bestSubmissiveKPerAgent.merge(agent, k, Math::min);
 				}
 
-				else if (bestPairings.k() == pairing.kRank()) {
-					bestPairings.pairingsAtK().add(pairing);
+				if (pairingsByK[k] == null) {
+					pairingsByK[k] = new KProjectAgentsPairing(new ArrayList<>(), k);
 				}
+
+				pairingsByK[k].pairingsAtK().add(pairing);
 			}
 		}
 
-		return bestPairings;
+		var worstK = bestSubmissiveKPerAgent.values().stream().max(Integer::compareTo).orElseThrow();
+
+		return pairingsByK[worstK];
 	}
 
 }
