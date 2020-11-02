@@ -2,30 +2,25 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupingsByIndividual;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.EmptyMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.PessimismMetric;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
-import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
-import nl.tudelft.aidm.optimalgroups.metric.rank.WorstAssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.ListBasedMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.Match;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.search.DynamicSearch;
 import plouchtch.assertion.Assert;
-import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 
-public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimistic.Solution>
+public class Pessimistic extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
 {
 
 	// determine set of 'eccentric' students E - eccentric: student with lowest satisfaction
@@ -83,7 +78,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	public Pessimistic(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
-		super(new Solution(new EmptyMatching(agents.datasetContext), new EmptyMetric()));
+		super(PessimismSolution.empty(agents.datasetContext));
 
 		this.agents = agents;
 		this.projects = projects;
@@ -96,7 +91,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 	public AgentToProjectMatching matching()
 	{
 		DatasetContext datsetContext = agents.datasetContext;
-		var emptySolution = new Solution(new EmptyMatching(datsetContext), new EmptyMetric());
+		var emptySolution = PessimismSolution.empty(datsetContext);
 
 		var root = new PessimismSearchNode(emptySolution, agents, new DecrementableProjects(projects), groupSizeConstraint);
 
@@ -110,6 +105,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 			forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
 			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
 				// Give an extension...
+				System.out.println("Pessimism: going in over-time...");
 				forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
 			}
 			forkJoinPool.shutdownNow();
@@ -121,7 +117,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		Assert.that(bestSolutionSoFar.hasNonEmptySolution())
 			.orThrowMessage("Pessimism-search did not find a single valid solution :");
 
-		var matching = bestSolutionSoFar.currentBest().matching;
+		var matching = bestSolutionSoFar.currentBest().matching();
 
 		// Check all students matched
 		Assert.that(agents.count() == matching.countDistinctStudents())
@@ -141,13 +137,13 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	public class PessimismSearchNode extends SearchNode
 	{
-		private final Solution partial;
+		private final PessimismSolution partial;
 
 		private final Agents agents;
 		private final DecrementableProjects projects;
 		private final GroupSizeConstraint groupSizeConstraint;
 
-		PessimismSearchNode(Solution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
+		PessimismSearchNode(PessimismSolution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
 		{
 			this.partial = partial;
 			this.agents = agents;
@@ -156,14 +152,14 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 		}
 
 		@Override
-		public Optional<Solution> solve()
+		public Optional<PessimismSolution> solve()
 		{
 			// BOUND
 			// Check if the partial solution has a worse absolute worst rank than the best-so-far
 			// If it is indeed worse, do not continue searching further with this partial solution (it will never become beter)
-			if (bestSolutionSoFar.test(best -> best.metric.absoluteWorstRank.asInt() < partial.metric.absoluteWorstRank.asInt())) {
-				return Optional.empty();
-			}
+//			if (bestSolutionSoFar.test(best -> best.metric.absoluteWorstRank.asInt() < partial.metric.absoluteWorstRank.asInt())) {
+//				return Optional.empty();
+//			}
 
 			// If node has no agents to group, the partial solution is considered to be done
 			if (agents.count() == 0) {
@@ -186,6 +182,10 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 			var kProjects = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
 
+			if (bestSolutionSoFar.test(solution -> solution.metric().worstRank().asInt() < kProjects.k())) {
+				return Optional.empty();
+			}
+
 			var solution = kProjects.pairingsAtK()
 //				.stream()
 				.parallelStream()
@@ -197,6 +197,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 					return possibleGrps.stream()
 						.map(possibleGroup -> new PairingWithPossibleGroup(pairing, possibleGroup));
 				})
+//				.parallel()
 
 				.map(pairingWithPossibleGroup -> {
 					var possibleGroup = pairingWithPossibleGroup.possibleGroup();
@@ -206,7 +207,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 					DecrementableProjects projectsWithout = this.projects.decremented(pairing.project());
 
 					var newPartial = partial.matching().withMatches(pairing.project(), possibleGroup);
-					return new PessimismSearchNode(Solution.fromMatching(newPartial), remainingAgents, projectsWithout, groupSizeConstraint);
+					return new PessimismSearchNode(PessimismSolution.fromMatching(newPartial), remainingAgents, projectsWithout, groupSizeConstraint);
 				})
 
 				.map(SearchNode::solution)
@@ -214,7 +215,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 				// Unpack optionals - filter out empty/invalid solutions
 				.flatMap(Optional::stream)
 
-				.max(Comparator.comparing(Solution::metric));
+				.max(Comparator.comparing(PessimismSolution::metric));
 
 			return solution;
 		}
@@ -229,129 +230,4 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimist
 
 	private static record PairingWithPossibleGroup(ProjectAgentsPairing pairing, Set<Agent> possibleGroup) {}
 
-	public static record Solution(PessimismMatching matching, Pessimistic.Metric metric)
-		implements nl.tudelft.aidm.optimalgroups.search.Solution<Pessimistic.Metric>
-	{
-		public static Solution fromMatching(PessimismMatching matching) {
-			return new Solution(matching, new Metric(matching));
-		}
-	}
-
-	public static class Metric implements Comparable<Metric>
-	{
-		private final AUPCR aupcr;
-		private final WorstAssignedRank absoluteWorstRank;
-
-		public Metric(AgentToProjectMatching matching)
-		{
-			this.aupcr = new AUPCRStudent(matching);
-			this.absoluteWorstRank = new WorstAssignedRank.ProjectToStudents(matching);
-			var henk  = 0;
-		}
-
-		public Metric(AUPCR aupcr, WorstAssignedRank worstAssignedRank)
-		{
-			this.aupcr = aupcr;
-			this.absoluteWorstRank = worstAssignedRank;
-			var henk  = 0;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "Metric - worst: " + absoluteWorstRank.asInt() + ", aupcr: " + aupcr.asDouble();
-		}
-
-		@Override
-		public int compareTo(Pessimistic.Metric o)
-		{
-			// Check which solution has minimized the worst rank better
-			// Smaller rank is better, we also want to "maximize" the metric
-			// and AUPCR is also "higher is better". So inverse the compareTo
-			var rankComparison = -(absoluteWorstRank.compareTo(o.absoluteWorstRank));
-
-			// If the worst-ranks are tied, use AUPCR as tie breaker
-			if (rankComparison == 0) return aupcr.compareTo(o.aupcr);
-			else return rankComparison;
-		}
-	}
-
-	private static class PessimismMatching extends ListBasedMatching<Agent, Project> implements AgentToProjectMatching
-	{
-		public PessimismMatching(DatasetContext datasetContext, List<Match<Agent, Project>> matches)
-		{
-			super(datasetContext, matches);
-		}
-
-		public PessimismMatching(List<Match<Agent, Project>> matches)
-		{
-			super(
-				matches.stream().map(match -> match.from().context).findAny().orElseThrow(),
-				List.copyOf(matches)
-			);
-		}
-
-		public PessimismMatching withMatches(Project project, Collection<Agent> agents)
-		{
-			var matchedWithNew = new ArrayList<>(asList());
-			agents.forEach(agent -> {
-				var match = new AgentToProjectMatch(agent, project);
-				matchedWithNew.add(match);
-			});
-
-			return new PessimismMatching(datasetContext(), matchedWithNew);
-		}
-	}
-
-	private static class EmptyMatching extends PessimismMatching
-	{
-		public EmptyMatching(DatasetContext datasetContext)
-		{
-			super(datasetContext, List.of());
-		}
-
-		@Override
-		public List<Match<Agent, Project>> asList()
-		{
-			return List.of();
-		}
-	}
-
-	private static class EmptyMetric extends Metric
-	{
-		private EmptyMetric()
-		{
-			super(new ZeroAupcr(), new HugeWorstRank());
-		}
-
-		private static class ZeroAupcr extends AUPCR
-		{
-			@Override
-			public void printResult()
-			{
-				throw new ImplementMe();
-			}
-
-			@Override
-			protected float totalArea()
-			{
-				return 1;
-			}
-
-			@Override
-			protected int aupc()
-			{
-				return 0;
-			}
-		}
-
-		private static class HugeWorstRank implements WorstAssignedRank
-		{
-			@Override
-			public Integer asInt()
-			{
-				return Integer.MAX_VALUE;
-			}
-		}
-	}
 }
