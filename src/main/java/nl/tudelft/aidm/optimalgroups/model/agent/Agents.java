@@ -20,15 +20,15 @@ public class Agents
 	private Map<Integer, Agent> idToAgentsMap;
 
 
-	public Agents(DatasetContext datasetContext, Collection<Agent> agents)
+	public Agents(DatasetContext datasetContext, LinkedHashSet<Agent> agents)
 	{
 		this.datasetContext = datasetContext;
 
 		// Ensure agents are ordered in same way as given (yes, an Agent's interface and specific ordered impl would be nicer)
 		this.agents = new LinkedHashSet<>(agents);
 
-		// Better to change the ctor signature
-		Assert.that(this.agents.size() == agents.size()).orThrowMessage("Agents contained duplicates");
+//		// Better to change the ctor signature
+//		Assert.that(this.agents.size() == agents.size()).orThrowMessage("Agents contained duplicates");
 
 		idToAgentsMap = new HashMap<>(agents.size());
 		for (Agent agent : agents)
@@ -78,7 +78,8 @@ public class Agents
 	{
 		Assert.that(datasetContext.equals(other.datasetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
 
-		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
+		var copyAgents = new LinkedHashSet<Agent>(this.agents.size() + other.agents.size());
+		copyAgents.addAll(this.agents);
 		copyAgents.addAll(other.agents);
 
 		return new Agents(datasetContext, copyAgents);
@@ -93,20 +94,23 @@ public class Agents
 	{
 		if (other.count() == 0) return this;
 
-		Assert.that(datasetContext.equals(other.datasetContext)).orThrowMessage("Cannot remove Agents: datasetcontext mismatch");
+		Assert.that(datasetContext.equals(other.datasetContext))
+			.orThrowMessage("Cannot remove Agents: datasetcontext mismatch");
 
-		ArrayList<Agent> copyAgents = new ArrayList<>(this.agents);
-		copyAgents.removeAll(other.agents);
+		LinkedHashSet<Agent> without = new LinkedHashSet<>(Math.max(this.agents.size() - other.count(), 0));
+		for (var agent : this.agents) {
+			if (!other.agents.contains(agent)) {
+				without.add(agent);
+			}
+		}
 
-		return new Agents(datasetContext, copyAgents);
+		return new Agents(datasetContext, without);
 	}
 
 	public void forEach(Consumer<Agent> fn)
 	{
 		agents.forEach(fn);
 	}
-
-	// todo: move into Agent, nice but need reference to Agents so would require some refactoring
 
 	/**
 	 * Checks if the agent is included in preference lists of all agents <b>(that are also in this Agents collection)</b> that the agent has included in his own preference list
@@ -157,7 +161,7 @@ public class Agents
 				return null;
 			});
 
-		return new Agents(datasetContext, agents);
+		return new Agents(datasetContext, new LinkedHashSet<>(agents));
 	}
 
 	@Override

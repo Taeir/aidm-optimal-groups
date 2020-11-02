@@ -7,10 +7,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;
 import plouchtch.assertion.Assert;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class SequentualAgents extends Agents
 {
@@ -30,12 +27,12 @@ public class SequentualAgents extends Agents
 		return ((SequentualAgent) agent).original;
 	}
 
-	private static List<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects, SequentualDatasetContext datasetContext)
+	private static LinkedHashSet<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects, SequentualDatasetContext datasetContext)
 	{
 		var originalSorted = new ArrayList<>(original);
 		originalSorted.sort(Comparator.comparing(agent -> agent.id));
 
-		var resequenced = new ArrayList<Agent>(original.size());
+		var resequenced = new LinkedHashSet<Agent>(original.size());
 
 		final int START_INDEX = 1;
 

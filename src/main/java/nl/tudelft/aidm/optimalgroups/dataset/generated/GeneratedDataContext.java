@@ -11,6 +11,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -31,7 +32,7 @@ public class GeneratedDataContext implements DatasetContext
 		agents = new Agents(this,
 			IntStream.rangeClosed(1, numAgents)
 				.mapToObj(i -> new Agent.AgentInDatacontext(i, generator.generateNew(), GroupPreference.none(), this))
-				.collect(Collectors.toList())
+				.collect(Collectors.toCollection(LinkedHashSet::new))
 		);
 
 		this.projects = projects;
