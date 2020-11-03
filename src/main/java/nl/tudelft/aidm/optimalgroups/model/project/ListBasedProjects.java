@@ -80,7 +80,7 @@ public abstract class ListBasedProjects implements Projects
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(numTotalSlots);
+		return Objects.hash(projectList());
 	}
 
 	@Override

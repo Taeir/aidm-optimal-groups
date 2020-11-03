@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.Application;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.pref.base.AbstractListBasedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
@@ -12,7 +13,7 @@ import java.util.*;
 /**
  * ProjectPreference implementation for a whole group. This is an average of the group member preferences (as implemented in BepSYS)
  */
-public abstract class AggregatedProfilePreference implements ProjectPreference
+public abstract class AggregatedProfilePreference extends AbstractListBasedProjectPreferences
 {
 	protected final Agents agents;
 
@@ -46,7 +47,6 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 	}
 
 	@Override
-
 	public synchronized List<Project> asListOfProjects()
 	{
 		if (avgPreferenceAsProjectList == null) {
@@ -65,25 +65,19 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 		return avgPreferenceAsProjectList;
 	}
 
-	@Override
-	public Map<Integer, Integer> asMap() {
-		if (this.avgPreferenceMap == null) {
-			this.avgPreferenceMap = new HashMap<>();
-
-			Integer[] preferences = asArray();
-			for (int rank = 1; rank <= preferences.length; rank++) {
-				this.avgPreferenceMap.put(preferences[rank - 1], rank);
-			}
-		}
-
-		return this.avgPreferenceMap;
-	}
-
-	public static AggregatedProfilePreference usingGloballyConfiguredMethod(Agents agents) {
-		if (Application.preferenceAggregatingMethod.equals("Copeland")) {
+	public static AggregatedProfilePreference usingGloballyConfiguredMethod(Agents agents)
+	{
+		if (Application.preferenceAggregatingMethod.equals("Copeland"))
+		{
 			return new AggregatedProfilePreference.Copeland(agents);
-		} else {
+		}
+		else if (Application.preferenceAggregatingMethod.equals("Borda"))
+		{
 			return new AggregatedProfilePreference.Borda(agents);
+		}
+		else
+		{
+			throw new RuntimeException("Unrecognized aggregation method, was: " + Application.preferenceAggregatingMethod);
 		}
 	}
 
@@ -105,13 +99,14 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 
 	public static class Borda extends AggregatedProfilePreference
 	{
-
-		public Borda(Agents agents) {
+		public Borda(Agents agents)
+		{
 			super(agents);
 		}
 
 		@Override
-		protected Integer[] calculateAverageOfGroup() {
+		protected Integer[] calculateAverageOfGroup()
+		{
 			// mapping: Project --> Preference-rank
 			Map<Integer, Integer> prefs = new LinkedHashMap<>();
 
@@ -137,13 +132,14 @@ public abstract class AggregatedProfilePreference implements ProjectPreference
 
 	public static class Copeland extends AggregatedProfilePreference
 	{
-
-		public Copeland(Agents agents) {
+		public Copeland(Agents agents)
+		{
 			super(agents);
 		}
 
 		@Override
-		protected Integer[] calculateAverageOfGroup() {
+		protected Integer[] calculateAverageOfGroup()
+		{
 			Set<Integer> projects = null;
 
 			// Retrieve the projects

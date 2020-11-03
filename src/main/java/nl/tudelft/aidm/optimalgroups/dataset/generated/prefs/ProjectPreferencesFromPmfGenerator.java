@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.dataset.generated.prefs;
 
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.base.AbstractListBasedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
@@ -38,7 +39,7 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 		return new PmfGeneratedProjectPreference(pmf);
 	}
 
-	class PmfGeneratedProjectPreference implements ProjectPreference
+	class PmfGeneratedProjectPreference extends AbstractListBasedProjectPreferences
 	{
 		// The PMF used to generate this preference profile
 		private final List<Pair<Project, Double>> completePmf;
@@ -66,16 +67,6 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 			}
 
 			prefProfile = pref;
-		}
-
-		@Override
-		public Integer[] asArray()
-		{
-			if (asArray == null) {
-				asArray = prefProfile.stream().map(Project::id).toArray(Integer[]::new);
-			}
-
-			return asArray;
 		}
 
 		@Override

@@ -10,40 +10,6 @@ public interface Project
 	int id();
 	List<ProjectSlot> slots();
 
-	interface ProjectSlot
-	{
-		String id();
-		Project belongingToProject();
-
-		class Simple implements ProjectSlot {
-
-			private String id;
-			private Project projectBelongsTo;
-
-			public Simple(String id, Project projectBelongsTo)
-			{
-				this.id = id;
-				this.projectBelongsTo = projectBelongsTo;
-			}
-
-			public String id()
-			{
-				return id;
-			}
-
-			public Project belongingToProject()
-			{
-				return projectBelongsTo;
-			}
-
-			@Override
-			public String toString()
-			{
-				return "Slot: " + id();
-			}
-		}
-	}
-
 	class ProjectsWithDefaultSlotAmount extends ProjectWithStaticSlotAmount
 	{
 		private final static int DEFAULT_NUM_SLOTS_VALUE = 5;
@@ -118,6 +84,40 @@ public interface Project
 		public int hashCode()
 		{
 			return Objects.hash(id);
+		}
+	}
+
+	interface ProjectSlot
+	{
+		String id();
+		Project belongingToProject();
+
+		class Simple implements ProjectSlot {
+
+			private String id;
+			private Project projectBelongsTo;
+
+			public Simple(String id, Project projectBelongsTo)
+			{
+				this.id = id;
+				this.projectBelongsTo = projectBelongsTo;
+			}
+
+			public String id()
+			{
+				return id;
+			}
+
+			public Project belongingToProject()
+			{
+				return projectBelongsTo;
+			}
+
+			@Override
+			public String toString()
+			{
+				return "Slot: " + id();
+			}
 		}
 	}
 }

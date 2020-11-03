@@ -2,7 +2,7 @@ package nl.tudelft.aidm.optimalgroups.model.agent;
 
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.GroupPreferenceInDb;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.ProjectPreferencesInDb;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.RawProjectPreferencesInDb;
 import nl.tudelft.aidm.optimalgroups.model.HasProjectPrefs;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
@@ -128,7 +128,7 @@ public abstract class Agent implements HasProjectPrefs
 		{
 			super(
 				userId,
-				new ProjectPreferencesInDb(dataSource, userId, courseEdition),
+				new RawProjectPreferencesInDb(dataSource, userId, courseEdition),
 				new GroupPreferenceInDb(dataSource, userId, courseEdition),
 				courseEdition
 			);

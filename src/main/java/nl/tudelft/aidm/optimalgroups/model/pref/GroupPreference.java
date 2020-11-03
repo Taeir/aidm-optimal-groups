@@ -12,8 +12,7 @@ import java.util.stream.Collectors;
 
 public interface GroupPreference
 {
-	// TODO: determine representation (let algo guide this choice)
-	// for now as int array purely for memory efficiency
+	// Array of id's sufficies for now
 	int[] asArray();
 
 	List<Agent> asListOfAgents();

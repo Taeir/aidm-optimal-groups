@@ -27,8 +27,9 @@ public class CourseEdition implements DatasetContext
 	protected final DataSource dataSource;
 
 	protected final int courseEditionId;
-	protected Agents agents;
+	protected final Agents agents;
 	protected final Projects projects;
+
 	protected final GroupSizeConstraint groupSizeConstraint;
 
 

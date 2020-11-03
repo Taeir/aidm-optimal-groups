@@ -72,7 +72,8 @@ public class CombinedPreference implements ProjectPreference {
         return this.combinedPreferenceMap;
     }
 
-    private Integer[] computeCombinedPreference() {
+    private Integer[] computeCombinedPreference()
+    {
         // If no group preference is given, there is nothing to combine so just return the raw project preferences
         if (this.groupPreference == null ||  this.groupPreference.asArray().length == 0)
             return this.projectPreference.asArray();

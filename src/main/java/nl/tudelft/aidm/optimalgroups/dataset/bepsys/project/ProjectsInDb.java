@@ -27,19 +27,4 @@ public class ProjectsInDb extends ListBasedProjects
 	{
 		return projectList;
 	}
-
-	@Override
-	public synchronized Optional<Project> findWithId(int projectId)
-	{
-		if (byId == null) {
-			byId = new HashMap<>();
-			projectList().forEach(project -> {
-				byId.put(project.id(), project);
-			});
-		}
-
-		Project value = byId.get(projectId);
-		return Optional.ofNullable(value);
-	}
-
 }

@@ -15,20 +15,10 @@ public interface ProjectPreference
 
 	List<Project> asListOfProjects();
 
-//	default void forEach(ProjectPreferenceIdRankConsumer iter)
-//	{
-//		Integer[] prefArray = asArray();
-//		for (int i = 0; i < prefArray.length; i++)
-//		{
-//			iter.apply(prefArray[i], i+1);
-//		}
-//	}
-
 	default void forEach(ProjectPreferenceObjectRankConsumer iter)
 	{
 		List<Project> projectList = asListOfProjects();
-		for (Project proj : projectList)
-		{
+		for (Project proj : projectList) {
 			var rank = rankOf(proj);
 			iter.apply(proj, rank);
 		}
@@ -43,24 +33,6 @@ public interface ProjectPreference
 	default boolean isCompletelyIndifferent()
 	{
 		return asArray().length == 0;
-	}
-
-	default int differenceTo(ProjectPreference otherPreference) {
-		Map<Integer, Integer> own = asMap();
-		Map<Integer, Integer> other = otherPreference.asMap();
-
-		// If the other does not have any preferences, return maximum difference to
-		// avoid picking this matchings over people that do have preferences
-		if (other.size() == 0 || own.size() == 0) {
-			return Integer.MAX_VALUE;
-		}
-
-		int difference = 0;
-		for (Map.Entry<Integer, Integer> entry : own.entrySet()) {
-			difference += Math.abs(entry.getValue() - other.get(entry.getKey()));
-		}
-
-		return difference;
 	}
 
 	default OptionalInt rankOf(Project project)
@@ -80,7 +52,8 @@ public interface ProjectPreference
 	 *
 	 * @return Map
 	 */
-	default Map<Integer, Integer> asMap() {
+	default Map<Integer, Integer> asMap()
+	{
 		Integer[] preferences = this.asArray();
 		var preferencesMap = new HashMap<Integer, Integer>(preferences.length);
 
@@ -91,15 +64,24 @@ public interface ProjectPreference
 
 		return preferencesMap;
 	}
+	default int differenceTo(ProjectPreference otherPreference)
+	{
+		Map<Integer, Integer> own = asMap();
+		Map<Integer, Integer> other = otherPreference.asMap();
 
-//	interface ProjectPreferenceIdRankConsumer
-//	{
-//		/**
-//		 * @param projectId the id of the project that has the given rank
-//		 * @param rank Rank of the preference, 1 being highest
-//		 */
-//		void apply(int projectId, int rank);
-//	}
+		// If the other does not have any preferences, return maximum difference to
+		// avoid picking this matchings over people that do have preferences
+		if (other.size() == 0 || own.size() == 0) {
+			return Integer.MAX_VALUE;
+		}
+
+		int difference = 0;
+		for (Map.Entry<Integer, Integer> entry : own.entrySet()) {
+			difference += Math.abs(entry.getValue() - other.get(entry.getKey()));
+		}
+
+		return difference;
+	}
 
 	interface ProjectPreferenceObjectRankConsumer
 	{
