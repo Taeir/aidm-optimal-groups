@@ -2,9 +2,8 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupingsByIndividual;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.EmptyMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.PessimismMetric;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.PessimismSolution;
+import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -12,13 +11,19 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.search.DynamicSearch;
+import org.jetbrains.annotations.NotNull;
 import plouchtch.assertion.Assert;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 public class Pessimistic extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
 {
@@ -59,7 +64,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 
 	public static void main(String[] args)
 	{
-		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
 		var thing = new Pessimistic(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 
@@ -102,7 +107,7 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 			// Threads of a parallel stream run in a pool, not as children of this thread
 			// Hence, we provide a pool context which we control so that we can force shutdown
 			forkJoinPool.execute(root::solution);
-			forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
+			forkJoinPool.awaitTermination(15, TimeUnit.MINUTES);
 			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
 				// Give an extension...
 				System.out.println("Pessimism: going in over-time...");
@@ -163,13 +168,14 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 
 			// If node has no agents to group, the partial solution is considered to be done
 			if (agents.count() == 0) {
-				bestSolutionSoFar.potentiallyUpdateBestSolution(bestSoFar -> {
-					if (bestSoFar.metric().compareTo(partial.metric()) < 0) {
-						return Optional.of(partial);
-					}
+				if (bestSolutionSoFar.test(bestSolutionSoFar -> bestSolutionSoFar.metric().compareTo(partial.metric()) < 0))
+					bestSolutionSoFar.potentiallyUpdateBestSolution(bestSoFar -> {
+						if (bestSoFar.metric().compareTo(partial.metric()) < 0) {
+							return Optional.of(partial);
+						}
 
-					return Optional.empty();
-				});
+						return Optional.empty();
+					});
 
 				return Optional.of(partial);
 			}
@@ -196,25 +202,10 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 //				.stream()
 				.parallelStream()
 
-				.flatMap(pairing -> {
-					var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
-					// TODO HERE: group agents by "type"
-					var possibleGrps =  possibleGroups.of(pairing.agents(), possibleGroupmates, groupSizeConstraint);
-					return possibleGrps.stream()
-						.map(possibleGroup -> new PairingWithPossibleGroup(pairing, possibleGroup));
-				})
+				.flatMap(this::allPossibleGroupsInPairing)
 //				.parallel()
 
-				.map(pairingWithPossibleGroup -> {
-					var possibleGroup = pairingWithPossibleGroup.possibleGroup();
-					var pairing = pairingWithPossibleGroup.pairing();
-
-					Agents remainingAgents = agents.without(possibleGroup);
-					DecrementableProjects projectsWithout = this.projects.decremented(pairing.project());
-
-					var newPartial = partial.matching().withMatches(pairing.project(), possibleGroup);
-					return new PessimismSearchNode(PessimismSolution.fromMatching(newPartial), remainingAgents, projectsWithout, groupSizeConstraint);
-				})
+				.map(this::makeGroupAndIterateDeeper)
 
 				.map(SearchNode::solution)
 
@@ -226,6 +217,31 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 			return solution;
 		}
 
+		private PessimismSearchNode makeGroupAndIterateDeeper(GroupProjectPairing groupProjectPairing)
+		{
+			var group = groupProjectPairing.group();
+			var project = groupProjectPairing.project();
+
+			Assert.that(group.size() >= groupSizeConstraint.minSize()).orThrowMessage("Group is smaller than min size");
+			Assert.that(group.size() <= groupSizeConstraint.maxSize()).orThrowMessage("Group is larger than max size");
+
+			Agents remainingAgents = agents.without(group);
+			DecrementableProjects remainingProjects = this.projects.decremented(project);
+
+			var newPartial = partial.matching().withMatches(project, group);
+			PessimismSolution solutionSoFar = PessimismSolution.fromMatching(newPartial);
+			return new PessimismSearchNode(solutionSoFar, remainingAgents, remainingProjects, groupSizeConstraint);
+		}
+
+		@NotNull
+		private Stream<? extends GroupProjectPairing> allPossibleGroupsInPairing(ProjectAgentsPairing pairing)
+		{
+			// TODO HERE: group agents by "type"
+			var possibleGrps = possibleGroups.of(pairing.agents(), pairing.possibleGroupmates(), groupSizeConstraint);
+			return possibleGrps
+				.map(possibleGroup -> new GroupProjectPairing(pairing.project(), possibleGroup));
+		}
+
 		@Override
 		protected boolean candidateSolutionTest(AgentToProjectMatching candidateSolution)
 		{
@@ -234,6 +250,6 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 		}
 	}
 
-	private static record PairingWithPossibleGroup(ProjectAgentsPairing pairing, Set<Agent> possibleGroup) {}
+	private static record GroupProjectPairing(Project project, List<Agent> group) {}
 
 }

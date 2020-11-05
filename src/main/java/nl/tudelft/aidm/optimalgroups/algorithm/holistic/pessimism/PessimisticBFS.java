@@ -229,10 +229,13 @@ public class PessimisticBFS extends DynamicSearch<AgentToProjectMatching, Pessim
 				var possibleGroupmates = new LinkedHashSet<>(pairing.possibleGroupmates());
 				var possibleGrps =  possibleGroups.of(pairing.agents(), possibleGroupmates, groupSizeConstraint);
 
-				newlyExpandedNodes.ensureCapacity(newlyExpandedNodes.size() + possibleGrps.size());
+//				newlyExpandedNodes.ensureCapacity(newlyExpandedNodes.size() + possibleGrps.size());
 
-				for (var possibleGroup : possibleGrps)
+				var iter = possibleGrps.iterator();
+				while (iter.hasNext())
 				{
+					var possibleGroup = iter.next();
+
 					int agentsRemainingAfterMakingGroup = agents.count() - possibleGroup.size();
 					if (!groupFactorization.isFactorableIntoValidGroups(agentsRemainingAfterMakingGroup)) {
 						// If forming this group leads to an invalid solution (cannot partition remaining students into
