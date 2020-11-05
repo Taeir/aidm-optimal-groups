@@ -180,7 +180,13 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 				return Optional.empty();
 			}
 
-			var kProjects = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
+			var kProjectsMaybe = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
+
+			if (kProjectsMaybe.isEmpty()) {
+				return Optional.empty();
+			}
+
+			var kProjects = kProjectsMaybe.get();
 
 			if (bestSolutionSoFar.test(solution -> solution.metric().worstRank().asInt() < kProjects.k())) {
 				return Optional.empty();

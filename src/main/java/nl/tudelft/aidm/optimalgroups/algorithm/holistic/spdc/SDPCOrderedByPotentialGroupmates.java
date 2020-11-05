@@ -17,16 +17,16 @@ public class SDPCOrderedByPotentialGroupmates extends SerialDictatorshipWithProj
 	public SDPCOrderedByPotentialGroupmates(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		super(
-			ordered(agents, KProjectAgentsPairing.from(agents, projects, groupSizeConstraint).k()),
+			ordered(agents, KProjectAgentsPairing.from(agents, projects, groupSizeConstraint).get().k()),
 			projects,
 			groupSizeConstraint
 		);
 	}
-
-	private static int k(DatasetContext datasetContext)
-	{
-		return KProjectAgentsPairing.from(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint()).k();
-	}
+//
+//	private static int k(DatasetContext datasetContext)
+//	{
+//		return KProjectAgentsPairing.from(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint()).k();
+//	}
 
 	private static Agents ordered(Agents agents, int k)
 	{

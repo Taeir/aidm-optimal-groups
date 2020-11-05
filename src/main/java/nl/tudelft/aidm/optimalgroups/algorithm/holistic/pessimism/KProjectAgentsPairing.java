@@ -64,7 +64,7 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 		}
 	}
 
-	public static KProjectAgentsPairing from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	public static Optional<KProjectAgentsPairing> from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		Assert.that(agents.count() >= groupSizeConstraint.minSize())
 			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
@@ -109,9 +109,14 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 			}
 		}
 
-		var worstK = bestSubmissiveKPerAgent.values().stream().max(Integer::compareTo).orElseThrow();
+		var worstK = bestSubmissiveKPerAgent.values().stream().max(Integer::compareTo);
 
-		return pairingsByK[worstK];
+		if (worstK.isPresent()) {
+			var pairing = pairingsByK[worstK.get()];
+			return Optional.of(pairing);
+		}
+
+		return Optional.empty();
 	}
 
 }

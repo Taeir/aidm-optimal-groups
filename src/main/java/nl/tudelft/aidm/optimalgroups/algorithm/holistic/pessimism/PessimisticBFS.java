@@ -158,7 +158,7 @@ public class PessimisticBFS extends DynamicSearch<AgentToProjectMatching, Pessim
 		private final Agents agents;
 		private final DecrementableProjects projects;
 		private final GroupSizeConstraint groupSizeConstraint;
-		private KProjectAgentsPairing kProjectAgentsPairing;
+		private Optional<KProjectAgentsPairing> kProjectAgentsPairing;
 		private final Integer k;
 
 		PessimismSearchNode(PessimismSolution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
@@ -178,10 +178,10 @@ public class PessimisticBFS extends DynamicSearch<AgentToProjectMatching, Pessim
 			this.groupSizeConstraint = searchNode.groupSizeConstraint;
 			this.k = Math.max(searchNode.k, kProjectAgentsPairing.k());
 
-			this.kProjectAgentsPairing = kProjectAgentsPairing;
+			this.kProjectAgentsPairing = Optional.of(kProjectAgentsPairing);
 		}
 
-		private KProjectAgentsPairing determineKProjectAgentsPairing()
+		private Optional<KProjectAgentsPairing> determineKProjectAgentsPairing()
 		{
 			if (kProjectAgentsPairing == null) {
 				return KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
@@ -205,7 +205,12 @@ public class PessimisticBFS extends DynamicSearch<AgentToProjectMatching, Pessim
 			//  -> a] We update this node... with new worst without completing the expansion/adding to partial?
 			//     b] We expand the node regardless
 
-			var kProjects = determineKProjectAgentsPairing();
+			var kProjectsMaybe = determineKProjectAgentsPairing();
+			if (kProjectsMaybe.isEmpty()) {
+				return List.of();
+			}
+
+			var kProjects = kProjectsMaybe.get();
 
 			// If the first step of expanding this node already gives us a worse max-rank than that of
 			// the partial solution so-far in the tree, we update the k (max-rank so far) of the node and
