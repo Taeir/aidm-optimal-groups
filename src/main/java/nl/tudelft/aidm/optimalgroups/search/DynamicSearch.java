@@ -39,12 +39,19 @@ public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 				});
 		}
 
-		public synchronized boolean test(Predicate<SOLUTION> predicate)
+		/**
+		 * Executes the given predicate on the current best solution
+		 * Note that the operation is not synchronized as it is meant for quick
+		 * tests. The solution should be compared and updated through a different method
+		 * @param predicate The predicate to run with the best-so-far solution
+		 * @return Result of predicate
+		 */
+		public boolean test(Predicate<SOLUTION> predicate)
 		{
 			return predicate.test(bestSolutionSeen);
 		}
 
-		public synchronized SOLUTION currentBest()
+		public SOLUTION currentBest()
 		{
 			return bestSolutionSeen;
 		}

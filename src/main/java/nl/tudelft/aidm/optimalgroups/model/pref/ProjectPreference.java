@@ -32,7 +32,7 @@ public interface ProjectPreference
 	 */
 	default boolean isCompletelyIndifferent()
 	{
-		return asArray().length == 0;
+		return asListOfProjects().size() == 0;
 	}
 
 	default OptionalInt rankOf(Project project)

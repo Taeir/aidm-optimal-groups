@@ -25,15 +25,15 @@ public record PessimismMetric(AUPCR aupcr, WorstAssignedRank worstRank) implemen
 	}
 
 	@Override
-	public int compareTo(PessimismMetric o)
+	public int compareTo(PessimismMetric other)
 	{
 		// Check which solution has minimized the worst rank better
 		// Smaller rank is better, we also want to "maximize" the metric
 		// and AUPCR is also "higher is better". So inverse the compareTo
-		var rankComparison = -(worstRank.compareTo(o.worstRank));
+		var rankComparison = -(this.worstRank.compareTo(other.worstRank));
 
 		// If the worst-ranks are tied, use AUPCR as tie breaker
-		if (rankComparison == 0) return aupcr.compareTo(o.aupcr);
+		if (rankComparison == 0) return this.aupcr.compareTo(other.aupcr);
 		else return rankComparison;
 	}
 

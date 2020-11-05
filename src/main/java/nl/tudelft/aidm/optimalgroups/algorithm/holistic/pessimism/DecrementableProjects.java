@@ -3,6 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
 import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
+import plouchtch.assertion.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,6 +29,15 @@ public class DecrementableProjects extends ListBasedProjects
 
 	public DecrementableProjects decremented(Project project)
 	{
+		var numSlotsAvailableForProject = availableSlots.get(project);
+
+		Assert.that(numSlotsAvailableForProject != null)
+			.orThrowMessage("Given project cannot be decremented, project is not present");
+
+		Assert.that(numSlotsAvailableForProject > 0)
+			.orThrowMessage("Given project cannot be decremented, project has no slots available");
+
+
 		IdentityHashMap<Project, Integer> updatedSlotAvailabilities = new IdentityHashMap<>(availableSlots);
 		updatedSlotAvailabilities.merge(project, -1, Integer::sum);
 

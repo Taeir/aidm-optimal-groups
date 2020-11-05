@@ -15,6 +15,10 @@ public class DatasetContextTiesBrokenIndividually implements DatasetContext
 
 	private final Agents agents;
 
+	public static DatasetContext from(DatasetContext datasetContext)
+	{
+		return new DatasetContextTiesBrokenIndividually(datasetContext);
+	}
 	protected DatasetContextTiesBrokenIndividually(DatasetContext datasetContext)
 	{
 		this.originalDatasetContext = datasetContext;
