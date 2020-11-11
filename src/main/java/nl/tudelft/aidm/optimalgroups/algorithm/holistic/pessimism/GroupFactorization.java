@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 
 public class GroupFactorization
 {
-	public static record Factorization(boolean isFactorable, int numGroupsOfMinSize, int numGroupsOfMaxSize) {};
+	public static record Factorization(boolean isFactorable, int numGroupsOfMinSize, int numGroupsOfMaxSize) {}
 
 	private List<Factorization> isFactorable;
 	private final GroupSizeConstraint groupSizeConstraint;
@@ -38,7 +38,7 @@ public class GroupFactorization
 	}
 
 
-	public synchronized Factorization forGivenNumberOfStudents(int numStudents) {
+	public Factorization forGivenNumberOfStudents(int numStudents) {
 		isFactorableIntoValidGroups(numStudents);
 
 		return isFactorable.get(numStudents);
