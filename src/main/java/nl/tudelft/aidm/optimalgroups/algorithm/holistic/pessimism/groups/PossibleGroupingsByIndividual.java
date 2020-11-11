@@ -30,15 +30,20 @@ public class PossibleGroupingsByIndividual implements PossibleGroupings
 			return List.of(group).stream();
 		}
 
-		return IntStream.rangeClosed(
-				Math.max(groupSizeConstraint.minSize() - include.size(), 0),
-				Math.min(possibleGroupmates.size(), Math.max(groupSizeConstraint.maxSize() - include.size(), 0))
-			)
+		// Must add at least this many agents to "include" to reach the minSize constraint
+		int agentsToAddLowerbound = Math.max(groupSizeConstraint.minSize() - include.size(), 0);
+
+		// Cannot add more than this many agents to "include"
+		int agentsToAddUpperbound = Math.min(possibleGroupmates.size(), Math.max(groupSizeConstraint.maxSize() - include.size(), 0));
+
+		return IntStream.rangeClosed(agentsToAddLowerbound, agentsToAddUpperbound)
+//			.sorted()
 			.filter(value -> value > 0)
 			.boxed()
 			.flatMap(take -> {
-				var iter = new CombinationsOfObjects<>(possibleGroupmates, take).asIterator();
-				var spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.DISTINCT);
+				var comb = new CombinationsOfObjects<>(possibleGroupmates, take);
+				var iter = comb.asIterator();
+				var spliterator = Spliterators.spliterator(iter, comb.count(), Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.SIZED);
 
 				return StreamSupport.stream(spliterator, false)
 					.map(groupmatesToAdd -> {

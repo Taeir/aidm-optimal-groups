@@ -10,16 +10,27 @@ public class CombinationsOfObjects<T>
 	private final List<T> indexedObjects;
 	private final int take;
 
-	public CombinationsOfObjects(Collection<T> objects, int take)
+	private final Combinations combinations;
+
+	public
+	CombinationsOfObjects(Collection<T> objects, int take)
 	{
 		this.indexedObjects = new ArrayList<>(objects);
 		this.take = take;
+
+		this.combinations = new Combinations(take, indexedObjects.size());
+	}
+
+	public
+	long count()
+	{
+		return combinations.count();
 	}
 
 	public
 	Iterator<List<T>> asIterator()
 	{
-		var iterCombRaw = new Combinations(take, indexedObjects.size()).asIterator();
+		var iterCombRaw = combinations.asIterator();
 
 		return new Iterator<>()
 		{

@@ -9,8 +9,7 @@ import java.util.Stack;
 
 public class Combinations
 {
-	private final int m;
-	private final int n;
+	private final int m, n;
 
 	public
 	Combinations(int m, int n)
@@ -21,7 +20,14 @@ public class Combinations
 		this.n = n;
 	}
 
-	public Iterator<int[]> asIterator()
+	public
+	long count()
+	{
+		return numCombinations(n, m);
+	}
+
+	public
+	Iterator<int[]> asIterator()
 	{
 		return new CombIterator(m, n);
 	}
@@ -29,8 +35,7 @@ public class Combinations
 	private static
 	class CombIterator implements Iterator<int[]>
 	{
-		private final int m;
-		private final int n;
+		private final int m, n;
 
 		private final long numResults;
 		private long resultsReturned = 0;
@@ -47,18 +52,10 @@ public class Combinations
 
 			stack = new Stack<>();
 
-			numResults = fac(n) / (fac(m)*fac(n - m));
+			numResults = numCombinations(n, m);
 
 			if (m > 0)
 				stack.push(0);
-		}
-
-		private long fac(int n)
-		{
-			long fac = 1;
-			for(int i = 1; i <= n; ++i) fac *= i;
-
-			return fac;
 		}
 
 		@Override
@@ -93,5 +90,24 @@ public class Combinations
 
 			throw new NoSuchElementException();
 		}
+	}
+
+
+	private static
+	long numCombinations(int n, int take)
+	{
+		if (n == 0) return 0;
+		if (n == take) return 1;
+
+		return fac(n) / ( fac(take) * fac(n - take) );
+	}
+
+	private static
+	long fac(int x)
+	{
+		long fac = 1;
+		for(int i = 1; i <= x; ++i) fac *= i;
+
+		return fac;
 	}
 }
