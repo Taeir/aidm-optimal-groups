@@ -10,6 +10,7 @@ import plouchtch.assertion.Assert;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK, int k)
 {
@@ -66,7 +67,7 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 
 	public static Optional<KProjectAgentsPairing> from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
-		Assert.that(agents.count() >= groupSizeConstraint.minSize())
+		Assert.that(/*agents.count() == 0 || */agents.count() >= groupSizeConstraint.minSize())
 			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
 
 		var maxRank = agents.datasetContext.allProjects().count() + 1;
@@ -117,6 +118,40 @@ public record KProjectAgentsPairing(Collection<ProjectAgentsPairing> pairingsAtK
 		}
 
 		return Optional.empty();
+	}
+
+	public static Stream<ProjectAgentsPairing> henk(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	{
+		Assert.that(/*agents.count() == 0 || */agents.count() >= groupSizeConstraint.minSize())
+			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
+
+		var maxRank = agents.datasetContext.allProjects().count() + 1;
+
+		var worstBestRank = maxRank;
+//		var bestPairings = new KProjectAgentsPairing(Collections.emptyList(), maxRank + 1);
+
+//		var bestSubmissiveKPerAgent = new IdentityHashMap<Agent, Integer>(agents.count());
+//		var pairingsByK = new KProjectAgentsPairing[maxRank];
+		var pairings = new LinkedList<ProjectAgentsPairing>();
+
+		for (var project : projects.asCollection())
+		{
+			final var edgesToProject = new ProjectEdges(maxRank, project);
+
+			agents.forEach(agent -> {
+				var rank = agent.projectPreference().rankOf(project)
+					.orElse(0); // indifferent agents are ok with everything
+
+				var edge = new Edge(agent, project, rank);
+
+				edgesToProject.add(edge);
+			});
+
+			edgesToProject.pairingForProject(worstBestRank, groupSizeConstraint)
+				.ifPresent(pairings::add);
+		}
+
+		return pairings.stream();
 	}
 
 }
