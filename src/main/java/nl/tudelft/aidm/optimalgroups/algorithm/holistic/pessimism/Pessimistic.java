@@ -3,7 +3,6 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupingsByIndividual;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.PessimismSolution;
-import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -18,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import plouchtch.assertion.Assert;
 
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
@@ -64,7 +62,8 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 
 	public static void main(String[] args)
 	{
-		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
+//		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
+		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
 		var thing = new Pessimistic(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 
@@ -83,7 +82,12 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 
 	public Pessimistic(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
-		super(PessimismSolution.empty(agents.datasetContext));
+		this(agents, projects, groupSizeConstraint, Integer.MAX_VALUE);
+	}
+
+	public Pessimistic(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int worstRankBound)
+	{
+		super(PessimismSolution.emptyWithBoundedWorstRank(agents.datasetContext, worstRankBound));
 
 		this.agents = agents;
 		this.projects = projects;
@@ -96,9 +100,8 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 	public AgentToProjectMatching matching()
 	{
 		DatasetContext datsetContext = agents.datasetContext;
-		var emptySolution = PessimismSolution.empty(datsetContext);
 
-		var root = new PessimismSearchNode(emptySolution, agents, new DecrementableProjects(projects), groupSizeConstraint);
+		var root = new PessimismSearchNode(agents, new DecrementableProjects(projects), groupSizeConstraint);
 
 		// Run the algorithm with time constraints, after timeout we check best solution found up to that moment
 		try {
@@ -107,10 +110,10 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 			// Threads of a parallel stream run in a pool, not as children of this thread
 			// Hence, we provide a pool context which we control so that we can force shutdown
 			forkJoinPool.execute(root::solution);
-			forkJoinPool.awaitTermination(15, TimeUnit.MINUTES);
+			forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
 			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
 				// Give an extension...
-				System.out.println("Pessimism: going in over-time...");
+				System.out.println("Pessimism: entering over-time...");
 				forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
 			}
 			forkJoinPool.shutdownNow();
@@ -148,7 +151,15 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 		private final DecrementableProjects projects;
 		private final GroupSizeConstraint groupSizeConstraint;
 
-		PessimismSearchNode(PessimismSolution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
+		public PessimismSearchNode(Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
+		{
+			this.partial = PessimismSolution.empty(agents.datasetContext);
+			this.agents = agents;
+			this.projects = projects;
+			this.groupSizeConstraint = groupSizeConstraint;
+		}
+
+		private PessimismSearchNode(PessimismSolution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
 		{
 			this.partial = partial;
 			this.agents = agents;
@@ -159,53 +170,38 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 		@Override
 		public Optional<PessimismSolution> solve()
 		{
+			if (agents.count() == 0) {
+				bestSolutionSoFar.potentiallyUpdateBestSolution(partial);
+				return Optional.of(partial);
+			}
+
 			// BOUND
 			// Check if the partial solution has a worse absolute worst rank than the best-so-far
 			// If it is indeed worse, do not continue searching further with this partial solution (it will never become beter)
-//			if (bestSolutionSoFar.test(best -> best.metric.absoluteWorstRank.asInt() < partial.metric.absoluteWorstRank.asInt())) {
-//				return Optional.empty();
-//			}
-
-			// If node has no agents to group, the partial solution is considered to be done
-			if (agents.count() == 0) {
-				if (bestSolutionSoFar.test(bestSolutionSoFar -> bestSolutionSoFar.metric().compareTo(partial.metric()) < 0))
-					bestSolutionSoFar.potentiallyUpdateBestSolution(bestSoFar -> {
-						if (bestSoFar.metric().compareTo(partial.metric()) < 0) {
-							return Optional.of(partial);
-						}
-
-						return Optional.empty();
-					});
-
-				return Optional.of(partial);
+			boolean partialIsAlreadyWorseThanCurrentBest = partial.matching().asList().size() != 0 && bestSolutionSoFar.test(best -> best.isBetterThan(partial));
+			if (partialIsAlreadyWorseThanCurrentBest) {
+				return Optional.empty();
 			}
 
 			// If the remaining agents cannot be partitioned into groups of valid sizes,
 			// then this search branch is to be terminated without a solution (aka empty solution)
+			// (because we are looking for a complete matching)
 			if (!groupFactorization.isFactorableIntoValidGroups(agents.count())) {
 				return Optional.empty();
 			}
 
-			var kProjectsMaybe = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
+			var essentialPairing = KProjectAgentsPairing.from(agents, projects, groupSizeConstraint);
 
-			if (kProjectsMaybe.isEmpty()) {
+			if (essentialPairing.isEmpty()) {
 				return Optional.empty();
 			}
 
-			var kProjects = kProjectsMaybe.get();
+			var solution = essentialPairing.stream().parallel()
+				.flatMap(p -> p.pairingsAtK().stream())
 
-			if (bestSolutionSoFar.test(solution -> solution.metric().worstRank().asInt() < kProjects.k())) {
-				return Optional.empty();
-			}
+				.flatMap(this::intoAllPossibleGroupCombinationsPerPairing)
 
-			var solution = kProjects.pairingsAtK()
-//				.stream()
-				.parallelStream()
-
-				.flatMap(this::allPossibleGroupsInPairing)
-//				.parallel()
-
-				.map(this::makeGroupAndIterateDeeper)
+				.map(this::assumeGroupAndRecurseDeeper)
 
 				.map(SearchNode::solution)
 
@@ -217,7 +213,16 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 			return solution;
 		}
 
-		private PessimismSearchNode makeGroupAndIterateDeeper(GroupProjectPairing groupProjectPairing)
+		@NotNull
+		private Stream<? extends GroupProjectPairing> intoAllPossibleGroupCombinationsPerPairing(ProjectAgentsPairing pairing)
+		{
+			// TODO HERE: group agents by "type"
+			var possibleGrps = possibleGroups.of(pairing.agents(), pairing.possibleGroupmates(), groupSizeConstraint);
+			return possibleGrps
+				.map(possibleGroup -> new GroupProjectPairing(pairing.project(), possibleGroup));
+		}
+
+		private PessimismSearchNode assumeGroupAndRecurseDeeper(GroupProjectPairing groupProjectPairing)
 		{
 			var group = groupProjectPairing.group();
 			var project = groupProjectPairing.project();
@@ -231,15 +236,6 @@ public class Pessimistic extends DynamicSearch<AgentToProjectMatching, Pessimism
 			var newPartial = partial.matching().withMatches(project, group);
 			PessimismSolution solutionSoFar = PessimismSolution.fromMatching(newPartial);
 			return new PessimismSearchNode(solutionSoFar, remainingAgents, remainingProjects, groupSizeConstraint);
-		}
-
-		@NotNull
-		private Stream<? extends GroupProjectPairing> allPossibleGroupsInPairing(ProjectAgentsPairing pairing)
-		{
-			// TODO HERE: group agents by "type"
-			var possibleGrps = possibleGroups.of(pairing.agents(), pairing.possibleGroupmates(), groupSizeConstraint);
-			return possibleGrps
-				.map(possibleGroup -> new GroupProjectPairing(pairing.project(), possibleGroup));
 		}
 
 		@Override

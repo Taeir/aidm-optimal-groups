@@ -18,6 +18,11 @@ public record PessimismMetric(AUPCR aupcr, WorstAssignedRank worstRank) implemen
 		return new PessimismMetric(new ZeroAupcr(), new HugeWorstRank());
 	}
 
+	public static PessimismMetric boundedRank(int rank)
+	{
+		return new PessimismMetric(new ZeroAupcr(), () -> rank);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -27,14 +32,22 @@ public record PessimismMetric(AUPCR aupcr, WorstAssignedRank worstRank) implemen
 	@Override
 	public int compareTo(PessimismMetric other)
 	{
-		// Check which solution has minimized the worst rank better
-		// Smaller rank is better, we also want to "maximize" the metric
-		// and AUPCR is also "higher is better". So inverse the compareTo
+		// A metric is larger than another if it is better
+
+		// A lower rank is better (larger, positive), so inverse the comparison result
 		var rankComparison = -(this.worstRank.compareTo(other.worstRank));
 
 		// If the worst-ranks are tied, use AUPCR as tie breaker
-		if (rankComparison == 0) return this.aupcr.compareTo(other.aupcr);
-		else return rankComparison;
+		if (rankComparison != 0)
+			return rankComparison;
+
+		// Larger AUPCR values are better
+		return this.aupcr.compareTo(other.aupcr);
+	}
+
+	public boolean betterThan(PessimismMetric other)
+	{
+		return this.compareTo(other) > 0;
 	}
 
 	public static class ZeroAupcr extends AUPCR

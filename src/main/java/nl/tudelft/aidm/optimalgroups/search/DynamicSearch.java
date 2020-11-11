@@ -1,7 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.search;
 
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -20,23 +19,22 @@ public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 
 	public class BestSolutionSoFar
 	{
-		private SOLUTION bestSolutionSeen;
+		private SOLUTION bestKnown;
 		private boolean hasNonEmptySolution;
 
 		public BestSolutionSoFar(SOLUTION emptySolution)
 		{
-			this.bestSolutionSeen = emptySolution;
+			this.bestKnown = emptySolution;
 			this.hasNonEmptySolution = false;
 		}
 
-		public synchronized void potentiallyUpdateBestSolution(Function<SOLUTION, Optional<SOLUTION>> bestSoFarSection)
+		public synchronized void potentiallyUpdateBestSolution(SOLUTION another)
 		{
-			bestSoFarSection.apply(this.bestSolutionSeen)
-				.ifPresent(newBest -> {
-					System.out.printf("New best solution found: %s (was: %s)\n", newBest.metric(), bestSolutionSeen.metric());
-					this.bestSolutionSeen = newBest;
-					this.hasNonEmptySolution = true;
-				});
+			if (another.isBetterThan(bestKnown)) {
+				System.out.printf("New best solution found: %s (was: %s)\n", another.metric(), bestKnown.metric());
+				this.bestKnown = another;
+				this.hasNonEmptySolution = true;
+			}
 		}
 
 		/**
@@ -48,12 +46,12 @@ public class DynamicSearch<CANDIDATE, SOLUTION extends Solution>
 		 */
 		public boolean test(Predicate<SOLUTION> predicate)
 		{
-			return predicate.test(bestSolutionSeen);
+			return predicate.test(bestKnown);
 		}
 
 		public SOLUTION currentBest()
 		{
-			return bestSolutionSeen;
+			return bestKnown;
 		}
 
 		public boolean hasNonEmptySolution()

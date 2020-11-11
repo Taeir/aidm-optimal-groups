@@ -250,13 +250,7 @@ public class PessimisticBFS extends DynamicSearch<AgentToProjectMatching, Pessim
 					var newPartialAsSolution = PessimismSolution.fromMatching(newPartial);
 
 					if (remainingAgents.count() == 0) {
-						bestSolutionSoFar.potentiallyUpdateBestSolution((bestSoFar) -> {
-							if (bestSoFar.metric().compareTo(newPartialAsSolution.metric()) < 0) {
-								return Optional.of(newPartialAsSolution);
-							}
-
-							return Optional.empty();
-						});
+						bestSolutionSoFar.potentiallyUpdateBestSolution(newPartialAsSolution);
 					}
 					else {
 						var node = new PessimismSearchNode(newPartialAsSolution, remainingAgents, projectsWithout, groupSizeConstraint);
