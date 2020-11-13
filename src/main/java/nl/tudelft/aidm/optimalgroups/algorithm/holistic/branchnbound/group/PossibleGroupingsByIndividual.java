@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group;
 
 import nl.tudelft.aidm.optimalgroups.math.CombinationsOfObjects;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;

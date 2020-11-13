@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model;
 
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;

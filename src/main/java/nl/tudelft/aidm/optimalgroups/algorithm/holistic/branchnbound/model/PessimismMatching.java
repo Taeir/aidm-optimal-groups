@@ -1,6 +1,5 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.Pessimistic;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;

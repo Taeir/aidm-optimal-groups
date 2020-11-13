@@ -1,11 +1,10 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GroupFactorization

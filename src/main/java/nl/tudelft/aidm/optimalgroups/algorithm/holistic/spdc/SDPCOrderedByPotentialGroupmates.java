@@ -1,10 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.KProjectAgentsPairing;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.ProjectPairings;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.graph.BipartitieAgentsProjectGraph;
 import nl.tudelft.aidm.optimalgroups.model.graph.DatasetAsGraph;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -17,7 +16,7 @@ public class SDPCOrderedByPotentialGroupmates extends SerialDictatorshipWithProj
 	public SDPCOrderedByPotentialGroupmates(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		super(
-			ordered(agents, KProjectAgentsPairing.from(agents, projects, groupSizeConstraint).get().k()),
+			ordered(agents, ProjectPairings.from(agents, projects, groupSizeConstraint, projects.count()).get().k()),
 			projects,
 			groupSizeConstraint
 		);

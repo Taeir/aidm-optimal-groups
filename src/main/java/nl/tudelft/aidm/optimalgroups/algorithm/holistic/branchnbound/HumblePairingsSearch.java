@@ -1,8 +1,11 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupings;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.groups.PossibleGroupingsByIndividual;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.model.PessimismSolution;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupings;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupingsByIndividual;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.ProjectAgentsPairing;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -23,7 +26,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-public class BranchAndBoundPairings extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
+public class HumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
 {
 
 	// determine set of 'eccentric' students E - eccentric: student with lowest satisfaction
@@ -64,7 +67,7 @@ public class BranchAndBoundPairings extends DynamicSearch<AgentToProjectMatching
 	{
 //		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
 		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		var thing = new BranchAndBoundPairings(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
+		var thing = new HumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 
 		var matching = thing.matching();
@@ -80,12 +83,12 @@ public class BranchAndBoundPairings extends DynamicSearch<AgentToProjectMatching
 	private final PossibleGroupings possibleGroups;
 	private final GroupFactorization groupFactorization;
 
-	public BranchAndBoundPairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	public HumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
-		this(agents, projects, groupSizeConstraint, Integer.MAX_VALUE);
+		this(agents, projects, groupSizeConstraint, projects.count() + 1);
 	}
 
-	public BranchAndBoundPairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int worstRankBound)
+	public HumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int worstRankBound)
 	{
 		super(PessimismSolution.emptyWithBoundedWorstRank(agents.datasetContext, worstRankBound));
 
@@ -190,14 +193,15 @@ public class BranchAndBoundPairings extends DynamicSearch<AgentToProjectMatching
 				return Optional.empty();
 			}
 
-			var essentialPairing = KProjectAgentsPairing.henk(agents, projects, groupSizeConstraint);
+			var worstRankOfBestSoFar = bestSolutionSoFar.currentBest().metric().worstRank().asInt();
+			var humblePairings = new nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.HumblePairings(agents, projects, groupSizeConstraint, worstRankOfBestSoFar);
 
 //			if (essentialPairing.isEmpty()) {
 //				return Optional.empty();
 //			}
 
-			var solution = essentialPairing.parallel()
-//				.flatMap(p -> p.pairingsAtK().stream())
+			var solution = humblePairings.asStream()
+				.parallel()
 
 				.flatMap(this::intoAllPossibleGroupCombinationsPerPairing)
 

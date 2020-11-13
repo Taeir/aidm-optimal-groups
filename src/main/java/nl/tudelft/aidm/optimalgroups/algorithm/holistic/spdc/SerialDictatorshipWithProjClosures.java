@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.GroupFactorization;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;

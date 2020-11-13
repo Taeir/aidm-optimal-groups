@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.GroupFactorization;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;

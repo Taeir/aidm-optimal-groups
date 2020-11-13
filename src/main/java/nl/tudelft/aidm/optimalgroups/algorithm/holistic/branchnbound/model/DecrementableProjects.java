@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model;
 
 import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;

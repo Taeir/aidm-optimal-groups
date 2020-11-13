@@ -5,34 +5,22 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.pessimism.Pessimistic;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.WorstHumblePairingsSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.GroupedProjectMinizincAllocation;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCOrderedByPotentialGroupmates;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCPessimism;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SerialDictatorshipWithProjClosures;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
-import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
-import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.ManualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.matching.AgentPerspectiveGroupProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static java.util.Comparator.*;
 
 public interface GroupProjectAlgorithm extends Algorithm
 {
@@ -277,7 +265,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			Pessimistic p = new Pessimistic(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			WorstHumblePairingsSearch p = new WorstHumblePairingsSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var agentsToProjects = p.matching();
 
 			return FormedGroupToProjectMatching.from(agentsToProjects);
