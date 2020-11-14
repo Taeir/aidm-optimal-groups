@@ -9,33 +9,33 @@ import java.util.Stack;
 
 public class Combinations
 {
-	private final int m, n;
+	private final int take, n;
 
 	public
-	Combinations(int m, int n)
+	Combinations(int take, int n)
 	{
-		Assert.that(m <= n).orThrowMessage(String.format("m must be <= n (was, m: %s, n: %s)", m, n));
+		Assert.that(take <= n).orThrowMessage(String.format("take must be <= n (was, take: %s, n: %s)", take, n));
 
-		this.m = m;
+		this.take = take;
 		this.n = n;
 	}
 
 	public
 	long count()
 	{
-		return numCombinations(n, m);
+		return numCombinations(n, take);
 	}
 
 	public
 	Iterator<int[]> asIterator()
 	{
-		return new CombIterator(m, n);
+		return new CombIterator(take, n);
 	}
 
 	private static
 	class CombIterator implements Iterator<int[]>
 	{
-		private final int m, n;
+		private final int take, n;
 
 		private final long numResults;
 		private long resultsReturned = 0;
@@ -43,30 +43,35 @@ public class Combinations
 		private final int[] result;
 		private final Stack<Integer> stack;
 
-		public CombIterator(int m, int n)
+		public CombIterator(int take, int n)
 		{
-			this.m = m;
+			this.take = take;
 			this.n = n;
 
-			result = new int[m];
+			result = new int[take];
 
 			stack = new Stack<>();
 
-			numResults = numCombinations(n, m);
+			numResults = numCombinations(n, take);
 
-			if (m > 0)
+			if (take > 0)
 				stack.push(0);
 		}
 
 		@Override
 		public boolean hasNext()
 		{
-			return resultsReturned < numResults && m > 0;
+			return resultsReturned < numResults;
 		}
 
 		@Override
 		public int[] next()
 		{
+			if (take == 0) {
+				resultsReturned++;
+				return new int[0];
+			}
+
 			// Iterative Combinatiorial algorithm
 			// Taken from / based on https://rosettacode.org/wiki/Combinations#C.23
 			while (!stack.empty())
@@ -79,7 +84,7 @@ public class Combinations
 					result[index++] = value++;
 					stack.push(value);
 
-					if (index == m)
+					if (index == take)
 					{
 						int[] copy = Arrays.copyOf(result, result.length);
 						resultsReturned++;
@@ -97,7 +102,7 @@ public class Combinations
 	long numCombinations(int n, int take)
 	{
 		if (n == 0) return 0;
-		if (n == take) return 1;
+		if (n == take || take == 0) return 1;
 
 		return fac(n) / ( fac(take) * fac(n - take) );
 	}

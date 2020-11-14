@@ -38,7 +38,6 @@ public class PossibleGroupingsByIndividual implements PossibleGroupings
 
 		return IntStream.rangeClosed(agentsToAddLowerbound, agentsToAddUpperbound)
 //			.sorted()
-			.filter(value -> value > 0)
 			.boxed()
 			.flatMap(take -> {
 				var comb = new CombinationsOfObjects<>(possibleGroupmates, take);
