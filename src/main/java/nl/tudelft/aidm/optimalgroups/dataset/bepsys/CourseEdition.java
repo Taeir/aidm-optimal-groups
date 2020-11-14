@@ -69,7 +69,7 @@ public class CourseEdition implements DatasetContext
 	@Override
 	public String identifier()
 	{
-		return String.format("BepSys%s%s", courseEditionId, groupSizeConstraint);
+		return String.format("CourseEdition[%s]_[s%s_p%s]_%s", courseEditionId, agents.count(), projects.count(), groupSizeConstraint);
 	}
 
 	@Override
