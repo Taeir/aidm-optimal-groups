@@ -7,15 +7,13 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import plouchtch.assertion.Assert;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
  * Finds all "humble" pairings for given projects and agents
  */
-public class HumblePairings
+public class BestHumblePairings
 {
 	private final Agents agents;
 	private final Projects projects;
@@ -28,7 +26,7 @@ public class HumblePairings
 	 * @param projects The available projects
 	 * @param groupSizeConstraint The groupsize constraint
 	 */
-	public HumblePairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	public BestHumblePairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		this(agents, projects, groupSizeConstraint, projects.count());
 	}
@@ -39,7 +37,7 @@ public class HumblePairings
 	 * @param projects The available projects
 	 * @param groupSizeConstraint The groupsize constraint
 	 */
-	public HumblePairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int rankBound)
+	public BestHumblePairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int rankBound)
 	{
 		Assert.that(/*agents.count() == 0 || */agents.count() >= groupSizeConstraint.minSize())
 			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");

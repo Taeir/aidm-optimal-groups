@@ -5,7 +5,9 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Possi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupingsByIndividual;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.BestHumblePairings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.ProjectAgentsPairing;
+import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -67,7 +69,10 @@ public class HumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, 
 	{
 //		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
 		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		var thing = new HumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
+
+		System.out.println(ce.identifier());
+
+		var thing = new HumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint(), 50);
 //		thing.determineK();
 
 		var matching = thing.matching();
@@ -194,14 +199,14 @@ public class HumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, 
 			}
 
 			var worstRankOfBestSoFar = bestSolutionSoFar.currentBest().metric().worstRank().asInt();
-			var humblePairings = new nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.HumblePairings(agents, projects, groupSizeConstraint, worstRankOfBestSoFar);
+			var humblePairings = new BestHumblePairings(agents, projects, groupSizeConstraint, worstRankOfBestSoFar);
 
-//			if (essentialPairing.isEmpty()) {
-//				return Optional.empty();
-//			}
 
 			var solution = humblePairings.asStream()
 				.parallel()
+
+				// BOUND (extra, rember we're parallel): if a pairing is already worse, don't need to even try
+//				.filter(pairing -> pairing.kRank() <= worstRankOfBestSoFar)
 
 				.flatMap(this::intoAllPossibleGroupCombinationsPerPairing)
 

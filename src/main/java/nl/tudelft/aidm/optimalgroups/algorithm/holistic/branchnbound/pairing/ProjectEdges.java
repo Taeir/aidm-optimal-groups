@@ -5,9 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 class ProjectEdges
 {
@@ -58,5 +56,36 @@ class ProjectEdges
 		}
 
 		return Optional.empty();
+	}
+
+	public List<ProjectAgentsPairing> allPairingsForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
+	{
+		var results = new LinkedList<ProjectAgentsPairing>();
+
+		var potentialGroupmates = new HashSet<Agent>();
+
+		// Indifferent agents are potential group mates of everyone
+		if (edgesPerRankBucket[0] != null)
+		{
+			potentialGroupmates.addAll(edgesPerRankBucket[0]);
+		}
+
+		for (int rank = 1; rank <= rankBoundInclusive; rank++)
+		{
+			var agentsWithRank = edgesPerRankBucket[rank];
+
+			if (agentsWithRank == null) continue;
+
+			if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize())
+			{
+				// We've reached the "pivot point", so the 'rank' is the 'k'
+				var pairing =  new ProjectAgentsPairing(rank, project, agentsWithRank, new HashSet<>(potentialGroupmates));
+				results.add(pairing);
+			}
+
+			potentialGroupmates.addAll(agentsWithRank);
+		}
+
+		return results;
 	}
 }
