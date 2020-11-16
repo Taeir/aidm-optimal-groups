@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.ProjectAgentsPairing;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -90,7 +90,7 @@ public class SDPCPessimism
 
 		var eccentric = WorstBestPairings.from(agents, projects, partialMatching, groupSizeConstraint);
 		var mostEccentric = eccentric.pairingsAtK().stream()
-			.collect(Collectors.groupingBy(ProjectAgentsPairing::project))
+			.collect(Collectors.groupingBy(MatchCandidate::project))
 			.entrySet().stream()
 			.min(Comparator.comparing(projectListEntry -> projectListEntry.getValue().size()))
 				.orElseThrow(() -> new RuntimeException())
@@ -101,7 +101,7 @@ public class SDPCPessimism
 		return new WorstBestOffAgents(mostEccentric.project(), mostEccentric.agents());
 	}
 
-	public record WorstBestPairings(Collection<ProjectAgentsPairing> pairingsAtK, int k)
+	public record WorstBestPairings(Collection<MatchCandidate> pairingsAtK, int k)
 	{
 		public record Edge(Agent from, Project to, int rank){}
 
@@ -128,7 +128,7 @@ public class SDPCPessimism
 				});
 			});
 
-			Map<Project, ProjectAgentsPairing>[] agentsWithK = new IdentityHashMap[numProjectsInDatasetContext + 1];
+			Map<Project, MatchCandidate>[] agentsWithK = new IdentityHashMap[numProjectsInDatasetContext + 1];
 			for (int i = 0; i < agentsWithK.length; i++)
 			{
 				agentsWithK[i] = new IdentityHashMap<>();
@@ -194,7 +194,7 @@ public class SDPCPessimism
 					}
 
 					HashSet<Agent> agentsInclude = new HashSet<>(Set.of(thisAgent));
-					ProjectAgentsPairing pairing = new ProjectAgentsPairing(l, lProj, agentsInclude, lPossibleGroupmates);
+					MatchCandidate pairing = new MatchCandidate(l, lProj, agentsInclude, lPossibleGroupmates);
 					agentsWithK[l].put(lProj, pairing);
 				}
 				else {

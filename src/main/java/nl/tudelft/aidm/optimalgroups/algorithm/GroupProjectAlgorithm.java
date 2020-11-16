@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.WorstHumblePairingsSearch;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.WorstAmongBestHumblePairingsSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.GroupedProjectMinizincAllocation;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCOrderedByPotentialGroupmates;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SerialDictatorshipWithProjClosures;
@@ -265,7 +265,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			WorstHumblePairingsSearch p = new WorstHumblePairingsSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			WorstAmongBestHumblePairingsSearch p = new WorstAmongBestHumblePairingsSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var agentsToProjects = p.matching();
 
 			return FormedGroupToProjectMatching.from(agentsToProjects);

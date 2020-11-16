@@ -6,8 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Possi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.BestHumblePairings;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.ProjectAgentsPairing;
-import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -28,7 +27,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-public class HumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
+public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
 {
 
 	// determine set of 'eccentric' students E - eccentric: student with lowest satisfaction
@@ -72,7 +71,7 @@ public class HumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, 
 
 		System.out.println(ce.identifier());
 
-		var thing = new HumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint(), 50);
+		var thing = new BestHumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint(), 50);
 //		thing.determineK();
 
 		var matching = thing.matching();
@@ -88,12 +87,12 @@ public class HumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, 
 	private final PossibleGroupings possibleGroups;
 	private final GroupFactorization groupFactorization;
 
-	public HumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	public BestHumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		this(agents, projects, groupSizeConstraint, projects.count() + 1);
 	}
 
-	public HumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int worstRankBound)
+	public BestHumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int worstRankBound)
 	{
 		super(PessimismSolution.emptyWithBoundedWorstRank(agents.datasetContext, worstRankBound));
 
@@ -223,7 +222,7 @@ public class HumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, 
 		}
 
 		@NotNull
-		private Stream<? extends GroupProjectPairing> intoAllPossibleGroupCombinationsPerPairing(ProjectAgentsPairing pairing)
+		private Stream<? extends GroupProjectPairing> intoAllPossibleGroupCombinationsPerPairing(MatchCandidate pairing)
 		{
 			// TODO HERE: group agents by "type"
 			var possibleGrps = possibleGroups.of(pairing.agents(), pairing.possibleGroupmates(), groupSizeConstraint);

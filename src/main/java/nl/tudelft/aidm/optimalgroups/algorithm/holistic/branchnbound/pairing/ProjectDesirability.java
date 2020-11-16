@@ -1,36 +1,36 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.Edge;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.*;
 
-class ProjectEdges
+class ProjectDesirability
 {
 	private Set<Agent>[] edgesPerRankBucket;
 	private Project project;
 
-	public ProjectEdges(int expectedMaxRank, Project project)
+	public ProjectDesirability(int expectedMaxRank, Project project)
 	{
 		this.edgesPerRankBucket = new Set[expectedMaxRank + 1];// ArrayList<>(expectedMaxRank);
 		this.project = project;
 	}
 
-	public void add(Edge edge)
+	public void add(AgentsProjDesirability agentsProjDesirability)
 	{
-		var bin = edgesPerRankBucket[edge.rank()];
+		var bin = edgesPerRankBucket[agentsProjDesirability.rank()];
 		if (bin == null)
 		{
 			bin = new HashSet<>();
-			edgesPerRankBucket[edge.rank()] = bin;
+			edgesPerRankBucket[agentsProjDesirability.rank()] = bin;
 		}
 
-		bin.add(edge.from());
+		bin.add(agentsProjDesirability.from());
 	}
 
-	public Optional<ProjectAgentsPairing> pairingForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
+	public Optional<MatchCandidate> pairingForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
 	{
 		var potentialGroupmates = new HashSet<Agent>();
 
@@ -49,7 +49,7 @@ class ProjectEdges
 			if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize())
 			{
 				// We've reached the "pivot point", so the 'rank' is the 'k'
-				return Optional.of(new ProjectAgentsPairing(rank, project, agentsWithRank, potentialGroupmates));
+				return Optional.of(new MatchCandidate(rank, project, agentsWithRank, potentialGroupmates));
 			}
 
 			potentialGroupmates.addAll(agentsWithRank);
@@ -58,9 +58,9 @@ class ProjectEdges
 		return Optional.empty();
 	}
 
-	public List<ProjectAgentsPairing> allPairingsForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
+	public List<MatchCandidate> allPairingsForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
 	{
-		var results = new LinkedList<ProjectAgentsPairing>();
+		var results = new LinkedList<MatchCandidate>();
 
 		var potentialGroupmates = new HashSet<Agent>();
 
@@ -79,7 +79,7 @@ class ProjectEdges
 			if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize())
 			{
 				// We've reached the "pivot point", so the 'rank' is the 'k'
-				var pairing =  new ProjectAgentsPairing(rank, project, agentsWithRank, new HashSet<>(potentialGroupmates));
+				var pairing =  new MatchCandidate(rank, project, agentsWithRank, new HashSet<>(potentialGroupmates));
 				results.add(pairing);
 			}
 
@@ -87,5 +87,10 @@ class ProjectEdges
 		}
 
 		return results;
+	}
+
+	public static record AgentsProjDesirability(Agent from, Project to, int rank)
+	{
+
 	}
 }

@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.Edge;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -8,35 +8,23 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
-import java.util.stream.Stream;
 
-public record ProjectPairings(Collection<ProjectAgentsPairing> pairingsAtK, int k)
+public record WorstAmongBestProjectPairings(Collection<MatchCandidate> pairingsAtK, int k)
 {
-	public static Optional<ProjectPairings> from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int rankBound)
+	public static Optional<WorstAmongBestProjectPairings> from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int rankBound)
 	{
 		Assert.that(agents.count() >= groupSizeConstraint.minSize())
 			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
 		// Or: always return Optional.empty?
 
 		var bestSubmissiveKPerAgent = new IdentityHashMap<Agent, Integer>(agents.count());
-		var pairingsByK = new ProjectPairings[rankBound + 1];
+		var pairingsByK = new WorstAmongBestProjectPairings[rankBound + 1];
+
+		var bestHumblePairings = new BestHumblePairings(agents, projects, groupSizeConstraint, rankBound);
 
 		for (var project : projects.asCollection())
 		{
-			final var edgesToProject = new ProjectEdges(rankBound, project);
-
-			agents.forEach(agent -> {
-				var rank = agent.projectPreference().rankOf(project)
-					.orElse(0); // indifferent agents are ok with everything
-
-				if (rank <= rankBound) {
-					var edge = new Edge(agent, project, rank);
-
-					edgesToProject.add(edge);
-				}
-			});
-
-			edgesToProject.pairingForProject(rankBound, groupSizeConstraint)
+			bestHumblePairings.forProject(project)
 				.ifPresent(pairing ->
 				{
 					int k = pairing.kRank();
@@ -46,7 +34,7 @@ public record ProjectPairings(Collection<ProjectAgentsPairing> pairingsAtK, int 
 					}
 
 					if (pairingsByK[k] == null) {
-						pairingsByK[k] = new ProjectPairings(new LinkedList<>(), k);
+						pairingsByK[k] = new WorstAmongBestProjectPairings(new LinkedList<>(), k);
 					}
 
 					pairingsByK[k].pairingsAtK().add(pairing);

@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.Edge;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -47,22 +47,22 @@ public class AllHumblePairings
 		this.rankBound = rankBound;
 	}
 
-	public Stream<ProjectAgentsPairing> asStream()
+	public Stream<MatchCandidate> asStream()
 	{
 		return projects.asCollection().stream()
 			.flatMap(this::forProject);
 	}
 
-	private Stream<ProjectAgentsPairing> forProject(Project project)
+	private Stream<MatchCandidate> forProject(Project project)
 	{
-		final var edgesToProject = new ProjectEdges(rankBound, project);
+		final var edgesToProject = new ProjectDesirability(rankBound, project);
 
 		agents.forEach(agent -> {
 			var rank = agent.projectPreference().rankOf(project)
 				.orElse(0); // indifferent agents are ok with everything
 
 			if (rank <= rankBound) {
-				var edge = new Edge(agent, project, rank);
+				var edge = new ProjectDesirability.AgentsProjDesirability(agent, project, rank);
 
 				edgesToProject.add(edge);
 			}

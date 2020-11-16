@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Possi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupingsByIndividual;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.ProjectPairings;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -22,13 +22,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class WorstHumblePairingsSearchBFS extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
+public class WorstAmongBestHumblePairingsSearchBFS extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
 {
 
 	public static void main(String[] args)
 	{
 		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		var thing = new WorstHumblePairingsSearchBFS(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
+		var thing = new WorstAmongBestHumblePairingsSearchBFS(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 
 		var indiff = ce.allAgents().asCollection().stream()
@@ -48,7 +48,7 @@ public class WorstHumblePairingsSearchBFS extends DynamicSearch<AgentToProjectMa
 	private final PossibleGroupings possibleGroups;
 	private final GroupFactorization groupFactorization;
 
-	public WorstHumblePairingsSearchBFS(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	public WorstAmongBestHumblePairingsSearchBFS(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		super(PessimismSolution.empty(agents.datasetContext));
 
@@ -158,7 +158,7 @@ public class WorstHumblePairingsSearchBFS extends DynamicSearch<AgentToProjectMa
 		private final Agents agents;
 		private final DecrementableProjects projects;
 		private final GroupSizeConstraint groupSizeConstraint;
-		private Optional<ProjectPairings> kProjectAgentsPairing;
+		private Optional<WorstAmongBestProjectPairings> kProjectAgentsPairing;
 		private final Integer k;
 
 		PessimismSearchNode(PessimismSolution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
@@ -170,22 +170,22 @@ public class WorstHumblePairingsSearchBFS extends DynamicSearch<AgentToProjectMa
 			this.k = partial.metric().worstRank().asInt();
 		}
 
-		PessimismSearchNode(PessimismSearchNode searchNode, ProjectPairings projectPairings)
+		PessimismSearchNode(PessimismSearchNode searchNode, WorstAmongBestProjectPairings worstAmongBestProjectPairings)
 		{
 			this.partial = searchNode.partial;
 			this.agents = searchNode.agents;
 			this.projects = searchNode.projects;
 			this.groupSizeConstraint = searchNode.groupSizeConstraint;
-			this.k = Math.max(searchNode.k, projectPairings.k());
+			this.k = Math.max(searchNode.k, worstAmongBestProjectPairings.k());
 
-			this.kProjectAgentsPairing = Optional.of(projectPairings);
+			this.kProjectAgentsPairing = Optional.of(worstAmongBestProjectPairings);
 		}
 
-		private Optional<ProjectPairings> determineKProjectAgentsPairing()
+		private Optional<WorstAmongBestProjectPairings> determineKProjectAgentsPairing()
 		{
 			if (kProjectAgentsPairing == null) {
 				var bestWorstRankSoFar = bestSolutionSoFar.currentBest().metric().worstRank().asInt();
-				return ProjectPairings.from(agents, projects, groupSizeConstraint, bestWorstRankSoFar);
+				return WorstAmongBestProjectPairings.from(agents, projects, groupSizeConstraint, bestWorstRankSoFar);
 			}
 
 			return kProjectAgentsPairing;
