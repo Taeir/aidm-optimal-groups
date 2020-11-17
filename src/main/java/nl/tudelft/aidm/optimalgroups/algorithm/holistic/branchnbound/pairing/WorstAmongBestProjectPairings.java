@@ -8,6 +8,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public record WorstAmongBestProjectPairings(Collection<MatchCandidate> pairingsAtK, int k)
 {
@@ -44,8 +45,16 @@ public record WorstAmongBestProjectPairings(Collection<MatchCandidate> pairingsA
 		var worstK = bestPerAgent.values().stream().max(Integer::compareTo);
 
 		if (worstK.isPresent()) {
+			// These are the pairings with k being the worstK - but not every candidate pairing
+			// will contain the agents who actually have that "worstK" (because they were found earlier on)
 			var pairing = pairingsByK[worstK.get()];
-			return Optional.of(pairing);
+
+			// So need to filter out only those candidates that contain agents that have that worstK rank
+			var filtered = pairing.pairingsAtK().stream().filter(matchCandidate ->
+				matchCandidate.agents().stream().anyMatch(agent -> bestPerAgent.get(agent).equals(worstK.get()))
+			).collect(Collectors.toList());
+
+			return Optional.of(new WorstAmongBestProjectPairings(filtered, worstK.get()));
 		}
 
 		return Optional.empty();
