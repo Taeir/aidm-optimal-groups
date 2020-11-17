@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Possi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;

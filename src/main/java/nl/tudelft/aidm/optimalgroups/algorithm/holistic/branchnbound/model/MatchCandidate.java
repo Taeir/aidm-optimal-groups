@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;

@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Possi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.AllHumblePairings;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -95,7 +95,7 @@ public class AllHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchin
 		}
 
 		Assert.that(bestSolutionSoFar.hasNonEmptySolution())
-			.orThrowMessage("Pessimism-search did not find a single valid solution :");
+			.orThrowMessage("AllHumblePairings-Search did not find a single valid solution :");
 
 		var matching = bestSolutionSoFar.currentBest().matching();
 

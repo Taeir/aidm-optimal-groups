@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Possi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.BestHumblePairings;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -106,8 +106,6 @@ public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchi
 
 	public AgentToProjectMatching matching()
 	{
-		DatasetContext datsetContext = agents.datasetContext;
-
 		var root = new PessimismSearchNode(agents, new DecrementableProjects(projects), groupSizeConstraint);
 
 		// Run the algorithm with time constraints, after timeout we check best solution found up to that moment

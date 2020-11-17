@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.model.MatchCandidate;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
