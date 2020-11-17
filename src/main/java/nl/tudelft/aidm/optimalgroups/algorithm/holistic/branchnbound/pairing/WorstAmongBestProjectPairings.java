@@ -17,7 +17,7 @@ public record WorstAmongBestProjectPairings(Collection<MatchCandidate> pairingsA
 			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
 		// Or: always return Optional.empty?
 
-		var bestSubmissiveKPerAgent = new IdentityHashMap<Agent, Integer>(agents.count());
+		var bestPerAgent = new IdentityHashMap<Agent, Integer>(agents.count());
 		var pairingsByK = new WorstAmongBestProjectPairings[rankBound + 1];
 
 		var bestHumblePairings = new BestHumblePairings(agents, projects, groupSizeConstraint, rankBound);
@@ -30,7 +30,7 @@ public record WorstAmongBestProjectPairings(Collection<MatchCandidate> pairingsA
 					int k = pairing.kRank();
 
 					for(var agent : pairing.agents()) {
-						bestSubmissiveKPerAgent.merge(agent, k, Math::min);
+						bestPerAgent.merge(agent, k, Math::min);
 					}
 
 					if (pairingsByK[k] == null) {
@@ -41,7 +41,7 @@ public record WorstAmongBestProjectPairings(Collection<MatchCandidate> pairingsA
 				});
 		}
 
-		var worstK = bestSubmissiveKPerAgent.values().stream().max(Integer::compareTo);
+		var worstK = bestPerAgent.values().stream().max(Integer::compareTo);
 
 		if (worstK.isPresent()) {
 			var pairing = pairingsByK[worstK.get()];

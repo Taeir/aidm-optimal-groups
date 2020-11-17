@@ -9,12 +9,12 @@ import java.util.*;
 
 class ProjectDesirability
 {
-	private Set<Agent>[] edgesPerRankBucket;
+	private List<Agent>[] edgesPerRankBucket;
 	private Project project;
 
 	public ProjectDesirability(int expectedMaxRank, Project project)
 	{
-		this.edgesPerRankBucket = new Set[expectedMaxRank + 1];// ArrayList<>(expectedMaxRank);
+		this.edgesPerRankBucket = new LinkedList[expectedMaxRank + 1];// ArrayList<>(expectedMaxRank);
 		this.project = project;
 	}
 
@@ -23,7 +23,7 @@ class ProjectDesirability
 		var bin = edgesPerRankBucket[agentsProjDesirability.rank()];
 		if (bin == null)
 		{
-			bin = new HashSet<>();
+			bin = new LinkedList<>();
 			edgesPerRankBucket[agentsProjDesirability.rank()] = bin;
 		}
 
@@ -32,7 +32,7 @@ class ProjectDesirability
 
 	public Optional<MatchCandidate> pairingForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
 	{
-		var potentialGroupmates = new HashSet<Agent>();
+		var potentialGroupmates = new LinkedList<Agent>();
 
 		// Indifferent agents are potential group mates of everyone
 		if (edgesPerRankBucket[0] != null)
@@ -48,8 +48,12 @@ class ProjectDesirability
 
 			if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize())
 			{
-				// We've reached the "pivot point", so the 'rank' is the 'k'
-				return Optional.of(new MatchCandidate(rank, project, agentsWithRank, potentialGroupmates));
+				// We've reached the "pivot point"
+				var agentsWithRankInSet = new HashSet<>(agentsWithRank);
+				var potentialGroupmatesInSet = new HashSet<>(potentialGroupmates);
+
+				MatchCandidate matchCandidate = new MatchCandidate(rank, project, agentsWithRankInSet, potentialGroupmatesInSet);
+				return Optional.of(matchCandidate);
 			}
 
 			potentialGroupmates.addAll(agentsWithRank);
@@ -62,7 +66,7 @@ class ProjectDesirability
 	{
 		var results = new LinkedList<MatchCandidate>();
 
-		var potentialGroupmates = new HashSet<Agent>();
+		var potentialGroupmates = new LinkedList<Agent>();
 
 		// Indifferent agents are potential group mates of everyone
 		if (edgesPerRankBucket[0] != null)
@@ -78,8 +82,11 @@ class ProjectDesirability
 
 			if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize())
 			{
-				// We've reached the "pivot point", so the 'rank' is the 'k'
-				var pairing =  new MatchCandidate(rank, project, agentsWithRank, new HashSet<>(potentialGroupmates));
+				// We've reached the "pivot point"
+				var agentsWithRankInSet = new HashSet<>(agentsWithRank);
+				var potentialGroupmatesInSet = new HashSet<>(potentialGroupmates);
+
+				var pairing =  new MatchCandidate(rank, project, agentsWithRankInSet, potentialGroupmatesInSet);
 				results.add(pairing);
 			}
 
