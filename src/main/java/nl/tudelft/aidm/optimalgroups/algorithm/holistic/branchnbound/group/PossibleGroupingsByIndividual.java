@@ -24,10 +24,10 @@ public class PossibleGroupingsByIndividual implements PossibleGroupings
 
 
 		if (include.size() >= groupSizeConstraint.maxSize()) {
-			var group = include.stream().limit(groupSizeConstraint.maxSize())
-				.collect(Collectors.toList());
+			var groups = IntStream.rangeClosed(groupSizeConstraint.minSize(), groupSizeConstraint.maxSize()).boxed()
+				.map(grpSize -> include.stream().limit(grpSize).collect(Collectors.toList()));
 
-			return List.of(group).stream();
+			return groups;
 		}
 
 		// Must add at least this many agents to "include" to reach the minSize constraint
