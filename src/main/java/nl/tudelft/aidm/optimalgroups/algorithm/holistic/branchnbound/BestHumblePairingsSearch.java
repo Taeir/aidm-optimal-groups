@@ -8,6 +8,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.Pessi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.BestHumblePairings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.datasets.ThesisDatasets;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -29,54 +30,21 @@ import java.util.stream.Stream;
 
 public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
 {
-
-	// determine set of 'eccentric' students E - eccentric: student with lowest satisfaction
-	// foreach s in E
-	//     try all group combinations such that nobody in that group is worse off than s
-	//     decrease slots of project p by 1
-
-
-//	public static void thingy(String[] args)
-//	{
-//		int k = 8;
-//
-//		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-//		int minGroupSize = ce.groupSizeConstraint().minSize();
-//
-//		var result = ce.allAgents().asCollection().stream()
-//			.map(agent -> agent.projectPreference().asListOfProjects())
-//			.map(projectPreference -> topNElements(projectPreference, k))
-//			.flatMap(Collection::stream)
-//			.collect(Collectors.groupingBy(project -> project)).entrySet().stream()
-//			.map(entry -> Pair.create(entry.getKey(), entry.getValue().size() / minGroupSize))
-//			.filter(pair -> pair.getValue() > 0)
-//			.sorted(Comparator.comparing((Pair<Project, Integer> pair) -> pair.getValue()))
-//	//			.mapToInt(pair -> pair.getValue())
-//	//			.sum();
-////			.count();
-//				.collect(Collectors.toList());
-//
-////		ce = new CourseEditionModNoPeerPref(ce);
-//		var bepSysMatchingWhenNoPeerPrefs = new GroupProjectAlgorithm.BepSys().determineMatching(ce);
-//
-//		var metrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(bepSysMatchingWhenNoPeerPrefs));
-//
-//		return;
-//	}
-
 	public static void main(String[] args)
 	{
 //		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
 		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+//		var ce = ThesisDatasets.CE10Like(500);
 
 		System.out.println(ce.identifier());
 
-		var thing = new BestHumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint(), 50);
-//		thing.determineK();
+		var thing = new BestHumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint(), 20);
 
 		var matching = thing.matching();
 
 		var metrics = new MatchingMetrics.StudentProject(matching);
+
+		metrics.rankDistribution().displayChart();
 
 		return;
 	}
@@ -204,8 +172,11 @@ public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchi
 
 				// BOUND (extra, rember we're parallel): if a pairing is already worse, don't need to even try
 //				.filter(pairing -> pairing.kRank() <= worstRankOfBestSoFar)
+				.takeWhile(x -> x.kRank() <= bestSolutionSoFar.currentBest().metric().worstRank().asInt())
 
 				.flatMap(this::intoAllPossibleGroupCombinationsPerPairing)
+
+				.takeWhile(x -> x.kRank() <= bestSolutionSoFar.currentBest().metric().worstRank().asInt())
 
 				.map(this::assumeGroupAndRecurseDeeper)
 
@@ -225,7 +196,7 @@ public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchi
 			// TODO HERE: group agents by "type"
 			var possibleGrps = possibleGroups.of(pairing.agents(), pairing.possibleGroupmates(), groupSizeConstraint);
 			return possibleGrps
-				.map(possibleGroup -> new GroupProjectPairing(pairing.project(), possibleGroup));
+				.map(possibleGroup -> new GroupProjectPairing(pairing.kRank(), pairing.project(), possibleGroup));
 		}
 
 		private PessimismSearchNode assumeGroupAndRecurseDeeper(GroupProjectPairing groupProjectPairing)
@@ -252,6 +223,6 @@ public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchi
 		}
 	}
 
-	private static record GroupProjectPairing(Project project, List<Agent> group) {}
+	private static record GroupProjectPairing(int kRank, Project project, List<Agent> group) {}
 
 }

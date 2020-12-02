@@ -68,7 +68,7 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 	{
 //		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
 		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		var thing = new WorstAmongBestHumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint(), 4);
+		var thing = new WorstAmongBestHumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 
 		var matching = thing.matching();
@@ -206,6 +206,8 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 
 				.flatMap(this::intoAllPossibleGroupCombinationsPerPairing)
 
+				.takeWhile(x -> x.kRank() <= bestSolutionSoFar.currentBest().metric().worstRank().asInt())
+
 				.map(this::assumeGroupAndRecurseDeeper)
 
 				.map(SearchNode::solution)
@@ -224,7 +226,7 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 			// TODO HERE: group agents by "type"
 			var possibleGrps = possibleGroups.of(pairing.agents(), pairing.possibleGroupmates(), groupSizeConstraint);
 			return possibleGrps
-				.map(possibleGroup -> new GroupProjectPairing(pairing.project(), possibleGroup));
+				.map(possibleGroup -> new GroupProjectPairing(pairing.kRank(), pairing.project(), possibleGroup));
 		}
 
 		private PessimismSearchNode assumeGroupAndRecurseDeeper(GroupProjectPairing groupProjectPairing)
@@ -251,6 +253,6 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 		}
 	}
 
-	private static record GroupProjectPairing(Project project, List<Agent> group) {}
+	private static record GroupProjectPairing(int kRank, Project project, List<Agent> group) {}
 
 }
