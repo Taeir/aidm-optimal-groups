@@ -56,7 +56,7 @@ public class RawProjectPreferencesInDb extends AbstractListBasedProjectPreferenc
 	{
 		if (preferencesAsProjectList == null) {
 			preferencesAsProjectList = fetchFromDb().stream()
-				.map(Project.ProjectsWithDefaultSlotAmount::new)
+				.map(id -> courseEdition.allProjects().findWithId(id).orElseThrow())
 				.collect(Collectors.toUnmodifiableList());
 		}
 
