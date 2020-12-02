@@ -19,13 +19,14 @@ public class PossibleGroupingsByIndividual implements PossibleGroupings
 	@Override
 	public Stream<List<Agent>> of(Set<Agent> include, Set<Agent> possibleGroupmates, GroupSizeConstraint groupSizeConstraint)
 	{
-//		var problemDef = new ProblemInstance(include, possibleGroupmates, groupSizeConstraint);
-//		var result = cached.computeIfAbsent(problemDef, this::possibleGroups);
-
-
 		if (include.size() >= groupSizeConstraint.maxSize()) {
-			var groups = IntStream.rangeClosed(groupSizeConstraint.minSize(), groupSizeConstraint.maxSize()).boxed()
-				.map(grpSize -> include.stream().limit(grpSize).collect(Collectors.toList()));
+			var groups = IntStream.rangeClosed(groupSizeConstraint.minSize(), groupSizeConstraint.maxSize())
+				.boxed()
+				.sorted(Comparator.reverseOrder())
+				.flatMap(grpSize -> {
+					var comb = new CombinationsOfObjects<>(include, grpSize);
+					return comb.asStream();
+				});
 
 			return groups;
 		}
@@ -41,29 +42,14 @@ public class PossibleGroupingsByIndividual implements PossibleGroupings
 			.boxed()
 			.flatMap(take -> {
 				var comb = new CombinationsOfObjects<>(possibleGroupmates, take);
-				var iter = comb.asIterator();
-				var spliterator = Spliterators.spliterator(iter, comb.count(), Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.SIZED);
 
-				return StreamSupport.stream(spliterator, false)
+				return comb.asStream()
 					.map(groupmatesToAdd -> {
 						var group = new ArrayList<>(include);
 						group.addAll(groupmatesToAdd);
 						return group;
 					});
 			});
-
-//		if (result == null) {
-//			// Mandatory include can form a group already - optimal case, don't even try generating powersets
-////			if (include.size() >= groupSizeConstraint.minSize() && include.size() <= groupSizeConstraint.maxSize()) {
-////				result = new Result(Set.of(include));
-////			}
-////			else {
-//				result = possibleGroups(problemDef);
-////			}
-//			cached.put(problemDef, result);
-//		}
-
-//		return result.possibleGroups();
 	}
 
 //	private Result possibleGroups(ProblemInstance problemDef)
