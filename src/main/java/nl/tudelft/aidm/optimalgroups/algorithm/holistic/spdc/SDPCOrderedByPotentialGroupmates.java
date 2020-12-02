@@ -16,7 +16,7 @@ public class SDPCOrderedByPotentialGroupmates extends SerialDictatorshipWithProj
 	public SDPCOrderedByPotentialGroupmates(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		super(
-			ordered(agents, ProjectPairings.from(agents, projects, groupSizeConstraint, projects.count()).get().k()),
+			ordered(agents, WorstAmongBestProjectPairings.from(agents, projects, groupSizeConstraint, projects.count()).get().k()),
 			projects,
 			groupSizeConstraint
 		);
