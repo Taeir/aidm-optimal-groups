@@ -1,7 +1,15 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.AllHumblePairingsSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
+import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenCommonly;
+import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -20,8 +28,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.max;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 public class SDPCPessimism
 {
@@ -36,13 +43,31 @@ public class SDPCPessimism
 		this.groupSizeConstraint = groupSizeConstraint;
 	}
 
-	public AgentToProjectMatching doIt()
+	public static void main(String[] args)
+	{
+		var ce = DatasetContextTiesBrokenCommonly.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
+//		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+
+		System.out.println(ce.identifier());
+
+		var thing = new SDPCPessimism(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
+//		thing.determineK();
+
+		var matching = thing.matching();
+
+		var metrics = new MatchingMetrics.StudentProject(matching);
+		metrics.rankDistribution().displayChart();
+
+		return;
+	}
+
+	public AgentToProjectMatching matching()
 	{
 		var remaningAgents = new LinkedList<>(agents.asCollection());
 		var partialMatching = new SDPCPartialMatching(agents.datasetContext);
 
 		int n = agents.count();
-		for (int t = 1; t <= n; t++)
+		for (int t = 1; t <= n;)
 		{
 			var activeProjects = new ActiveProjects(partialMatching, t);
 //			DatasetContext datasetContext = null;
@@ -51,13 +76,21 @@ public class SDPCPessimism
 			var worstBestOffAgents = worstBestOffAgents(Agents.from(remaningAgents), activeProjects, partialMatching, groupSizeConstraint);
 			var chosenProject = worstBestOffAgents.chosenProject();
 
+			var agentsAdded = 0;
 			for (var agent : worstBestOffAgents.agents())
 			{
 				partialMatching = partialMatching.withNewMatch(agent, chosenProject);
-//				t++;
+
+				System.out.printf("t: %s, worst: %s\n", t+agentsAdded, new MatchingMetrics.StudentProject(partialMatching).worstRank().asInt());
+
 				remaningAgents.remove(agent);
-				break;
+				agentsAdded++;
+
+				if (new ActiveProjects(partialMatching, t+agentsAdded).contains(chosenProject)) continue;
+				else break;
 			}
+
+			t += agentsAdded;
 		}
 
 		// Check all students matched
@@ -88,131 +121,43 @@ public class SDPCPessimism
 			// No active projects
 		}
 
-		var eccentric = WorstBestPairings.from(agents, projects, partialMatching, groupSizeConstraint);
+		MinQuorumRequirement minQuorumRequirement = project -> {
+			var partialGroupedByProject = partialMatching.groupedByProject();
+			var currentlyMatchedToProject = partialGroupedByProject.get(project);
+
+			int numCurrentlyMatchedToProject = currentlyMatchedToProject == null ? 0 : currentlyMatchedToProject.size();
+
+			if (numCurrentlyMatchedToProject < groupSizeConstraint.minSize()) {
+				return new NumAgentsTillQuorum(groupSizeConstraint.minSize() - numCurrentlyMatchedToProject);
+			}
+
+			if (numCurrentlyMatchedToProject >= groupSizeConstraint.minSize() && numCurrentlyMatchedToProject < groupSizeConstraint.maxSize()) {
+				return new NumAgentsTillQuorum(groupSizeConstraint.maxSize() - numCurrentlyMatchedToProject);
+			}
+
+			if (numCurrentlyMatchedToProject == groupSizeConstraint.maxSize()) {
+				return new NumAgentsTillQuorum(0);
+			}
+
+			var groupsFactorisation = GroupFactorization.cachedInstanceFor(groupSizeConstraint);
+			var upperbound = project.slots().size() * groupSizeConstraint.maxSize();
+			for (var i = numCurrentlyMatchedToProject; i <= upperbound; i++) {
+				if (groupsFactorisation.isFactorableIntoValidGroups(i))
+					return new NumAgentsTillQuorum(i - numCurrentlyMatchedToProject);
+			}
+
+			throw new RuntimeException("BUGCHECK: Something not working well");
+		};
+
+		var bla = WorstAmongBestProjectPairings.from(agents, projects, minQuorumRequirement, agents.datasetContext.allProjects().count());
+
+		var eccentric = bla.orElseThrow();
+
 		var mostEccentric = eccentric.pairingsAtK().stream()
-			.collect(Collectors.groupingBy(MatchCandidate::project))
-			.entrySet().stream()
-			.min(Comparator.comparing(projectListEntry -> projectListEntry.getValue().size()))
-				.orElseThrow(() -> new RuntimeException())
-			.getValue().stream().min(Comparator.comparing(projectAgentsPairing -> projectAgentsPairing.agents().size()))
+			.min(Comparator.comparing(projectAgentsPairing -> projectAgentsPairing.agents().size()))
 				.orElseThrow();
-//			.agents();
 
 		return new WorstBestOffAgents(mostEccentric.project(), mostEccentric.agents());
-	}
-
-	public record WorstBestPairings(Collection<MatchCandidate> pairingsAtK, int k)
-	{
-		public record Edge(Agent from, Project to, int rank){}
-
-		public static WorstBestPairings from(Agents agents, Projects projects, SDPCPartialMatching partialMatching, GroupSizeConstraint groupSizeConstraint)
-		{
-			int numProjectsInDatasetContext = agents.datasetContext.allProjects().count();
-			Map<Project, List<Agent>> alreadyAssignedToProject = partialMatching.groupedByProject();
-
-			List<WorstBestPairings.Edge> edges = new ArrayList<>(agents.count() * projects.count());
-			Map<Agent, List<WorstBestPairings.Edge>> edgesFrom = new IdentityHashMap<>();
-			Map<Project, List<WorstBestPairings.Edge>> edgesTo = new IdentityHashMap<>();
-
-			agents.asCollection().forEach(agent -> {
-				agent.projectPreference().forEach((Project project, OptionalInt rank) -> {
-					if (projects.findWithId(project.id()).isEmpty()) {
-						return;
-					}
-
-					var edge = new WorstBestPairings.Edge(agent, project, rank.orElse(1));
-
-					edges.add(edge);
-					edgesFrom.computeIfAbsent(agent, __ -> new ArrayList<>()).add(edge);
-					edgesTo.computeIfAbsent(project, __ -> new ArrayList<>()).add(edge);
-				});
-			});
-
-			Map<Project, MatchCandidate>[] agentsWithK = new IdentityHashMap[numProjectsInDatasetContext + 1];
-			for (int i = 0; i < agentsWithK.length; i++)
-			{
-				agentsWithK[i] = new IdentityHashMap<>();
-			}
-
-			int k = 0;
-			for (var thisAgent : agents.asCollection())
-			{
-				int l = numProjectsInDatasetContext + 1;
-				Project lProj = null;
-				Set<Agent> lPossibleGroupmates = null;
-
-				// Note: the current assumption is that prefs have no ties
-				// but rankOf() can return same rank for different projects (indifferences)
-				var prefs = thisAgent.projectPreference().asListOfProjects();
-
-				for (int i = prefs.size(); i >= 1; i--)
-				{
-					final var rankThisAgent = i;
-
-					// opt: skip if rank being examined is better (<) than the 'k' found so far
-//				if (rankThisAgent <= k)
-//					continue;
-
-					// Prefs is a List representation of ProjPrefs and is 0-based
-					var proj = prefs.get(rankThisAgent - 1);
-					var edgesToProj = edgesTo.get(proj);
-					if (edgesToProj == null) continue;
-
-					var possibleGroupmates = edgesToProj.stream()
-
-						// An agent cannot be a group-mate of itself,
-						// so do not include it as a possible group mate
-						.filter(edge -> edge.from() != thisAgent)
-
-						// Consider only agents who rank 'proj' better or eq
-						.filter(edge -> edge.rank() <= rankThisAgent)
-
-						.map(WorstBestPairings.Edge::from)
-						.collect(Collectors.toSet());
-
-					// Possible group size = |already assigned to proj| + |possible group mates| + 1 (the agent himself)
-					int alreadyAssignedToProj = alreadyAssignedToProject.getOrDefault(proj, List.of()).size();
-					int possibleGroupSize = alreadyAssignedToProj + possibleGroupmates.size() + 1;
-
-					if (possibleGroupSize >= groupSizeConstraint.minSize() && rankThisAgent < l)
-					{
-						l = rankThisAgent;
-						lProj = proj;
-						lPossibleGroupmates = possibleGroupmates;
-					}
-				}
-
-				if (l >= agentsWithK.length) {
-					// Didn't find anything so try another agent
-					continue;
-				}
-
-				var existingResultForProj = agentsWithK[l].get(lProj);
-				if (existingResultForProj == null) {
-					if (lProj == null) {
-						System.out.printf("DBG: woops");
-					}
-
-					HashSet<Agent> agentsInclude = new HashSet<>(Set.of(thisAgent));
-					MatchCandidate pairing = new MatchCandidate(l, lProj, agentsInclude, lPossibleGroupmates);
-					agentsWithK[l].put(lProj, pairing);
-				}
-				else {
-					existingResultForProj.agents().add(thisAgent);
-					existingResultForProj.possibleGroupmates().remove(thisAgent);
-				}
-
-				k = Math.max(l, k);
-			}
-
-			// Hacky fix: k = 0 implies nothing found - no grouping possible
-			if (k == 0) {
-				return new WorstBestPairings(Collections.emptyList(), 0);
-			}
-
-			return new WorstBestPairings(agentsWithK[k].values(), k);
-		}
-
 	}
 
 	private class SDPCPartialMatching extends ListBasedMatching<Agent, Project> implements AgentToProjectMatching
