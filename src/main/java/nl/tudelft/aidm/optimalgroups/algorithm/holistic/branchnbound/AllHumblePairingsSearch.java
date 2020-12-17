@@ -7,6 +7,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.Decre
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.AllHumblePairings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
@@ -164,7 +166,10 @@ public class AllHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchin
 			}
 
 			var worstRankOfBestSoFar = bestSolutionSoFar.currentBest().metric().worstRank().asInt();
-			var humblePairings = new AllHumblePairings(agents, projects, groupSizeConstraint, worstRankOfBestSoFar);
+
+			MinQuorumRequirement minQuorumRequirement = project -> new NumAgentsTillQuorum(groupSizeConstraint.minSize());
+
+			var humblePairings = new AllHumblePairings(agents, projects, minQuorumRequirement, worstRankOfBestSoFar);
 
 
 			var solution = humblePairings.asStream()

@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -16,7 +18,7 @@ public class SDPCOrderedByPotentialGroupmates extends SerialDictatorshipWithProj
 	public SDPCOrderedByPotentialGroupmates(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		super(
-			ordered(agents, WorstAmongBestProjectPairings.from(agents, projects, groupSizeConstraint, projects.count()).get().k()),
+			ordered(agents, WorstAmongBestProjectPairings.from(agents, projects, project -> new NumAgentsTillQuorum(groupSizeConstraint.minSize()), projects.count()).get().k()),
 			projects,
 			groupSizeConstraint
 		);

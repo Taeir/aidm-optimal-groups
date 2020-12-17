@@ -15,6 +15,7 @@ public class GroupFactorization
 	private final GroupSizeConstraint groupSizeConstraint;
 
 
+	// TODO: capacities for num groups
 	// TODO: weak references solution if to be used in production environment
 	public static Map<GroupSizeConstraint, GroupFactorization> sharedInstances = new HashMap<>();
 	public static synchronized GroupFactorization cachedInstanceFor(GroupSizeConstraint groupSizeConstraint)

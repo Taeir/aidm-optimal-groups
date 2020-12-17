@@ -16,34 +16,38 @@ public class AllHumblePairings
 {
 	private final Agents agents;
 	private final Projects projects;
-	private final GroupSizeConstraint groupSizeConstraint;
+	private final MinQuorumRequirement minQuorumRequirement;
 	private final int rankBound;
 
 
 	/**
 	 * @param agents The agents
 	 * @param projects The available projects
-	 * @param groupSizeConstraint The groupsize constraint
+	 * @param minQuorumRequirement
 	 */
-	public AllHumblePairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	public AllHumblePairings(Agents agents, Projects projects, MinQuorumRequirement minQuorumRequirement)
 	{
-		this(agents, projects, groupSizeConstraint, projects.count());
+		this(agents, projects, minQuorumRequirement, projects.count());
 	}
 
 	/**
 	 * @param rankBound The upperbound (incl) for the worst rank achieved among agents per pairing
 	 * @param agents The agents
 	 * @param projects The available projects
-	 * @param groupSizeConstraint The groupsize constraint
+	 * @param minQuorumRequirement
 	 */
-	public AllHumblePairings(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int rankBound)
+	public AllHumblePairings(Agents agents, Projects projects, MinQuorumRequirement minQuorumRequirement, int rankBound)
 	{
-		Assert.that(/*agents.count() == 0 || */agents.count() >= groupSizeConstraint.minSize())
+		var atLeastOneProjectCanReachMinimumQuorum = projects.asCollection().stream()
+			.map(minQuorumRequirement::forProject)
+			.anyMatch(numAgentsTillQuorum -> agents.count() >= numAgentsTillQuorum.asInt());
+
+		Assert.that(/*agents.count() == 0 || */ atLeastOneProjectCanReachMinimumQuorum)
 			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
 
 		this.agents = agents;
 		this.projects = projects;
-		this.groupSizeConstraint = groupSizeConstraint;
+		this.minQuorumRequirement = minQuorumRequirement;
 		this.rankBound = rankBound;
 	}
 
@@ -68,7 +72,7 @@ public class AllHumblePairings
 			}
 		});
 
-		return edgesToProject.allPairingsForProject(rankBound, groupSizeConstraint).stream();
+		return edgesToProject.allPairingsForProject(rankBound, minQuorumRequirement.forProject(project)).stream();
 	}
 
 }

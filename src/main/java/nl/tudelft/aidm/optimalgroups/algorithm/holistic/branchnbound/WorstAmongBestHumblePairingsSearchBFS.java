@@ -5,6 +5,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Possi
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupingsByIndividual;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
@@ -185,7 +187,9 @@ public class WorstAmongBestHumblePairingsSearchBFS extends DynamicSearch<AgentTo
 		{
 			if (kProjectAgentsPairing == null) {
 				var bestWorstRankSoFar = bestSolutionSoFar.currentBest().metric().worstRank().asInt();
-				return WorstAmongBestProjectPairings.from(agents, projects, groupSizeConstraint, bestWorstRankSoFar);
+
+				MinQuorumRequirement minQuorumRequirement = project -> new NumAgentsTillQuorum(groupSizeConstraint.minSize());
+				return WorstAmongBestProjectPairings.from(agents, projects, minQuorumRequirement, bestWorstRankSoFar);
 			}
 
 			return kProjectAgentsPairing;

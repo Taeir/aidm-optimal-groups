@@ -323,7 +323,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
 			var sdpc = new nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCPessimism(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
-			var matchingStudentsToProjects = sdpc.doIt();
+			var matchingStudentsToProjects = sdpc.matching();
 
 			return FormedGroupToProjectMatching.from(matchingStudentsToProjects);
 		}

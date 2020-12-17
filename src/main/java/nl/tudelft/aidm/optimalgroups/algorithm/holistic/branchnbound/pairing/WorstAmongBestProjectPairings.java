@@ -12,16 +12,12 @@ import java.util.stream.Collectors;
 
 public record WorstAmongBestProjectPairings(Collection<MatchCandidate> pairingsAtK, int k)
 {
-	public static Optional<WorstAmongBestProjectPairings> from(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int rankBound)
+	public static Optional<WorstAmongBestProjectPairings> from(Agents agents, Projects projects, MinQuorumRequirement minQuorumRequirement, int rankBound)
 	{
-		Assert.that(agents.count() >= groupSizeConstraint.minSize())
-			.orThrowMessage("Cannot determine pairings: given agents cannot even constitute a min-size group");
-		// Or: always return Optional.empty?
-
 		var bestPerAgent = new IdentityHashMap<Agent, Integer>(agents.count());
 		var pairingsByK = new WorstAmongBestProjectPairings[rankBound + 1];
 
-		var bestHumblePairings = new BestHumblePairings(agents, projects, groupSizeConstraint, rankBound);
+		var bestHumblePairings = new BestHumblePairings(agents, projects, minQuorumRequirement, rankBound);
 
 		for (var project : projects.asCollection())
 		{

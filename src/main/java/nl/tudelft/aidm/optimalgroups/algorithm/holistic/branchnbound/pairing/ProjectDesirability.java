@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 class ProjectDesirability
 {
@@ -30,7 +31,7 @@ class ProjectDesirability
 		bin.add(agentsProjDesirability.from());
 	}
 
-	public Optional<MatchCandidate> pairingForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
+	public Optional<MatchCandidate> pairingForProject(int rankBoundInclusive, NumAgentsTillQuorum numAgentsTillQuorum)
 	{
 		var potentialGroupmates = new LinkedList<Agent>();
 
@@ -46,7 +47,7 @@ class ProjectDesirability
 
 			if (agentsWithRank == null) continue;
 
-			if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize())
+			if (agentsWithRank.size() + potentialGroupmates.size() >= numAgentsTillQuorum.asInt())
 			{
 				// We've reached the "pivot point"
 				var agentsWithRankInSet = new HashSet<>(agentsWithRank);
@@ -59,10 +60,20 @@ class ProjectDesirability
 			potentialGroupmates.addAll(agentsWithRank);
 		}
 
+		// Corner case where only indiff agents remain
+		if (edgesPerRankBucket[0] != null && edgesPerRankBucket[0].size() >= numAgentsTillQuorum.asInt()) {
+
+			var include = edgesPerRankBucket[0].stream().limit(numAgentsTillQuorum.asInt()).collect(Collectors.toSet());
+			var rest = new HashSet<>(edgesPerRankBucket[0]);
+			rest.removeAll(include);
+
+			return Optional.of (new MatchCandidate(0, project, include, rest));
+		}
+
 		return Optional.empty();
 	}
 
-	public List<MatchCandidate> allPairingsForProject(int rankBoundInclusive, GroupSizeConstraint groupSizeConstraint)
+	public List<MatchCandidate> allPairingsForProject(int rankBoundInclusive, NumAgentsTillQuorum numAgentsTillQuorum)
 	{
 		var results = new LinkedList<MatchCandidate>();
 
@@ -80,7 +91,7 @@ class ProjectDesirability
 
 			if (agentsWithRank == null) continue;
 
-			if (agentsWithRank.size() + potentialGroupmates.size() >= groupSizeConstraint.minSize())
+				if (agentsWithRank.size() + potentialGroupmates.size() >= numAgentsTillQuorum.asInt())
 			{
 				// We've reached the "pivot point"
 				var agentsWithRankInSet = new HashSet<>(agentsWithRank);

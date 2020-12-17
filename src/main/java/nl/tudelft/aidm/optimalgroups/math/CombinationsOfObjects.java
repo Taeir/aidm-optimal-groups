@@ -1,9 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.math;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class CombinationsOfObjects<T>
 {
@@ -55,5 +54,15 @@ public class CombinationsOfObjects<T>
 				return listResult;
 			}
 		};
+	}
+
+	public
+	Stream<List<T>> asStream()
+	{
+		var iter = this.asIterator();
+		long count = this.count();
+		var spliterator = Spliterators.spliterator(iter, count, Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.SIZED);
+
+		return StreamSupport.stream(spliterator, false);
 	}
 }
