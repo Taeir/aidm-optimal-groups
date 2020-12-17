@@ -22,15 +22,15 @@ public class Experiment_BepSys_Pessimism_SDPC_MinizincMIP_241020
 	{
 		var experimentsForInReport = new ArrayList<Experiment>();
 
-		var algorithms = List.of(
-			new GroupProjectAlgorithm.BepSys_reworked(),
+		List<GroupProjectAlgorithm> algorithms = List.of(
+//			new GroupProjectAlgorithm.BepSys_reworked(),
 //			new GroupProjectAlgorithm.BepSys_reworkedGroups_minimizeIndividualDisutility(),
 //			new GroupProjectAlgorithm.CombinedPrefs(),
 //			new GroupProjectAlgorithm.RSD(),
 //			new GroupProjectAlgorithm.ILPPP(),
-//			new GroupProjectAlgorithm.PessimisticHeuristic(),
-			new GroupProjectAlgorithm.SDPCWithSlots(),
-			new GroupProjectAlgorithm.MinizincMIP()
+			new GroupProjectAlgorithm.Pessimism()
+//			new GroupProjectAlgorithm.SDPCWithSlots(),
+//			new GroupProjectAlgorithm.MinizincMIP()
 //			new GroupProjectAlgorithm.Greedy_SDPC_Pessimism_inspired(),
 //			new GroupProjectAlgorithm.SDPCWithSlots_potential_numgroupmates_ordered()
 		);
