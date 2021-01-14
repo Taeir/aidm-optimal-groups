@@ -38,7 +38,7 @@ public interface Projects
 	 */
 	static Projects from(Collection<Project> projects)
 	{
-		return new ListBasedProjects.ListBasedProjectsImpl(new ArrayList<>(projects));
+		return new ListBasedProjects.FromBackingList(new ArrayList<>(projects));
 	}
 
 	static Projects generated(int numProjects, int numSlots)

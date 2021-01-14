@@ -101,11 +101,11 @@ public abstract class ListBasedProjects implements Projects
 	/**
 	 * A simple implementation of ListBasedProjects
 	 */
-	public static class ListBasedProjectsImpl extends ListBasedProjects
+	public static class FromBackingList extends ListBasedProjects
 	{
 		private final List<Project> projects;
 
-		ListBasedProjectsImpl(List<Project> projects)
+		public FromBackingList(List<Project> projects)
 		{
 			this.projects = projects;
 		}
