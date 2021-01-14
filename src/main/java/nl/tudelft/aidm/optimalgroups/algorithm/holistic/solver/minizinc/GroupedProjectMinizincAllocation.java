@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc;
 
+import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.datasets.ThesisDatasets;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -42,7 +44,12 @@ public class GroupedProjectMinizincAllocation
 		var minizinc = new MiniZinc(model);
 
 		SequentualDatasetContext seqDataset = SequentualDatasetContext.from(datasetContext);
-		var instanceData = new StudentGroupProjectMatchingInstanceData(seqDataset, 5);
+
+		var slotsPerProject = datasetContext.allProjects().asCollection().stream().map(Project::slots).map(List::size).distinct().collect(Collectors.toList());
+		Assert.that(slotsPerProject.size() == 1)
+			.orThrowMessage("I know this is probably a bad time, but you need to fix MiniZinc model to support heterogenuous slot amounts");
+
+		var instanceData = new StudentGroupProjectMatchingInstanceData(seqDataset, slotsPerProject.get(0));
 
 		try {
 			long timelimit = Duration.ofMinutes(5).toMillis();
@@ -58,10 +65,6 @@ public class GroupedProjectMinizincAllocation
 			throw new RuntimeException(e);
 		}
 	}
-
-
-
-
 
 	private static class MinizincSolution
 	{
@@ -124,11 +127,11 @@ public class GroupedProjectMinizincAllocation
 	public static void main(String[] args) throws Exception
 	{
 //		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-
-		var ce = ThesisDatasets.CE10Like(500);
+//		var ce = ThesisDatasets.CE10Like(500);
+		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
 
 		var seqDataset = SequentualDatasetContext.from(ce);
-		var data = new StudentGroupProjectMatchingInstanceData(seqDataset, 5);
+		var data = new StudentGroupProjectMatchingInstanceData(seqDataset, 1);
 
 		var henk = new GroupedProjectMinizincAllocation(ce, 5).matching();
 		MatchingMetrics.StudentProject metrics = new MatchingMetrics.StudentProject(henk);
