@@ -128,15 +128,21 @@ public class CourseEdition implements DatasetContext
 
 	private static Projects fetchProjects(DataSource dataSource, CourseEdition courseEdition)
 	{
-		var sql = "SELECT id FROM projects where course_edition_id = :courseEditionId";
+		var sqlProjects = """
+				SELECT      p.id as id, cc.max_number_of_groups as numSlots
+				FROM        projects as p
+				INNER JOIN  course_configurations as cc
+							ON p.course_edition_id = cc.course_edition_id
+				WHERE       p.course_edition_id = :courseEditionId
+				""";
 		try (var connection = new Sql2o(dataSource).open())
 		{
-			Query query = connection.createQuery(sql);
+			Query query = connection.createQuery(sqlProjects);
 			query.addParameter("courseEditionId", courseEdition.courseEditionId);
 
 			List<Project> projectsAsList = query.executeAndFetch(
 				(ResultSetHandler<Project>) rs ->
-					new Project.ProjectsWithDefaultSlotAmount(rs.getInt("id"))
+					new Project.ProjectWithStaticSlotAmount(rs.getInt("id"), rs.getInt("numSlots"))
 			);
 
 			return new ProjectsInDb(projectsAsList, courseEdition);
@@ -148,6 +154,7 @@ public class CourseEdition implements DatasetContext
 		switch (ComputerName.ofThisMachine().toString())
 		{
 			case "COOLICER-DESK":
+			case "PHILIPE-DESK":
 				return new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
 			case "PHILIPE-LAPTOP":
 				return new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
