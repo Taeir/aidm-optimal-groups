@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.Group
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupingsByIndividual;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
@@ -116,7 +117,7 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 			// Threads of a parallel stream run in a pool, not as children of this thread
 			// Hence, we provide a pool context which we control so that we can force shutdown
 			forkJoinPool.execute(root::solution);
-			forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
+			forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
 			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
 				// Give an extension...
 				System.out.println("Pessimism: entering over-time...");
@@ -198,7 +199,7 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 
 			var bestWorstRankSoFar = bestSolutionSoFar.currentBest().metric().worstRank().asInt();
 
-			MinQuorumRequirement minQuorumRequirement = project -> new NumAgentsTillQuorum(groupSizeConstraint.minSize());
+			MinQuorumRequirement minQuorumRequirement = new MinQuorumReqTillNextQuorum();
 			var essentialPairing = WorstAmongBestProjectPairings.from(agents, projects, minQuorumRequirement, bestWorstRankSoFar);
 
 			if (essentialPairing.isEmpty()) {
@@ -255,8 +256,43 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 			// I think...
 			return true;
 		}
+
+		private class MinQuorumReqTillNextQuorum implements MinQuorumRequirement
+		{
+			@Override
+			public NumAgentsTillQuorum forProject(Project project)
+			{
+				var partialGroupedByProject = partial.matching().groupedByProject();
+				var currentlyMatchedToProject = partialGroupedByProject.get(project);
+
+				int numCurrentlyMatchedToProject = currentlyMatchedToProject == null ? 0 : currentlyMatchedToProject.size();
+
+				if (numCurrentlyMatchedToProject < groupSizeConstraint.minSize()) {
+					return new NumAgentsTillQuorum(groupSizeConstraint.minSize() - numCurrentlyMatchedToProject);
+				}
+
+				if (numCurrentlyMatchedToProject >= groupSizeConstraint.minSize() && numCurrentlyMatchedToProject < groupSizeConstraint.maxSize()) {
+					return new NumAgentsTillQuorum(groupSizeConstraint.maxSize() - numCurrentlyMatchedToProject);
+				}
+
+//				if (numCurrentlyMatchedToProject == groupSizeConstraint.maxSize()) {
+//					return new NumAgentsTillQuorum(0);
+//				}
+
+				var groupsFactorisation = GroupFactorization.cachedInstanceFor(groupSizeConstraint);
+				var upperbound = project.slots().size() * groupSizeConstraint.maxSize();
+				for (var i = numCurrentlyMatchedToProject; i <= upperbound; i++) {
+					if (groupsFactorisation.isFactorableIntoValidGroups(i))
+						return new NumAgentsTillQuorum(i - numCurrentlyMatchedToProject);
+				}
+
+				throw new RuntimeException("BUGCHECK: Something not working well");
+			}
+		}
 	}
 
 	private static record GroupProjectPairing(int kRank, Project project, List<Agent> group) {}
+
+
 
 }
