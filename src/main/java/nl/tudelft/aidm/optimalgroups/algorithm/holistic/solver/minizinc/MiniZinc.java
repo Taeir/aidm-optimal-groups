@@ -28,19 +28,26 @@ public class MiniZinc
 
 	private Process spawnMinizincProcess(JsonDatafile modelData, String solver, long timelimit) throws Exception
 	{
-		var dataFile = File.createTempFile("minizinc_data_" + Instant.now().getEpochSecond(), ".json");
-		var writer = new FileWriter(dataFile);
-		writer.write(modelData.asJsonString());
-		writer.close();
+		var modelFile = File.createTempFile("minizinc_model_", ".mzn");
+		var writerModel = new FileWriter(modelFile);
+		writerModel.write(new String(model.openStream().readAllBytes()));
+		writerModel.close();
 
-		var proc = Runtime.getRuntime().exec(new String[] {
+		var dataFile = File.createTempFile("minizinc_data_", ".json");
+		var writerData = new FileWriter(dataFile);
+		writerData.write(modelData.asJsonString());
+		writerData.close();
+
+		var commandline = new String[] {
 			workingDir + binary,
 			"--solver", solver,
 			"--time-limit", String.valueOf(timelimit),
 			"-O3",
-			new File(model.getFile()).getAbsolutePath(),
+			modelFile.getAbsolutePath(),
 			dataFile.getAbsolutePath()
-		}, null, new File(workingDir));
+		};
+
+		var proc = Runtime.getRuntime().exec(commandline, null, new File(workingDir));
 
 		return proc;
 	}
@@ -50,7 +57,13 @@ public class MiniZinc
 		var proc = spawnMinizincProcess(data, solver, timelimit);
 
 		InputStream inputStream = proc.getInputStream();
+		InputStream errStream = proc.getErrorStream();
 		proc.waitFor(5, TimeUnit.MINUTES);
+
+		if (errStream.available() > 0) {
+			var errorOutput = new String(errStream.readAllBytes());
+			throw new RuntimeException(errorOutput);
+		}
 
 		return new Solutions(inputStream);
 	}
