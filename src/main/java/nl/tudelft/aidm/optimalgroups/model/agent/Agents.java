@@ -85,6 +85,11 @@ public class Agents
 		return new Agents(datasetContext, copyAgents);
 	}
 
+	public Agents without(Agent agent)
+	{
+		return this.with(Agents.from(agent));
+	}
+
 	public Agents without(Collection<Agent> other)
 	{
 		return this.without(Agents.from(other));

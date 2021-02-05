@@ -8,7 +8,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMat
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.WorstAmongBestHumblePairingsSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.GroupedProjectMinizincAllocation;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCOrderedByPotentialGroupmates;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SerialDictatorshipWithProjClosures;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPC;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -284,7 +284,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var sdpc = new SerialDictatorshipWithProjClosures(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			var sdpc = new SDPC(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.doIt();
 
 			return FormedGroupToProjectMatching.from(matchingStudentsToProjects);

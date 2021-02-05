@@ -1,6 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -13,7 +12,7 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SDPCOrderedByPotentialGroupmates extends SerialDictatorshipWithProjClosures
+public class SDPCOrderedByPotentialGroupmates extends SDPC
 {
 	public SDPCOrderedByPotentialGroupmates(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
