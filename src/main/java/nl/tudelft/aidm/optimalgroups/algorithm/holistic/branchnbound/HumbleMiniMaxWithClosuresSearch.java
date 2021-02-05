@@ -1,16 +1,15 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupings;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.PossibleGroupingsByIndividual;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.DecrementableProjects;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.PessimismSolution;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.ActiveProjects;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.math.CombinationsOfObjects;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -26,52 +25,26 @@ import plouchtch.assertion.Assert;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
+/**
+ * A variant of the "Pessimism" search where the BnB search is _not_ creating groups, but merely
+ * matches the most disadvantaged (at that step) students to a project. Doing so evolves the set of "active projects"
+ * as introduced by Tumennasan et al for in the SDPC mechanism {@link ActiveProjects}. But now we're doing a Branch n Bound
+ * search instead of a serial dictatorship, the order is dynamic - driven by the heuristic, on the choices of which we branch
+ */
+@SuppressWarnings("DuplicatedCode")
+public class HumbleMiniMaxWithClosuresSearch extends DynamicSearch<AgentToProjectMatching, PessimismSolution>
 {
-
-	// determine set of 'eccentric' students E - eccentric: student with lowest satisfaction
-	// foreach s in E
-	//     try all group combinations such that nobody in that group is worse off than s
-	//     decrease slots of project p by 1
-
-
-//	public static void thingy(String[] args)
-//	{
-//		int k = 8;
-//
-//		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-//		int minGroupSize = ce.groupSizeConstraint().minSize();
-//
-//		var result = ce.allAgents().asCollection().stream()
-//			.map(agent -> agent.projectPreference().asListOfProjects())
-//			.map(projectPreference -> topNElements(projectPreference, k))
-//			.flatMap(Collection::stream)
-//			.collect(Collectors.groupingBy(project -> project)).entrySet().stream()
-//			.map(entry -> Pair.create(entry.getKey(), entry.getValue().size() / minGroupSize))
-//			.filter(pair -> pair.getValue() > 0)
-//			.sorted(Comparator.comparing((Pair<Project, Integer> pair) -> pair.getValue()))
-//	//			.mapToInt(pair -> pair.getValue())
-//	//			.sum();
-////			.count();
-//				.collect(Collectors.toList());
-//
-////		ce = new CourseEditionModNoPeerPref(ce);
-//		var bepSysMatchingWhenNoPeerPrefs = new GroupProjectAlgorithm.BepSys().determineMatching(ce);
-//
-//		var metrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(bepSysMatchingWhenNoPeerPrefs));
-//
-//		return;
-//	}
-
 	public static void main(String[] args)
 	{
 //		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
 		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		var thing = new WorstAmongBestHumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
+		var thing = new HumbleMiniMaxWithClosuresSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 
 		var matching = thing.matching();
@@ -84,22 +57,22 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 	private final Agents agents;
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
-	private final PossibleGroupings possibleGroups;
+	private final PossibleAssignmentOfAgentsToProject possibleAssignmentOfAgentsToProject;
 	private final GroupFactorization groupFactorization;
 
-	public WorstAmongBestHumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
+	public HumbleMiniMaxWithClosuresSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint)
 	{
 		this(agents, projects, groupSizeConstraint, projects.count() + 1);
 	}
 
-	public WorstAmongBestHumblePairingsSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int worstRankBound)
+	public HumbleMiniMaxWithClosuresSearch(Agents agents, Projects projects, GroupSizeConstraint groupSizeConstraint, int worstRankBound)
 	{
 		super(PessimismSolution.emptyWithBoundedWorstRank(agents.datasetContext, worstRankBound));
 
 		this.agents = agents;
 		this.projects = projects;
 		this.groupSizeConstraint = groupSizeConstraint;
-		this.possibleGroups = new PossibleGroupingsByIndividual();
+		this.possibleAssignmentOfAgentsToProject = new PossibleAssignmentOfAgentsToProject();
 
 		this.groupFactorization = new GroupFactorization(groupSizeConstraint, agents.count());
 	}
@@ -108,7 +81,7 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 	{
 		DatasetContext datsetContext = agents.datasetContext;
 
-		var root = new PessimismSearchNode(agents, new DecrementableProjects(projects), groupSizeConstraint);
+		var root = new HumbleMiniMaxClosuresSearchNode(agents, new DecrementableProjects(projects), groupSizeConstraint);
 
 		// Run the algorithm with time constraints, after timeout we check best solution found up to that moment
 		try {
@@ -117,12 +90,12 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 			// Threads of a parallel stream run in a pool, not as children of this thread
 			// Hence, we provide a pool context which we control so that we can force shutdown
 			forkJoinPool.execute(root::solution);
-			forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
-			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
-				// Give an extension...
-				System.out.println("Pessimism: entering over-time...");
-				forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
-			}
+			forkJoinPool.awaitTermination(60, TimeUnit.MINUTES);
+//			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
+//				// Give an extension...
+//				System.out.println("Pessimism: entering over-time...");
+//				forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
+//			}
 			forkJoinPool.shutdownNow();
 		}
 		catch (Exception e) {
@@ -150,34 +123,36 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 		return matching;
 	}
 
-	public class PessimismSearchNode extends SearchNode
+	private static record AgentsToProjectPairing(List<Agent> agents, Project project, int rankOfProject) {}
+
+	public class HumbleMiniMaxClosuresSearchNode extends SearchNode
 	{
 		private final PessimismSolution partial;
 
-		private final Agents agents;
-		private final DecrementableProjects projects;
+		private final Agents remainingAgents;
+		private final ActiveProjects activeProjects;
 		private final GroupSizeConstraint groupSizeConstraint;
 
-		public PessimismSearchNode(Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
+		public HumbleMiniMaxClosuresSearchNode(Agents allAgents, Projects allProjects, GroupSizeConstraint groupSizeConstraint)
 		{
-			this.partial = PessimismSolution.empty(agents.datasetContext);
-			this.agents = agents;
-			this.projects = projects;
+			this.partial = PessimismSolution.empty(allAgents.datasetContext);
+			this.remainingAgents = allAgents;
+			this.activeProjects = new ActiveProjects(partial.matching(), allProjects, remainingAgents, groupSizeConstraint);
 			this.groupSizeConstraint = groupSizeConstraint;
 		}
 
-		private PessimismSearchNode(PessimismSolution partial, Agents agents, DecrementableProjects projects, GroupSizeConstraint groupSizeConstraint)
+		private HumbleMiniMaxClosuresSearchNode(PessimismSolution partial, Agents remainingAgents, ActiveProjects activeProjects, GroupSizeConstraint groupSizeConstraint)
 		{
 			this.partial = partial;
-			this.agents = agents;
-			this.projects = projects;
+			this.remainingAgents = remainingAgents;
+			this.activeProjects = activeProjects;
 			this.groupSizeConstraint = groupSizeConstraint;
 		}
 
 		@Override
 		public Optional<PessimismSolution> solve()
 		{
-			if (agents.count() == 0) {
+			if (remainingAgents.count() == 0) {
 				bestSolutionSoFar.potentiallyUpdateBestSolution(partial);
 				return Optional.of(partial);
 			}
@@ -190,28 +165,33 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 				return Optional.empty();
 			}
 
-			// If the remaining agents cannot be partitioned into groups of valid sizes,
-			// then this search branch is to be terminated without a solution (aka empty solution)
-			// (because we are looking for a complete matching)
-			if (!groupFactorization.isFactorableIntoValidGroups(agents.count())) {
-				return Optional.empty();
-			}
+			// By using ActiveProjects not relevant
+//			if (!groupFactorization.isFactorableIntoValidGroups(agents.count())) {
+//				return Optional.empty();
+//			}
 
 			var bestWorstRankSoFar = bestSolutionSoFar.currentBest().metric().worstRank().asInt();
 
-			MinQuorumRequirement minQuorumRequirement = new MinQuorumReqTillNextQuorum();
-			var essentialPairing = WorstAmongBestProjectPairings.from(agents, projects, minQuorumRequirement, bestWorstRankSoFar);
+//			MinQuorumRequirement minQuorumRequirement = new MinQuorumReqTillNextQuorum();
 
-			if (essentialPairing.isEmpty()) {
+			// TODO: tigher check - extend ActiveProjects to count available slots for students
+			if (activeProjects.count() < 1) {
 				return Optional.empty();
 			}
+
+			var essentialPairing = WorstAmongBestProjectPairings.from(remainingAgents, activeProjects, project -> new NumAgentsTillQuorum(1), bestWorstRankSoFar);
+
+//			if (essentialPairing.isEmpty()) {
+//				return Optional.empty();
+//			}
 
 			var solution = essentialPairing.stream().parallel()
 				.flatMap(p -> p.pairingsAtK().stream())
 
 				.flatMap(this::intoAllPossibleGroupCombinationsPerPairing)
 
-				.takeWhile(x -> x.kRank() <= bestSolutionSoFar.currentBest().metric().worstRank().asInt())
+				// Abort the parallel-stream if the bound has changed in the meantime, as it will not find better solutions
+				.takeWhile(x -> x.rankOfProject() <= bestSolutionSoFar.currentBest().metric().worstRank().asInt())
 
 				.map(this::assumeGroupAndRecurseDeeper)
 
@@ -226,33 +206,37 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 		}
 
 		@NotNull
-		private Stream<? extends GroupProjectPairing> intoAllPossibleGroupCombinationsPerPairing(MatchCandidate pairing)
+		private Stream<? extends AgentsToProjectPairing> intoAllPossibleGroupCombinationsPerPairing(MatchCandidate pairing)
 		{
 			// TODO OPT: group agents by "type" to decrease the amount of symmetric combinations. Where type is to be defined as
 			//  "only the effective part of the agent's preference".
 
+			var numAlreadyMatched = partial.matching().groupedByProject().getOrDefault(pairing.project(), List.of()).size();
 
-			// The MinTillQuorum approach:
-			//  use as many "include" agents as possible, do not use possible group mates unless needed
+			// Wrong!
+			int maxCapacityOfProject = pairing.project().slots().size() * groupSizeConstraint.maxSize();
+			var remainingCapacityProject = maxCapacityOfProject - numAlreadyMatched;
+//
+			var bla = activeProjects.numStudentsCanBeAddedInBulk(pairing.project());
+			var possibleGrps = possibleAssignmentOfAgentsToProject.of(pairing.agents(), remainingCapacityProject);
 
-			var possibleGrps = possibleGroups.of(pairing.agents(), pairing.possibleGroupmates(), groupSizeConstraint);
-			return possibleGrps.map(possibleGroup -> new GroupProjectPairing(pairing.kRank(), pairing.project(), possibleGroup));
+			return possibleGrps.map(candidates -> new AgentsToProjectPairing(candidates, pairing.project(), pairing.kRank()));
 		}
 
-		private PessimismSearchNode assumeGroupAndRecurseDeeper(GroupProjectPairing groupProjectPairing)
+		private HumbleMiniMaxClosuresSearchNode assumeGroupAndRecurseDeeper(AgentsToProjectPairing pairing)
 		{
-			var group = groupProjectPairing.group();
-			var project = groupProjectPairing.project();
+			var candidates = pairing.agents();
+			var project = pairing.project();
 
-			Assert.that(group.size() >= groupSizeConstraint.minSize()).orThrowMessage("Group is smaller than min size");
-			Assert.that(group.size() <= groupSizeConstraint.maxSize()).orThrowMessage("Group is larger than max size");
+			Agents remainingAgents = this.remainingAgents.without(candidates);
+//			DecrementableProjects remainingProjects = this.projects.decremented(project);
 
-			Agents remainingAgents = agents.without(group);
-			DecrementableProjects remainingProjects = this.projects.decremented(project);
+			var newPartial = partial.matching().withMatches(project, candidates);
+			var solutionSoFar = PessimismSolution.fromMatching(newPartial);
 
-			var newPartial = partial.matching().withMatches(project, group);
-			PessimismSolution solutionSoFar = PessimismSolution.fromMatching(newPartial);
-			return new PessimismSearchNode(solutionSoFar, remainingAgents, remainingProjects, groupSizeConstraint);
+			var availableProjectsAfter = new ActiveProjects(solutionSoFar.matching(), activeProjects, remainingAgents, groupSizeConstraint);
+
+			return new HumbleMiniMaxClosuresSearchNode(solutionSoFar, remainingAgents, availableProjectsAfter, groupSizeConstraint);
 		}
 
 		@Override
@@ -300,7 +284,15 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 		}
 	}
 
-	private static record GroupProjectPairing(int kRank, Project project, List<Agent> group) {}
+	private static class PossibleAssignmentOfAgentsToProject
+	{
+		public Stream<List<Agent>> of(Set<Agent> agents, int capacity)
+		{
+			int maxAgentsToAssign = Math.min(agents.size(), capacity);
+			return IntStream.rangeClosed(1, maxAgentsToAssign).boxed()
+				.flatMap(numToAssign -> new CombinationsOfObjects<>(agents, numToAssign).asStream());
+		}
+	}
 
 
 
