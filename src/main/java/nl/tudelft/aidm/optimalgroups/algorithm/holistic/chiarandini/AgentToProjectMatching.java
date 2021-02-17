@@ -20,7 +20,7 @@ class AgentToProjectMatching implements nl.tudelft.aidm.optimalgroups.model.matc
 	private final List<Match<Agent, Project>> asList;
 	private final DatasetContext datasetContext;
 
-	public AgentToProjectMatching(AssignmentVariablesAndConstraints assignmentVariablesAndConstraints, GRBModel model, SequentualDatasetContext datasetContext)
+	public AgentToProjectMatching(AssignmentConstraint assignmentConstraint, GRBModel model, SequentualDatasetContext datasetContext)
 	{
 		var matches = new ArrayList<Match<Agent, Project>>();
 
@@ -30,11 +30,9 @@ class AgentToProjectMatching implements nl.tudelft.aidm.optimalgroups.model.matc
 			{
 				project.slots().forEach(slot ->
 				{
-					var x = assignmentVariablesAndConstraints.x(agent, project, slot);
-					if (x != null)
+					assignmentConstraint.x(agent, slot).ifPresent(x ->
 					{
-						var xValue = Try.getting(() -> x.asVar().get(GRB.DoubleAttr.X))
-							.or(Rethrow.asRuntime());
+						var xValue = x.getValueOrThrow();
 
 						if (xValue > 0.9)
 						{
@@ -43,7 +41,7 @@ class AgentToProjectMatching implements nl.tudelft.aidm.optimalgroups.model.matc
 							var match = new AgentToProjectMatch(ogAgent, ogProject);
 							matches.add(match);
 						}
-					}
+					});
 				});
 			});
 		});

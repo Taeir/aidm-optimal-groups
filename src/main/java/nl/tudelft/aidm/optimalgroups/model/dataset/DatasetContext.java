@@ -30,4 +30,10 @@ public interface DatasetContext<PROJECTS extends Projects, AGENTS extends Agents
 	AGENTS allAgents();
 
 	GroupSizeConstraint groupSizeConstraint();
+
+	default int numMaxSlots()
+	{
+		return this.allProjects().asCollection().stream().map(proj -> proj.slots().size()).max(Integer::compareTo)
+			.orElseThrow(() -> new RuntimeException(String.format("None of the projects in dataset [%s] have slots. Bug?", this)));
+	}
 }

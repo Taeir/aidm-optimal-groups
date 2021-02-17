@@ -7,12 +7,14 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
-class AssignmentVariablesAndConstraints
+import java.util.Optional;
+
+class AssignmentConstraint
 {
 	public final X[][][] x;
 	public final Y[][] y;
 	
-	public static AssignmentVariablesAndConstraints createInModel(GRBModel model, SequentualDatasetContext datasetContext) throws GRBException
+	public static AssignmentConstraint createInModel(GRBModel model, SequentualDatasetContext datasetContext) throws GRBException
 	{
 		// num agents
 		var S = datasetContext.allAgents().count();
@@ -21,8 +23,7 @@ class AssignmentVariablesAndConstraints
 		var P = datasetContext.allProjects().count();
 
 		// num slots per projects (the max)
-		var SL = datasetContext.allProjects().asCollection().stream().map(proj -> proj.slots().size()).max(Integer::compareTo)
-			.orElseThrow(() -> new RuntimeException(String.format("None of the projects in dataset [%s] have slots. Bug?", datasetContext)));
+		var SL = datasetContext.numMaxSlots();
 
 		X[][][] x = new X[S+1][P+1][SL];
 		Y[][] y = new Y[P+1][SL];
@@ -127,21 +128,30 @@ class AssignmentVariablesAndConstraints
 			});
 		});
 
-		return new AssignmentVariablesAndConstraints(datasetContext, model, x, y);
+		return new AssignmentConstraint(datasetContext, model, x, y);
 	}
 
-	public AssignmentVariablesAndConstraints(SequentualDatasetContext datasetContext, GRBModel model, X[][][] x, Y[][] y)
+	public AssignmentConstraint(SequentualDatasetContext datasetContext, GRBModel model, X[][][] x, Y[][] y)
 	{
 		this.x = x;
 		this.y = y;
 	}
 
-	public X x(Agent agent, Project project, Project.ProjectSlot slot) {
-		return x[agent.id][project.id()][slot.index()];
+	public Optional<X> x(Agent agent, Project.ProjectSlot slot)
+	{
+		return Optional.ofNullable(
+			x[agent.id][slot.belongingToProject().id()][slot.index()]
+		);
 	}
 
+	public Optional<Y> y(Project.ProjectSlot slot)
+	{
+		return Optional.ofNullable(
+			y[slot.belongingToProject().id()][slot.index()]
+		);
+	}
 
-	public record X(Agent student, Project project, Project.ProjectSlot slot, String name, GRBVar asVar)
+	public record X (Agent student, Project project, Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
 		public static X createInModel(Agent student, Project project, Project.ProjectSlot slot, GRBModel model)
 		{
@@ -149,6 +159,12 @@ class AssignmentVariablesAndConstraints
 			var grbVar = binaryVariable(model, name);
 
 			return new X(student, project, slot, name, grbVar);
+		}
+
+		public double getValueOrThrow()
+		{
+			return Try.getting(() -> this.asVar().get(GRB.DoubleAttr.X))
+				.or(Rethrow.asRuntime());
 		}
 
 		@Override

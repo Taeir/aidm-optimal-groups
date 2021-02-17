@@ -9,7 +9,7 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetC
 public class UtilitarianWeightsObjective
 {
 	public static void createInModel(GRBModel model, SequentualDatasetContext datasetContext,
-		AssignmentVariablesAndConstraints assignmentVars, WeightScheme weightScheme)
+	                                 AssignmentConstraint assignmentVars, WeightScheme weightScheme)
 		throws GRBException
 	{
 		var objFnExpr = new GRBLinExpr();
@@ -20,7 +20,7 @@ public class UtilitarianWeightsObjective
 
 					// Agent is not indiff and finds project acceptable
 					if (!rank.isCompletelyIndifferent() && !rank.unacceptable()) {
-						var x = assignmentVars.x(agent, project, slot);
+						var x = assignmentVars.x(agent, slot).get();
 
 						// calc weight from rank
 						var weight = weightScheme.weight(rank.asInt());

@@ -8,9 +8,6 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
-import plouchtch.assertion.Assert;
-
-import java.util.function.Function;
 
 public class ChiarandiniUtilitarianWeightSumMinimalization
 {
@@ -45,14 +42,14 @@ public class ChiarandiniUtilitarianWeightSumMinimalization
 
 		var model = new GRBModel(env);
 
-		AssignmentVariablesAndConstraints assignmentVariablesAndConstraints = AssignmentVariablesAndConstraints.createInModel(model, seqDatasetContext);
-		UtilitarianWeightsObjective.createInModel(model, seqDatasetContext, assignmentVariablesAndConstraints, weightScheme);
+		AssignmentConstraint assignmentConstraint = AssignmentConstraint.createInModel(model, seqDatasetContext);
+		UtilitarianWeightsObjective.createInModel(model, seqDatasetContext, assignmentConstraint, weightScheme);
 
 		model.optimize();
 
 		// extract x's and map to matching
 
-		var matching = new AgentToProjectMatching(assignmentVariablesAndConstraints, model, seqDatasetContext);
+		var matching = new AgentToProjectMatching(assignmentConstraint, model, seqDatasetContext);
 
 		env.dispose();
 
