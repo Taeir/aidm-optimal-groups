@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.jfree.chart.ChartFactory;
@@ -71,10 +72,12 @@ public class AvgPreferenceRankOfProjects
 
 		// collect rankings per project
 		prefProfiles.forEach(profile -> {
-			profile.forEach((Project project, OptionalInt rank) -> {
-				if (rank.isPresent()) {
-					projectToRanksMap.get(project).add(rank.getAsInt());
-				}
+			profile.forEach((Project project, RankInPref rank) -> {
+				// Oeffff
+				if (rank.unacceptable()) projectToRanksMap.get(project).add(Integer.MAX_VALUE);
+
+				// Skip indifferent agents, they don't count because we can't ascertain how well they value their match
+				if (!rank.isCompletelyIndifferent()) projectToRanksMap.get(project).add(rank.asInt());
 			});
 		});
 

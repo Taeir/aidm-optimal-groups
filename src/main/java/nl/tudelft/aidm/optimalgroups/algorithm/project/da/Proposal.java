@@ -44,7 +44,7 @@ public class Proposal
 
 //		int agentsProjectRank = proposingAgent.projectPreference.rankOf(project);
 		int numAllProjects = proposingAgent.projectPreference().asArray().length;
-		int rankOfProjectProposingTo = proposingAgent.projectPreference().rankOf(project).orElseThrow();
+		int rankOfProjectProposingTo = proposingAgent.projectPreference().rankOf(project).asInt();
 		this.utilityOfAccepted = numAllProjects - rankOfProjectProposingTo + 1; // correct for Ranks being 1-based
 
 		this.utilityOfRejected = this.utilityOfAccepted - 1;

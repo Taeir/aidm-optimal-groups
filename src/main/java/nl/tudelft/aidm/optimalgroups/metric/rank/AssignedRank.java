@@ -64,7 +64,12 @@ public interface AssignedRank
 		private void determine()
 		{
 			if (rankAsInt == null) {
-				rankAsInt = match.from().projectPreference().rankOf(match.to());
+				// Hmmm, AssignedRank existed before rankOf started returning RankInPref's
+				var rank = match.from().projectPreference().rankOf(match.to());
+
+				if (rank.unacceptable()) rankAsInt = OptionalInt.of(Integer.MAX_VALUE);
+				else if (rank.isCompletelyIndifferent()) rankAsInt = OptionalInt.empty();
+				else rankAsInt = OptionalInt.of(rank.asInt());
 			}
 		}
 
@@ -87,6 +92,8 @@ public interface AssignedRank
 		private Agent student;
 		private Project project;
 
+		private OptionalInt rankAsInt = null;
+
 		public ProjectToStudent(Match<Agent, Project> match)
 		{
 			this(match.from(), match.to());
@@ -106,7 +113,20 @@ public interface AssignedRank
 		@Override
 		public OptionalInt asInt()
 		{
-			return student.projectPreference().rankOf(project);
+			determine();
+			return rankAsInt;
+		}
+
+		private void determine()
+		{
+			if (rankAsInt == null) {
+				// Hmmm, AssignedRank existed before rankOf started returning RankInPref's
+				var rank = student.projectPreference().rankOf(project);
+
+				if (rank.unacceptable()) rankAsInt = OptionalInt.of(Integer.MAX_VALUE);
+				else if (rank.isCompletelyIndifferent()) rankAsInt = OptionalInt.empty();
+				else rankAsInt = OptionalInt.of(rank.asInt());
+			}
 		}
 
 		@Override

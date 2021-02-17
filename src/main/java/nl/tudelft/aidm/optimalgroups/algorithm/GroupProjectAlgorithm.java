@@ -137,8 +137,12 @@ public interface GroupProjectAlgorithm extends Algorithm
 					var aggPref = ((AggregatedProfilePreference) projectPreference);
 					return aggPref.agentsAggregatedFrom().asCollection().stream()
 						.map(Agent::projectPreference)
-						.filter(Predicate.not(ProjectPreference::isCompletelyIndifferent))
-						.mapToInt(pp -> pp.rankOf(theProject).orElse(0))
+						.mapToInt(pp -> {
+							var rank = pp.rankOf(theProject);
+							if (rank.unacceptable()) return Integer.MAX_VALUE;
+							if (rank.isCompletelyIndifferent()) return 0;
+							return rank.asInt();
+						})
 						.max().orElseThrow();
 				});
 
@@ -174,9 +178,14 @@ public interface GroupProjectAlgorithm extends Algorithm
 					return aggPref.agentsAggregatedFrom().asCollection().stream()
 						.map(Agent::projectPreference)
 //						.filter(Predicate.not(ProjectPreference::isCompletelyIndifferent))
-						.mapToInt(pp -> pp.rankOf(theProject).orElse(0))
+						.mapToInt(pp -> {
+							var rank = pp.rankOf(theProject);
+							if (rank.unacceptable()) return Integer.MAX_VALUE;
+							if (rank.isCompletelyIndifferent()) return 0;
+							return rank.asInt();
+						})
 						.max().orElseThrow(() -> {
-							System.out.printf("henk");
+							System.out.printf("henkq23234");
 							return new RuntimeException();
 						});
 				});

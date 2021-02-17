@@ -99,8 +99,11 @@ public interface AgentProjectAlgorithm extends Algorithm
 				// If project is not in preferences (either indifference or a "do-not-want" project,
 				// assign it the highest cost.
 				int maxRank = datasetContext.allProjects().count();
-				int rank = projectPreference.rankOf(theProject).orElse(maxRank);
-				return (int) Math.pow(rank, 2);
+
+				var rank = projectPreference.rankOf(theProject);
+				boolean hasRank = rank.isCompletelyIndifferent() || rank.unacceptable();
+				var rankInt = hasRank ? maxRank : rank.asInt();
+				return (int) Math.pow(rankInt, 2);
 			};
 
 			return new AgentProjectMaxFlowMatching(datasetContext, preferencesToCostFn);

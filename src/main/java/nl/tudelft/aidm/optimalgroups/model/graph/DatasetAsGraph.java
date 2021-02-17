@@ -113,10 +113,16 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 			{
 				Vertex<Agent> agentVertex = vertices.vertexOf(agent);
 
-				agent.projectPreference().forEach((Project project, OptionalInt rank) -> {
+				agent.projectPreference().forEach((Project project, RankInPref rank) -> {
 					Vertex<Project> projectVertex = vertices.vertexOf(project);
 
-					WeightedEdge edge = new WeightedEdge(agentVertex, projectVertex, rank.orElse(1));
+					if (rank.unacceptable()) return; // skip - will never happen, the proj is in pref!
+
+					// Assign w = 1 to all projects of indifferent agents, w = 0 might cause an algo to try these too much (but should be otherwise fine)
+					// and anything heavier will just inflate the obj function. So assume every project is their 1st choice.
+					int weight = rank.isCompletelyIndifferent() ? 1 : rank.asInt();
+
+					WeightedEdge edge = new WeightedEdge(agentVertex, projectVertex, weight);
 
 					edges.add(edge);
 

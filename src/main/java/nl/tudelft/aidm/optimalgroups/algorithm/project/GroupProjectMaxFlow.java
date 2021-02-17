@@ -11,6 +11,7 @@ import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectSlotMatc
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
@@ -28,9 +29,14 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 	public GroupProjectMaxFlow(DatasetContext datasetContext, FormedGroups groups, Projects projects)
 	{
 		this(datasetContext, groups, projects, (projectPreference, theProject) -> {
+			var rank = projectPreference.rankOf(theProject);
+
 			// If project not present: agent is indifferent or does not want the project,
 			// in both cases it's ok to assign maximum cost
-			return projectPreference.rankOf(theProject).orElse(datasetContext.allProjects().count());
+			if (rank.isPresent())
+				return rank.asInt();
+			else
+				return datasetContext.allProjects().count();
 		});
 	}
 
@@ -127,7 +133,7 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 			groups.forEach(group -> {
 
 				var projectPreference = group.content().projectPreference();
-				projectPreference.forEach((Project project, OptionalInt rank) -> {
+				projectPreference.forEach((Project project, RankInPref rank) -> {
 
 					projects.slotVerticesForProject(project.id()).forEach(projectSlotVertex -> {
 						var costOfAssignment = preferencesToCostFn.costOfGettingAssigned(projectPreference, project);

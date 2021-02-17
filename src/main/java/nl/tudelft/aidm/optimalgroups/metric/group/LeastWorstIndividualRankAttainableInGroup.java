@@ -2,8 +2,10 @@ package nl.tudelft.aidm.optimalgroups.metric.group;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 
 import java.util.OptionalInt;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -41,11 +43,17 @@ public class LeastWorstIndividualRankAttainableInGroup
 			.distinct()
 			.collect(Collectors.toList());
 
+		Function<RankInPref, Integer> rankInfoIntoInt = (RankInPref rankInfo) -> {
+			if (rankInfo.unacceptable()) return Integer.MAX_VALUE;
+			if (rankInfo.isCompletelyIndifferent()) return 0;
+			return rankInfo.asInt();
+		};
+
 		var bestWorst = allProjects.stream()
 			.mapToInt(project ->
 				members.stream()
 					.map(Agent::projectPreference)
-					.flatMapToInt(projectPreference -> projectPreference.rankOf(project).stream())
+					.mapToInt(projectPreference -> rankInfoIntoInt.apply(projectPreference.rankOf(project)))
 					.max()
 					.orElse(0) // 0 if all agents turn out to be (magically) indifferent, or have not ranked the project
 			)

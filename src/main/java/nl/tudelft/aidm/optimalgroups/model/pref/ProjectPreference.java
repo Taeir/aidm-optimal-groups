@@ -1,6 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankOfCompletelyIndifferentAgent;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.PresentRankInPref;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.UnacceptableAlternativeRank;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.HashMap;
@@ -8,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 
+/**
+ * Note: currently these are total preferences (no ties) - but not necessarily complete. Only missing alternatives can be partially ordered (tied)
+ */
 public interface ProjectPreference
 {
 	// TODO: determine representation (let algo guide this choice)
@@ -35,13 +42,17 @@ public interface ProjectPreference
 		return asListOfProjects().size() == 0;
 	}
 
-	default OptionalInt rankOf(Project project)
-	{
+	default RankInPref rankOf(Project project) {
 		if (isCompletelyIndifferent()) {
-			return OptionalInt.empty();
+			return new RankOfCompletelyIndifferentAgent(owner(), project);
 		}
 
-		return new RankInArray().determineRank(project.id(), this.asArray());
+		var inArray = new RankInArray().determineRank(project.id(), this.asArray());
+		if (inArray.isEmpty()) {
+			return new UnacceptableAlternativeRank(owner(), project);
+		}
+
+		return new PresentRankInPref(inArray.getAsInt());
 	}
 
 	/**
@@ -64,6 +75,8 @@ public interface ProjectPreference
 
 		return preferencesMap;
 	}
+
+
 	default int differenceTo(ProjectPreference otherPreference)
 	{
 		Map<Integer, Integer> own = asMap();
@@ -89,7 +102,7 @@ public interface ProjectPreference
 		 * @param project The project with the given rank
 		 * @param rank Rank in preference, 1 being highest - empty if indifferent
 		 */
-		void apply(Project project, OptionalInt rank);
+		void apply(Project project, RankInPref rank);
 	}
 
 }

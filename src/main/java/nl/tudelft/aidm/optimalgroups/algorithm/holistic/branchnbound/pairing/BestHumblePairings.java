@@ -65,11 +65,14 @@ public class BestHumblePairings
 		final var edgesToProject = new ProjectDesirability(rankBound, project);
 
 		agents.forEach(agent -> {
-			var rank = agent.projectPreference().rankOf(project)
-				.orElse(0); // indifferent agents are ok with everything
+			var rank = agent.projectPreference().rankOf(project);
+			if (rank.unacceptable()) return;
 
-			if (rank <= rankBound) {
-				var edge = new ProjectDesirability.AgentsProjDesirability(agent, project, rank);
+			// indifferent agents are ok with everything
+			var rankInt = rank.isCompletelyIndifferent() ? 0 : rank.asInt();
+
+			if (rankInt <= rankBound) {
+				var edge = new ProjectDesirability.AgentsProjDesirability(agent, project, rankInt);
 
 				edgesToProject.add(edge);
 			}

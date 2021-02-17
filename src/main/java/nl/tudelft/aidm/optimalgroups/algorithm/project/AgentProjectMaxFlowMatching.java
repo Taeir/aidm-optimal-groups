@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
@@ -66,9 +67,14 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 	public AgentProjectMaxFlowMatching(DatasetContext datasetContext, Agents students, Projects projects)
 	{
 		this(datasetContext, students, projects, (projectPreference, theProject) -> {
+			var rank = projectPreference.rankOf(theProject);
+
 			// If project not present: agent is indifferent or does not want the project,
 			// in both cases it's ok to assign maximum cost
-			return projectPreference.rankOf(theProject).orElse(datasetContext.allProjects().count());
+			if (rank.isPresent())
+				return rank.asInt();
+			else
+				return datasetContext.allProjects().count();
 		});
 	}
 
@@ -177,7 +183,7 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 			minCostFlow.addArcWithCapacityAndUnitCost(source.id, studentVert.id, 1, 1);
 
 			var prefs = student.projectPreference();
-			student.projectPreference().forEach((Project project, OptionalInt rank) -> {
+			student.projectPreference().forEach((Project project, RankInPref rank) -> {
 
 				var projectVert = projectVerts.asVertex.get(project);
 

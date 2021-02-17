@@ -2,12 +2,13 @@ package nl.tudelft.aidm.optimalgroups.model.pref.base;
 
 import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.PresentRankInPref;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankOfCompletelyIndifferentAgent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalInt;
 
 /**
  * A base implementation of ProjectPreferences where an agent has ordinal preference
@@ -20,7 +21,7 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 	private Integer[] asArray = null;
 	private Map<Integer, Integer> asMap;
 
-	private final IdentityHashMap<Project, OptionalInt> rankOfProject = new IdentityHashMap<>();
+	private final IdentityHashMap<Project, RankInPref> rankOfProject = new IdentityHashMap<>();
 
 	@Override
 	public Integer[] asArray()
@@ -35,22 +36,18 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 	}
 
 	@Override
-	public OptionalInt rankOf(Project project)
+	public RankInPref rankOf(Project project)
 	{
 		// Cache results - pessimism makes heavy use of this fn
 		return rankOfProject.computeIfAbsent(project, p ->
 		{
 			if (isCompletelyIndifferent()) {
-				return OptionalInt.empty();
+				return new RankOfCompletelyIndifferentAgent(owner(), project);
 			}
 
 			var rankInArray = new RankInArray().determineRank(p.id(), asArray());
 
-			if (rankInArray.isEmpty()){
-				// Not present, so rank is assumed to be tied between all missing projects after
 				// those that are present in the preferences - note: this impl excludes the possibility
-				// of "do no want" preferences
-				rankInArray = OptionalInt.of(asListOfProjects().size());
 			}
 
 			return rankInArray;
