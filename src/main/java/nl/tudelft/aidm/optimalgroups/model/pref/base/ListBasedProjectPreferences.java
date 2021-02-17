@@ -19,6 +19,8 @@ public class ListBasedProjectPreferences extends AbstractListBasedProjectPrefere
 	}
 
 	@Override
+	public Object owner()
+	{
 		return owner;
 	}
 

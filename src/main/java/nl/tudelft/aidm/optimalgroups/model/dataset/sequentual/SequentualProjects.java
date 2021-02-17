@@ -73,13 +73,13 @@ public class SequentualProjects extends ListBasedProjects
 		return projectsInMonotonicSequence;
 	}
 
-	public static class SequentualProject extends Project.ProjectsWithDefaultSlotAmount
+	public static class SequentualProject extends Project.ProjectWithStaticSlotAmount
 	{
 		private final Project originalProject;
 
 		public SequentualProject(int id, Project originalProject)
 		{
-			super(id);
+			super(id, originalProject.slots().size());
 			this.originalProject = originalProject;
 		}
 
@@ -91,7 +91,7 @@ public class SequentualProjects extends ListBasedProjects
 		@Override
 		public String toString()
 		{
-			return String.format("Seq project %s, (orig: %s)", id(), originalProject.id());
+			return String.format("seqproj_%s", id());
 		}
 	}
 
