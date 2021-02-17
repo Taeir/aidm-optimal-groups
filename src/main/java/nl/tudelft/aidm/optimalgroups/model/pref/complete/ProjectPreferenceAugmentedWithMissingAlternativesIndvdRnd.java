@@ -1,20 +1,24 @@
-package nl.tudelft.aidm.optimalgroups.model.pref.ties;
+package nl.tudelft.aidm.optimalgroups.model.pref.complete;
 
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.base.AbstractListBasedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.model.pref.base.ListBasedProjectPreferences;
+import nl.tudelft.aidm.optimalgroups.model.pref.base.MissingAlternativeRankResolution;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import plouchtch.lang.exception.ImplementMe;
 
 import java.util.*;
-import java.util.stream.Stream;
 
-public class RandomlyBrokenTiesProjectPreference extends ListBasedProjectPreferences
+/**
+ * Missing preferences are appended individually ranomly
+ */
+public class ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd extends ListBasedProjectPreferences
 {
-	public RandomlyBrokenTiesProjectPreference(ProjectPreference projectPreference, Projects projects, long seed)
+	public ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd(ProjectPreference projectPreference, Projects projects, long seed)
 	{
-		super(augmentWithMissing(projectPreference.asListOfProjects(), projects, seed));
+		super(
+			projectPreference.owner(),
+			augmentWithMissing(projectPreference.asListOfProjects(), projects, seed)
+		);
 	}
 
 	private static List<Project> augmentWithMissing(List<Project> pref, Projects allProjects, long seed)
@@ -23,7 +27,7 @@ public class RandomlyBrokenTiesProjectPreference extends ListBasedProjectPrefere
 
 		// Shuffle the projects that are absent from pref
 		var absentCopy = new ArrayList<>(absent);
-		var rnd = new Random(seed);
+		var rnd = new Random(seed * pref.hashCode());
 		Collections.shuffle(absentCopy, rnd);
 
 		var absentShuffled = absentCopy;

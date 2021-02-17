@@ -30,6 +30,12 @@ public class CombinedPreference implements ProjectPreference {
     }
 
     @Override
+    public Object owner()
+    {
+        return agents;
+    }
+
+    @Override
     public Integer[] asArray() {
         if (this.combinedPreference == null) {
             this.combinedPreference = this.computeCombinedPreference();

@@ -10,7 +10,6 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 
 /**
  * Note: currently these are total preferences (no ties) - but not necessarily complete. Only missing alternatives can be partially ordered (tied)
@@ -21,6 +20,12 @@ public interface ProjectPreference
 	Integer[] asArray();
 
 	List<Project> asListOfProjects();
+
+	/**
+	 * Whose preferences are these?
+	 * @return the owner
+	 */
+	Object owner();
 
 	default void forEach(ProjectPreferenceObjectRankConsumer iter)
 	{

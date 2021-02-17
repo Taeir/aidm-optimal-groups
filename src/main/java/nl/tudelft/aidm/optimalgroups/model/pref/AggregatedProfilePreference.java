@@ -105,6 +105,12 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		}
 
 		@Override
+		public Object owner()
+		{
+			return agents;
+		}
+
+		@Override
 		protected Integer[] calculateAverageOfGroup()
 		{
 			// mapping: Project --> Preference-rank
@@ -135,6 +141,12 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		public Copeland(Agents agents)
 		{
 			super(agents);
+		}
+
+		@Override
+		public Object owner()
+		{
+			return agents;
 		}
 
 		@Override

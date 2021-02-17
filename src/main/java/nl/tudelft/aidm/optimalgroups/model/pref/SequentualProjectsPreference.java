@@ -5,46 +5,48 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 import plouchtch.assertion.Assert;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.OptionalInt;
+import java.util.*;
 
 public class SequentualProjectsPreference implements ProjectPreference
 {
+	private final Object owner;
 	private final Integer[] preferenceProfile;
 	private List<Project> preferenceProfileAsProjectList = null;
 
-	public static SequentualProjectsPreference fromOriginal(ProjectPreference projectPreference, SequentualProjects sequentualProjects)
+	public static SequentualProjectsPreference fromOriginal(Object owner, ProjectPreference projectPreference, SequentualProjects sequentualProjects)
 	{
 		var originalProfile = projectPreference.asArray();
 		var remappedProfile = new Integer[originalProfile.length];
+		var asList = new ArrayList<Project>(originalProfile.length);
 
-//		projectPreference.forEach((Project project, OptionalInt rank) -> {
-//			var origProject = project;
-//
-//			// rank 1 = index 0
-//			for (int i = 0; i < ori; i++)
-//			{
-//
-//			}
-//			remappedProfile[rank-1] = remapped.id();
-//		});
+		// Ensure indices 0 to length exist, so we can use list.set(index, project)
+		for (int i = 0; i < originalProfile.length; i++)
+			asList.add(null);
 
 		var originalProfileAsList = projectPreference.asListOfProjects();
 		for (int i = 0; i < originalProfileAsList.size(); i++)
 		{
-
 			Project origProject = originalProfileAsList.get(i);
 			var remapped = sequentualProjects.correspondingSequentualProjectOf(origProject);
+
 			remappedProfile[i] = remapped.id();
+			asList.set(i, remapped);
 		}
 
-		return new SequentualProjectsPreference(remappedProfile);
+		return new SequentualProjectsPreference(owner, remappedProfile, asList);
 	}
 
-	public SequentualProjectsPreference(Integer[] preferenceProfile)
+	private SequentualProjectsPreference(Object owner, Integer[] preferenceProfile, List<Project> profileAsList)
 	{
+		this.owner = owner;
 		this.preferenceProfile = preferenceProfile;
+		this.preferenceProfileAsProjectList = Collections.unmodifiableList(profileAsList);
+	}
+
+	@Override
+	public Object owner()
+	{
+		return owner;
 	}
 
 	@Override
@@ -56,7 +58,7 @@ public class SequentualProjectsPreference implements ProjectPreference
 	@Override
 	public List<Project> asListOfProjects()
 	{
-		throw new RuntimeException("IMPL ME");
+		return preferenceProfileAsProjectList;
 	}
 
 	@Override

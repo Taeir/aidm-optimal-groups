@@ -35,8 +35,7 @@ public interface Project
 			slots = new ArrayList<>(numSlots);
 			for (int i = 0; i < numSlots; i++)
 			{
-				var slotId = String.format("proj-%d_slot-%d", id, i);
-				var slot = new ProjectSlot.Simple(slotId, this);
+				var slot = new ProjectSlot.Simple(i, this);
 
 				slots.add(slot);
 			}
@@ -62,7 +61,7 @@ public interface Project
 		@Override
 		public String toString()
 		{
-			return "proj(" + id() + ")";
+			return name();
 		}
 
 		@Override
@@ -90,22 +89,31 @@ public interface Project
 	interface ProjectSlot
 	{
 		String id();
+		int index();
 		Project belongingToProject();
 
 		class Simple implements ProjectSlot {
 
-			private String id;
-			private Project projectBelongsTo;
+			private final String id;
+			private final int index;
+			private final Project projectBelongsTo;
 
-			public Simple(String id, Project projectBelongsTo)
+			public Simple(int index, Project projectBelongsTo)
 			{
-				this.id = id;
+				this.index = index;
 				this.projectBelongsTo = projectBelongsTo;
+
+				this.id = projectBelongsTo + "_slot_ " + index;
 			}
 
 			public String id()
 			{
 				return id;
+			}
+
+			public int index()
+			{
+				return index;
 			}
 
 			public Project belongingToProject()
@@ -116,7 +124,7 @@ public interface Project
 			@Override
 			public String toString()
 			{
-				return "Slot: " + id();
+				return id();
 			}
 		}
 	}

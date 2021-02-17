@@ -12,6 +12,8 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.time.Instant;
 import java.util.LinkedHashSet;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,9 +31,11 @@ public class GeneratedDataContext implements DatasetContext
 		var hexEpochSeconds = Long.toHexString(Instant.now().getEpochSecond());
 		id = String.format("DC[RND_a%s_p%s_%s]_%s", numAgents, projects.count(), hexEpochSeconds, groupSizeConstraint);
 
+		Function<Integer, Supplier<Agent>> supplierForAgentWithId = (Integer id) -> (() -> this.allAgents().findByAgentId(id).get());
+
 		agents = new Agents(this,
 			IntStream.rangeClosed(1, numAgents)
-				.mapToObj(i -> new Agent.AgentInDatacontext(i, generator.generateNew(), GroupPreference.none(), this))
+				.mapToObj(i -> new Agent.AgentInDatacontext(i, generator.generateNew(supplierForAgentWithId.apply(i)), GroupPreference.none(), this))
 				.collect(Collectors.toCollection(LinkedHashSet::new))
 		);
 

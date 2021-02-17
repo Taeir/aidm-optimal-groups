@@ -42,7 +42,7 @@ public class VariantvakkenSinglePmf implements DatasetContext
 		this.agents = Agents.from(IntStream.rangeClosed(1, 400).mapToObj(id ->
 				new Agent.AgentInDatacontext(
 					id,
-					prefGen.generateNew(),
+					prefGen.generateNew(() -> allAgents().findByAgentId(id).get()),
 					GroupPreference.none(),
 					this)
 			).collect(Collectors.toList())

@@ -4,6 +4,8 @@ import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.rank.PresentRankInPref;
 import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankOfCompletelyIndifferentAgent;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.UnacceptableAlternativeRank;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.IdentityHashMap;
@@ -47,10 +49,11 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 
 			var rankInArray = new RankInArray().determineRank(p.id(), asArray());
 
-				// those that are present in the preferences - note: this impl excludes the possibility
-			}
+			// Alternative is missing, hence it is unacceptable to agent
+			if (rankInArray.isEmpty())
+				return new UnacceptableAlternativeRank(owner(), project);
 
-			return rankInArray;
+			return new PresentRankInPref(rankInArray.getAsInt());
 		});
 	}
 

@@ -60,7 +60,8 @@ public class SequentualAgents extends Agents
 
 		public static SequentualAgent fromOriginal(Integer newId, Agent agent, SequentualProjects sequentualProjects, SequentualDatasetContext context)
 		{
-			var sequentualProjectsPreference = SequentualProjectsPreference.fromOriginal(agent.projectPreference(), sequentualProjects);
+			var owner = "SeqAgent_"+newId;
+			var sequentualProjectsPreference = SequentualProjectsPreference.fromOriginal(owner, agent.projectPreference(), sequentualProjects);
 
 			return new SequentualAgent(newId, agent, sequentualProjectsPreference, agent.groupPreference, context);
 		}

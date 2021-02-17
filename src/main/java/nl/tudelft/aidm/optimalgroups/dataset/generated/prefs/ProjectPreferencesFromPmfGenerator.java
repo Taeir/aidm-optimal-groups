@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.dataset.generated.prefs;
 
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.base.AbstractListBasedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -8,6 +9,7 @@ import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  *  This type of generator generates ProjectPreferences
@@ -32,23 +34,26 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 	}
 
 	@Override
-	public ProjectPreference generateNew()
+	public ProjectPreference generateNew(Supplier<Agent> ownerSupplier)
 	{
 		// Would be nicer to have NormallyDistributedProjectPreference type...
 		/// TODO: move PMF into own class
-		return new PmfGeneratedProjectPreference(pmf);
+		return new PmfGeneratedProjectPreference(ownerSupplier, pmf);
 	}
 
 	class PmfGeneratedProjectPreference extends AbstractListBasedProjectPreferences
 	{
+		private Supplier<Agent> ownerSupplier;
 		// The PMF used to generate this preference profile
 		private final List<Pair<Project, Double>> completePmf;
 
 		private final List<Project> prefProfile;
 		private Integer[] asArray = null;
 
-		public PmfGeneratedProjectPreference(List<Pair<Project, Double>> completePmf)
+		public PmfGeneratedProjectPreference(Supplier<Agent> ownerSupplier, List<Pair<Project, Double>> completePmf)
 		{
+			this.ownerSupplier = ownerSupplier;
+
 			this.completePmf = completePmf;
 			// We're building this list by drawing projects with probabilities defined in the PMF
 			var pref = new ArrayList<Project>(pmf.size());
@@ -67,6 +72,12 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 			}
 
 			prefProfile = pref;
+		}
+
+		@Override
+		public Object owner()
+		{
+			return ownerSupplier.get();
 		}
 
 		@Override

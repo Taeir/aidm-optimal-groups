@@ -80,7 +80,7 @@ public class VariantvakkenData2020 implements DatasetContext
 				Variantvak variantvak = allProjects().findByName(col);
 				Integer rank = Integer.parseInt(cols[2]);
 
-				var prefOfStudent = studentToPrefsMap.computeIfAbsent(student, __ -> new VariantvakPreference());
+				var prefOfStudent = studentToPrefsMap.computeIfAbsent(student, __ -> new VariantvakPreference(student));
 				prefOfStudent.include(variantvak, rank);
 			});
 
@@ -161,9 +161,11 @@ public class VariantvakkenData2020 implements DatasetContext
 	private static class VariantvakPreference implements ProjectPreference
 	{
 		private final Project[] asListOfProjects;
+		private final Object owner;
 
-		public VariantvakPreference()
+		public VariantvakPreference(Object owner)
 		{
+			this.owner = owner;
 			asListOfProjects = new Project[3];
 		}
 
@@ -172,6 +174,12 @@ public class VariantvakkenData2020 implements DatasetContext
 			Assert.that(1 <= rank && rank <= 3).orThrowMessage("Rank < 1 or 3 < Rank, was: " + rank);
 
 			asListOfProjects[rank - 1] = project;
+		}
+
+		@Override
+		public Object owner()
+		{
+			return owner;
 		}
 
 		@Override

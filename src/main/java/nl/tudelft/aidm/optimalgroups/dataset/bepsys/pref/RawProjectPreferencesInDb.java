@@ -1,11 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref;
 
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
-import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.base.AbstractListBasedProjectPreferences;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
@@ -13,7 +10,6 @@ import org.sql2o.Sql2o;
 import javax.sql.DataSource;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RawProjectPreferencesInDb extends AbstractListBasedProjectPreferences
 {
@@ -24,17 +20,17 @@ public class RawProjectPreferencesInDb extends AbstractListBasedProjectPreferenc
 	private Integer[] preferences = null;
 	private List<Project> preferencesAsProjectList = null;
 
-
-	// Indicates the rank (inclusive) from which the agent is indifferent
-	// so all preferences of that rank and higher have the same rank, that
-	// of the value of the field.
-	private Integer isIndifferentFromRank = 0;
-
 	public RawProjectPreferencesInDb(DataSource dataSource, Integer userId, CourseEdition courseEdition)
 	{
 		this.dataSource = dataSource;
 		this.userId = userId;
 		this.courseEdition = courseEdition;
+	}
+
+	@Override
+	public Object owner()
+	{
+		return courseEdition.allAgents().findByAgentId(userId).get(); // assume exists
 	}
 
 	@Override

@@ -4,7 +4,7 @@ import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.pref.ties.RandomlyBrokenTiesProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.complete.ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.util.stream.Collectors;
@@ -30,7 +30,7 @@ public class DatasetContextTiesBrokenIndividually implements DatasetContext
 		var agentsWithTiesBroken = agents.asCollection().stream()
 			.map(agent -> {
 				var origPrefs = agent.projectPreference();
-				var newPrefs = new RandomlyBrokenTiesProjectPreference(origPrefs, projects, agent.id * projects.hashCode());
+				var newPrefs = new ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd(origPrefs, projects, agent.id * projects.hashCode());
 				return (Agent) new Agent.AgentInDatacontext(agent.id, newPrefs, agent.groupPreference, currentContext);
 			})
 			.collect(Collectors.collectingAndThen(Collectors.toUnmodifiableList(), Agents::from));
