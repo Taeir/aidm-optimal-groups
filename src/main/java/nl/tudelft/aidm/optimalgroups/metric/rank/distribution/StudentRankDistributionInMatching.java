@@ -51,7 +51,7 @@ public class StudentRankDistributionInMatching extends AbstractRankDistributionI
         }
     }
 
-    public JFreeChart asChart()
+    public JFreeChart asChart(String titleHint)
     {
         calculate();
 
@@ -59,7 +59,7 @@ public class StudentRankDistributionInMatching extends AbstractRankDistributionI
         this.profile.forEach(series::add);
 
         var chart = ChartFactory.createXYBarChart(
-            "Distribution of ranks of assigned project in individual students' preferences", "Rank", false, "#Students", new XYSeriesCollection(series));
+            "Assigned rank profile (individual) - " + titleHint, "Rank", false, "#Students", new XYSeriesCollection(series));
 
         NumberAxis numberAxis = new NumberAxis();
         numberAxis.setTickUnit(new NumberTickUnit(1));
@@ -84,9 +84,9 @@ public class StudentRankDistributionInMatching extends AbstractRankDistributionI
         return chart;
     }
 
-    public void displayChart()
+    public void displayChart(String titleHint)
     {
-        var chart = this.asChart();
+        var chart = this.asChart(titleHint);
 
         /* Output stuff */
         ChartPanel chartPanel = new ChartPanel(chart);

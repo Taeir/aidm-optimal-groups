@@ -46,7 +46,7 @@ public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchi
 
 		var metrics = new MatchingMetrics.StudentProject(matching);
 
-		metrics.rankDistribution().displayChart();
+		metrics.rankDistribution().displayChart("BestHumblePairingsSearch");
 
 		return;
 	}

@@ -112,7 +112,7 @@ public class ExperimentReportInMarkdown
 		int numStudentsInDataset = algoResult.producedMatching().datasetContext().allAgents().count();
 		doc.append(Markdown.text(String.format("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset)));
 
-		var rankDistribution = algoResult.studentPerspectiveMetrics.rankDistribution().asChart();
+		var rankDistribution = algoResult.studentPerspectiveMetrics.rankDistribution().asChart(algoResult.algo().name());
 		doc.append(Markdown.image(embed(rankDistribution))).append("\n\n");
 
 		var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());

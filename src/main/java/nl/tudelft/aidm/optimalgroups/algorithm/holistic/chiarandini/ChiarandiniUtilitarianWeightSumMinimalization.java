@@ -66,21 +66,21 @@ public class ChiarandiniUtilitarianWeightSumMinimalization
 		var result = utilitarianChiarandini.doIt();
 
 		var metrics = new MatchingMetrics.StudentProject(result);
-		new StudentRankDistributionInMatching(result).displayChart();
+		new StudentRankDistributionInMatching(result).displayChart("Chiarandini util identity weight scheme");
 
 
 		var expUtilitarianChiarandini = ChiarandiniUtilitarianWeightSumMinimalization.withExpWeightScheme(ce);
 		var resultExp = expUtilitarianChiarandini.doIt();
 
 		var metricsExp = new MatchingMetrics.StudentProject(resultExp);
-//		new StudentRankDistributionInMatching(resultExp).displayChart();
+//		new StudentRankDistributionInMatching(resultExp).displayChart("Chiarandini util exp weight scheme");
 
 
 		var owaMinimaxChiarandini = new ChiarandiniMinimaxDistribOWA(ce);
 		var resultOwa = owaMinimaxChiarandini.doIt();
 
 		var metricsOwa = new MatchingMetrics.StudentProject(resultOwa);
-		new StudentRankDistributionInMatching(resultOwa).displayChart();
+		new StudentRankDistributionInMatching(resultOwa).displayChart("Chiarandini minimax-owa");
 
 		return;
 	}

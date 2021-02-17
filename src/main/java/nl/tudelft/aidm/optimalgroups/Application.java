@@ -66,7 +66,7 @@ public class Application
 //			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
 			var studentProfileCurve = new StudentRankDistributionInMatching(matchingFromStudentPerspective);
-			studentProfileCurve.displayChart();
+			studentProfileCurve.displayChart("");
 
 
 			var groupAggRankProfile = new GroupRankDistributionInMatching(matching);

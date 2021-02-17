@@ -54,7 +54,7 @@ public class ChiarandiniMinimaxDistribOWA
 		var resultOwa = owaMinimaxChiarandini.doIt();
 
 		var metricsOwa = new MatchingMetrics.StudentProject(resultOwa);
-		new StudentRankDistributionInMatching(resultOwa).displayChart();
+		new StudentRankDistributionInMatching(resultOwa).displayChart("Chiarandini minimax-owa");
 
 		return;
 	}

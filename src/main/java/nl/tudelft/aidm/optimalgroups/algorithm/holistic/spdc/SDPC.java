@@ -48,7 +48,7 @@ public class SDPC
 		var matching = thing.doIt();
 
 		var metrics = new MatchingMetrics.StudentProject(matching);
-		metrics.rankDistribution().displayChart();
+		metrics.rankDistribution().displayChart("SDPC - CE10");
 
 		return;
 	}

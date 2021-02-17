@@ -45,7 +45,7 @@ public class SDPCPessimism
 		var matching = thing.matching();
 
 		var metrics = new MatchingMetrics.StudentProject(matching);
-		metrics.rankDistribution().displayChart();
+		metrics.rankDistribution().displayChart("SDPCPessimism");
 
 		return;
 	}
