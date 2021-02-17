@@ -2,11 +2,13 @@ package nl.tudelft.aidm.optimalgroups.model.pref.complete;
 
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.base.ListBasedProjectPreferences;
-import nl.tudelft.aidm.optimalgroups.model.pref.base.MissingAlternativeRankResolution;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Missing preferences are appended individually ranomly
