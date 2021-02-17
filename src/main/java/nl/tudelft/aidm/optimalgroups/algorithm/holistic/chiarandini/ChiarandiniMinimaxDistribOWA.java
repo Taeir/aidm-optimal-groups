@@ -12,28 +12,15 @@ import plouchtch.assertion.Assert;
 
 import java.util.function.Function;
 
-public class ChiarandiniUtilitarianWeightSumMinimalization
+public class ChiarandiniMinimaxDistribOWA
 {
 	private final DatasetContext datasetContext;
-	private UtilitarianWeightsObjective.WeightScheme weightScheme;
+	private final DistributiveWeightsObjective.WeightScheme weightScheme;
 
-	public static ChiarandiniUtilitarianWeightSumMinimalization withIdentityWeightScheme(DatasetContext datasetContext)
-	{
-		return new ChiarandiniUtilitarianWeightSumMinimalization(datasetContext, rank -> rank);
-	}
-
-	public static ChiarandiniUtilitarianWeightSumMinimalization withExpWeightScheme(DatasetContext datasetContext)
-	{
-		var maxRank = datasetContext.allProjects().count();
-		UtilitarianWeightsObjective.WeightScheme weightScheme = rank -> -1 * Math.pow(2, Math.max(0, maxRank - rank));
-
-		return new ChiarandiniUtilitarianWeightSumMinimalization(datasetContext, weightScheme);
-	}
-
-	public ChiarandiniUtilitarianWeightSumMinimalization(DatasetContext datasetContext, UtilitarianWeightsObjective.WeightScheme weightScheme)
+	public ChiarandiniMinimaxDistribOWA(DatasetContext datasetContext)
 	{
 		this.datasetContext = datasetContext;
-		this.weightScheme = weightScheme;
+		this.weightScheme = new DistribOWAWeightScheme(datasetContext);
 	}
 
 	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doIt() throws GRBException
@@ -46,7 +33,7 @@ public class ChiarandiniUtilitarianWeightSumMinimalization
 		var model = new GRBModel(env);
 
 		AssignmentVariablesAndConstraints assignmentVariablesAndConstraints = AssignmentVariablesAndConstraints.createInModel(model, seqDatasetContext);
-		UtilitarianWeightsObjective.createInModel(model, seqDatasetContext, assignmentVariablesAndConstraints, weightScheme);
+		DistributiveWeightsObjective.createInModel(model, seqDatasetContext, assignmentVariablesAndConstraints, weightScheme);
 
 		model.optimize();
 
@@ -62,19 +49,6 @@ public class ChiarandiniUtilitarianWeightSumMinimalization
 	public static void main(String[] args) throws Exception
 	{
 		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		var utilitarianChiarandini = ChiarandiniUtilitarianWeightSumMinimalization.withIdentityWeightScheme(ce);
-		var result = utilitarianChiarandini.doIt();
-
-		var metrics = new MatchingMetrics.StudentProject(result);
-		new StudentRankDistributionInMatching(result).displayChart();
-
-
-		var expUtilitarianChiarandini = ChiarandiniUtilitarianWeightSumMinimalization.withExpWeightScheme(ce);
-		var resultExp = expUtilitarianChiarandini.doIt();
-
-		var metricsExp = new MatchingMetrics.StudentProject(resultExp);
-//		new StudentRankDistributionInMatching(resultExp).displayChart();
-
 
 		var owaMinimaxChiarandini = new ChiarandiniMinimaxDistribOWA(ce);
 		var resultOwa = owaMinimaxChiarandini.doIt();
@@ -83,6 +57,43 @@ public class ChiarandiniUtilitarianWeightSumMinimalization
 		new StudentRankDistributionInMatching(resultOwa).displayChart();
 
 		return;
+	}
+
+
+	public static class DistribOWAWeightScheme implements DistributiveWeightsObjective.WeightScheme// withMinimaxOWAScheme(DatasetContext datasetContext)
+	{
+		private final int delta;
+		private final double Beta;
+
+		public DistribOWAWeightScheme(DatasetContext datasetContext)
+		{
+			// delta symbol = max pref length in paper
+			// TODO: Prefs max rank method
+			delta = 8; //datasetContext.allProjects().count();
+			Beta = 1d/delta - 0.001d;
+		}
+
+		private double f_(int rank)
+		{
+			return rank * 1d / delta;
+		}
+
+		@Override
+		public double weight(int rank)
+		{
+			final double rescale = 1;
+			if (rank > delta) return rank * 10000;
+
+			Assert.that(rank >= 1 && rank <= delta).orThrowMessage("Rank must be 1 <= rank <= delta, cannot calc weight. Bug?");
+
+			if (rank == 1)
+				return rescale * f_(rank) * Math.pow(Beta, delta - 1
+					/ Math.pow(1 + Beta, delta - 1));
+
+			else
+				return rescale * f_(rank) * Math.pow(Beta, delta - rank)
+					/ Math.pow(1 + Beta, delta + 1 - rank);
+		}
 	}
 
 }
