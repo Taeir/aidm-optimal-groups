@@ -34,8 +34,10 @@ dependencies {
     compile files('lib/ortools.lib')
     compile files('lib/com.google.ortools.jar')
     compile files('lib/protobuf.jar')
-//    compile files('lib/*')
-//    runtime files('lib/')
+
+    /* GUROBI LIB*/
+    implementation gurobi()
+
 
     implementation 'net.steppschuh.markdowngenerator:markdowngenerator:1.3.1.1'
     implementation 'com.vladsch.flexmark:flexmark-all:0.61.24'
@@ -59,4 +61,22 @@ compileJava {
 
 compileTestJava {
     options.compilerArgs << '--enable-preview'
+}
+
+static def gurobiLibsDir() {
+    String gurobiHome = System.getenv("GUROBI_HOME")
+    gurobiHome + File.separator + "lib" + File.separator
+}
+
+/* CHECKS GUROBI LIB EXISTS */
+def gurobi() {
+    String gurobiJar = gurobiLibsDir() + "gurobi.jar";
+    if (!file(gurobiJar).exists())
+        throw new RuntimeException("Install Gurobi and ensure env variable GUROBI_HOME points to its root dir\n (file doesn't exist: [" + gurobiJar +']')
+
+    String gurobiJavadoc = gurobiLibsDir() + "gurobi-javadoc.jar"
+    if (!file(gurobiJavadoc).exists())
+        throw new RuntimeException("Install Gurobi and ensure env variable GUROBI_HOME points to its root dir\n (file doesn't exist: [" + gurobiJavadoc +']')
+
+    return files(gurobiJar, gurobiJavadoc)
 }
