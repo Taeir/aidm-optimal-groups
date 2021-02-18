@@ -90,12 +90,12 @@ public class HumbleMiniMaxWithClosuresSearch extends DynamicSearch<AgentToProjec
 			// Threads of a parallel stream run in a pool, not as children of this thread
 			// Hence, we provide a pool context which we control so that we can force shutdown
 			forkJoinPool.execute(root::solution);
-			forkJoinPool.awaitTermination(60, TimeUnit.MINUTES);
-//			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
-//				// Give an extension...
-//				System.out.println("Pessimism: entering over-time...");
-//				forkJoinPool.awaitTermination(10, TimeUnit.MINUTES);
-//			}
+			forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
+			if (bestSolutionSoFar.hasNonEmptySolution() == false) {
+				// Give an extension...
+				System.out.println("Pessimism: entering over-time...");
+				forkJoinPool.awaitTermination(1, TimeUnit.MINUTES);
+			}
 			forkJoinPool.shutdownNow();
 		}
 		catch (Exception e) {
