@@ -87,7 +87,7 @@ public class Agents
 
 	public Agents without(Agent agent)
 	{
-		return this.with(Agents.from(agent));
+		return this.without(Agents.from(agent));
 	}
 
 	public Agents without(Collection<Agent> other)

@@ -63,8 +63,10 @@ public class SDPC
 		int n = agents.count();
 		for (int t = 1; t <= n; t++)
 		{
-			var activeProjects = new ActiveProjects(partialMatching, projects, agents, groupSizeConstraint);
 			var dictatorInThisStep = indexableAgents.get(t-1);
+			remainingAgents = remainingAgents.without(dictatorInThisStep);
+
+			var activeProjects = new ActiveProjects(partialMatching, projects, remainingAgents, groupSizeConstraint);
 			System.out.printf("Dictator@[t:\t%s]: %s\n", t, dictatorInThisStep);
 
 			var chosenProject = dictatorInThisStep.projectPreference().asListOfProjects().stream()
@@ -72,7 +74,6 @@ public class SDPC
 				.findFirst().orElseThrow();
 
 			partialMatching = partialMatching.withNewMatch(dictatorInThisStep, chosenProject);
-			remainingAgents = remainingAgents.without(dictatorInThisStep);
 		}
 
 		// Check all students matched

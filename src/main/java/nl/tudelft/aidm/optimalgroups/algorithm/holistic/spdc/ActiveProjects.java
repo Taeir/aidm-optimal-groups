@@ -50,16 +50,6 @@ public class ActiveProjects extends ListBasedProjects implements Projects
 
 	}
 
-	private final Map<Project, Integer> numStudentsCanBeSafelyAddedInBulkForProject = new IdentityHashMap<>();
-	public int numStudentsCanBeAddedInBulk(Project project)
-	{
-		if (asList == null) {
-			projectList();
-		}
-
-		return numStudentsCanBeSafelyAddedInBulkForProject.getOrDefault(project, 0);
-	}
-
 	@Override
 	protected List<Project> projectList()
 	{
@@ -114,14 +104,12 @@ public class ActiveProjects extends ListBasedProjects implements Projects
 				var projectQuorumIfNewAssigned = computeQuorum(project, agentsMatchedToProject.size() + 1);
 				var studentsProjectStillNeeds = Math.max(projectQuorumIfNewAssigned - (agentsMatchedToProject.size() + 1), 0);
 
-				numStudentsCanBeSafelyAddedInBulkForProject.put(project, projectQuorumIfNewAssigned - agentsMatchedToProject.size());
-
 				var neededForOtherProjects =
 					//     SUM            [
 					// p' \in P_t-1 / {p} [
 					projectsNotFull.entrySet().stream()
-						.filter(entry -> entry.getKey() != project)
-						.filter(entry -> entry.getValue().size() > 0)
+						.filter(entry -> !entry.getKey().equals(project)) // other project
+						.filter(entry -> entry.getValue().size() > 0) // is opened
 						.mapToInt(otherProjectWithMatchedStudents -> {
 							int numMatchedToOther = otherProjectWithMatchedStudents.getValue().size();
 							var otherQuorum = computeQuorum(project, numMatchedToOther);
@@ -132,7 +120,7 @@ public class ActiveProjects extends ListBasedProjects implements Projects
 				// ]
 				// ]
 
-				return studentsProjectStillNeeds + neededForOtherProjects <= (remainingAgents.count());
+				return (studentsProjectStillNeeds + neededForOtherProjects) <= (remainingAgents.count());
 			})
 			.map(Map.Entry::getKey)
 			.collect(toList());

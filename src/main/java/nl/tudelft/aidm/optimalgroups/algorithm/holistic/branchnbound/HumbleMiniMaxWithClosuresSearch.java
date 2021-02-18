@@ -216,8 +216,7 @@ public class HumbleMiniMaxWithClosuresSearch extends DynamicSearch<AgentToProjec
 			// Wrong!
 			int maxCapacityOfProject = pairing.project().slots().size() * groupSizeConstraint.maxSize();
 			var remainingCapacityProject = maxCapacityOfProject - numAlreadyMatched;
-//
-			var bla = activeProjects.numStudentsCanBeAddedInBulk(pairing.project());
+
 			var possibleGrps = possibleAssignmentOfAgentsToProject.of(pairing.agents(), remainingCapacityProject);
 
 			return possibleGrps.map(candidates -> new AgentsToProjectPairing(candidates, pairing.project(), pairing.kRank()));
