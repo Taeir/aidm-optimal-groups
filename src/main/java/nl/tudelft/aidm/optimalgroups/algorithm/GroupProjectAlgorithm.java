@@ -381,7 +381,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			return "MiniZinc MIP (COIN-BC) - MinRankSum";
+			return "MiniZinc - MinRankSum";
 		}
 	}
 
@@ -475,7 +475,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 	}
 
-	class CHiaranini_Stable_MiniMax_OWA implements GroupProjectAlgorithm
+	class Chiaranini_Stable_MiniMax_OWA implements GroupProjectAlgorithm
 	{
 		@Override
 		public String name()
