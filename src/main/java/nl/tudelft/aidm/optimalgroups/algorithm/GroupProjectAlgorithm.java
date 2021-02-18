@@ -4,16 +4,23 @@ import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.HumbleMiniMaxWithClosuresSearch;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_MinimaxDistribOWA;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_Stable_MinimaxDistribOWA;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_Stable_UtilitarianMinSumWeight;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_UtilitarianMinSumWeight;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.WorstAmongBestHumblePairingsSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.GroupedProjectMinizincAllocation;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCOrderedByPotentialGroupmates;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPC;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCPessimism;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.GroupProjectMaxFlow;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictatorship;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
@@ -250,7 +257,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			return "BepSys groups into Randomised Serial Dictatorship (IA with lottery)";
+			return "BepSys groups -> Randomised SD";
 		}
 
 		@Override
@@ -327,11 +334,10 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 	class Greedy_SDPC_Pessimism_inspired implements GroupProjectAlgorithm
 	{
-
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var sdpc = new nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.SDPCPessimism(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			var sdpc = new SDPCPessimism(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.matching();
 
 			return FormedGroupToProjectMatching.from(matchingStudentsToProjects);
@@ -341,6 +347,24 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String name()
 		{
 			return "Greedy (SDPC and Pessimism inspired)";
+		}
+	}
+
+	class BB_SDPC implements GroupProjectAlgorithm
+	{
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = new HumbleMiniMaxWithClosuresSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
+			var matchingStudentsToProjects = algo.matching();
+
+			return FormedGroupToProjectMatching.from(matchingStudentsToProjects);
+		}
+
+		@Override
+		public String name()
+		{
+			return "Branch-n-Bound with closures (BB over SDPC)";
 		}
 	}
 
@@ -357,7 +381,115 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			return "MiniZinc MIP (COIN-BC)";
+			return "MiniZinc MIP (COIN-BC) - MinRankSum";
+		}
+	}
+
+	class Chiarandini_Utilitarian_MinSum_IdentityScheme implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Chiaranini Utilitarian MinSum - Identity Weights";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = Chiarandini_UtilitarianMinSumWeight.withIdentityWeightScheme(datasetContext);
+			var matching = algo.doIt();
+
+			return FormedGroupToProjectMatching.from(matching);
+		}
+	}
+
+	class Chiarandini_Utilitarian_MinSum_ExpScheme implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Chiaranini Utilitarian MinSum - Exp Weights";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = Chiarandini_UtilitarianMinSumWeight.withExpWeightScheme(datasetContext);
+			var matching = algo.doIt();
+
+			return FormedGroupToProjectMatching.from(matching);
+		}
+	}
+
+	class Chiarandini_Stable_Utilitarian_MinSum_IdentityScheme implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Chiaranini Stable Utilitarian MinSum - Identity Weights";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = Chiarandini_Stable_UtilitarianMinSumWeight.withIdentityWeightScheme(datasetContext);
+			var matching = algo.doIt();
+
+			return FormedGroupToProjectMatching.from(matching);
+		}
+	}
+
+	class Chiarandini_Stable_Utilitarian_MinSum_ExpScheme implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Chiaranini Stable Utilitarian MinSum - Exp Weights";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = Chiarandini_Stable_UtilitarianMinSumWeight.withExpWeightScheme(datasetContext);
+			var matching = algo.doIt();
+
+			return FormedGroupToProjectMatching.from(matching);
+		}
+	}
+
+	class Chiarandini_MiniMax_OWA implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Chiaranini MiniMax-OWA";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = new Chiarandini_MinimaxDistribOWA(datasetContext);
+			var matching = algo.doIt();
+
+			return FormedGroupToProjectMatching.from(matching);
+		}
+	}
+
+	class CHiaranini_Stable_MiniMax_OWA implements GroupProjectAlgorithm
+	{
+		@Override
+		public String name()
+		{
+			return "Chiaranini Stable MiniMax-OWA";
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext);
+			var matching = algo.doIt();
+
+			return FormedGroupToProjectMatching.from(matching);
 		}
 	}
 }

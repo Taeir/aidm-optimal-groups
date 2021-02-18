@@ -8,32 +8,40 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
+import plouchtch.functional.actions.Rethrow;
+import plouchtch.util.Try;
 
-public class ChiarandiniUtilitarianWeightSumMinimalization
+public class Chiarandini_Stable_UtilitarianMinSumWeight
 {
 	private final DatasetContext datasetContext;
 	private UtilitarianWeightsObjective.WeightScheme weightScheme;
 
-	public static ChiarandiniUtilitarianWeightSumMinimalization withIdentityWeightScheme(DatasetContext datasetContext)
+	public static Chiarandini_Stable_UtilitarianMinSumWeight withIdentityWeightScheme(DatasetContext datasetContext)
 	{
-		return new ChiarandiniUtilitarianWeightSumMinimalization(datasetContext, rank -> rank);
+		return new Chiarandini_Stable_UtilitarianMinSumWeight(datasetContext, rank -> rank);
 	}
 
-	public static ChiarandiniUtilitarianWeightSumMinimalization withExpWeightScheme(DatasetContext datasetContext)
+	public static Chiarandini_Stable_UtilitarianMinSumWeight withExpWeightScheme(DatasetContext datasetContext)
 	{
 		var maxRank = datasetContext.allProjects().count();
 		UtilitarianWeightsObjective.WeightScheme weightScheme = rank -> -1 * Math.pow(2, Math.max(0, maxRank - rank));
 
-		return new ChiarandiniUtilitarianWeightSumMinimalization(datasetContext, weightScheme);
+		return new Chiarandini_Stable_UtilitarianMinSumWeight(datasetContext, weightScheme);
 	}
 
-	public ChiarandiniUtilitarianWeightSumMinimalization(DatasetContext datasetContext, UtilitarianWeightsObjective.WeightScheme weightScheme)
+	public Chiarandini_Stable_UtilitarianMinSumWeight(DatasetContext datasetContext, UtilitarianWeightsObjective.WeightScheme weightScheme)
 	{
 		this.datasetContext = datasetContext;
 		this.weightScheme = weightScheme;
 	}
 
-	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doIt() throws GRBException
+	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doIt()
+	{
+		return Try.getting(this::doItDirty)
+			.or(Rethrow.asRuntime());
+	}
+
+	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doItDirty() throws GRBException
 	{
 		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
 
@@ -44,6 +52,9 @@ public class ChiarandiniUtilitarianWeightSumMinimalization
 
 		AssignmentConstraint assignmentConstraint = AssignmentConstraint.createInModel(model, seqDatasetContext);
 		UtilitarianWeightsObjective.createInModel(model, seqDatasetContext, assignmentConstraint, weightScheme);
+
+		var stability = StabilityConstraints.createInModel(model, assignmentConstraint, seqDatasetContext);
+		stability.createStabilityFeasibilityConstraint(model);
 
 		model.optimize();
 
@@ -59,21 +70,21 @@ public class ChiarandiniUtilitarianWeightSumMinimalization
 	public static void main(String[] args) throws Exception
 	{
 		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
-		var utilitarianChiarandini = ChiarandiniUtilitarianWeightSumMinimalization.withIdentityWeightScheme(ce);
+		var utilitarianChiarandini = Chiarandini_Stable_UtilitarianMinSumWeight.withIdentityWeightScheme(ce);
 		var result = utilitarianChiarandini.doIt();
 
 		var metrics = new MatchingMetrics.StudentProject(result);
 		new StudentRankDistributionInMatching(result).displayChart("Chiarandini util identity weight scheme");
 
 
-		var expUtilitarianChiarandini = ChiarandiniUtilitarianWeightSumMinimalization.withExpWeightScheme(ce);
+		var expUtilitarianChiarandini = Chiarandini_Stable_UtilitarianMinSumWeight.withExpWeightScheme(ce);
 		var resultExp = expUtilitarianChiarandini.doIt();
 
 		var metricsExp = new MatchingMetrics.StudentProject(resultExp);
 //		new StudentRankDistributionInMatching(resultExp).displayChart("Chiarandini util exp weight scheme");
 
 
-		var owaMinimaxChiarandini = new ChiarandiniMinimaxDistribOWA(ce);
+		var owaMinimaxChiarandini = new Chiarandini_MinimaxDistribOWA(ce);
 		var resultOwa = owaMinimaxChiarandini.doIt();
 
 		var metricsOwa = new MatchingMetrics.StudentProject(resultOwa);

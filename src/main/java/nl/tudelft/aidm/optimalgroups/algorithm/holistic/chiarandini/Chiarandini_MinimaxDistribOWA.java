@@ -9,19 +9,27 @@ import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistrib
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import plouchtch.assertion.Assert;
+import plouchtch.functional.actions.Rethrow;
+import plouchtch.util.Try;
 
-public class ChiarandiniMinimaxDistribOWA
+public class Chiarandini_MinimaxDistribOWA
 {
 	private final DatasetContext datasetContext;
 	private final DistributiveWeightsObjective.WeightScheme weightScheme;
 
-	public ChiarandiniMinimaxDistribOWA(DatasetContext datasetContext)
+	public Chiarandini_MinimaxDistribOWA(DatasetContext datasetContext)
 	{
 		this.datasetContext = datasetContext;
 		this.weightScheme = new DistribOWAWeightScheme(datasetContext);
 	}
 
-	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doIt() throws GRBException
+	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doIt()
+	{
+		return Try.getting(this::doItDirty)
+			.or(Rethrow.asRuntime());
+	}
+
+	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doItDirty() throws GRBException
 	{
 		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
 
@@ -47,7 +55,7 @@ public class ChiarandiniMinimaxDistribOWA
 	{
 		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
 
-		var owaMinimaxChiarandini = new ChiarandiniMinimaxDistribOWA(ce);
+		var owaMinimaxChiarandini = new Chiarandini_MinimaxDistribOWA(ce);
 		var resultOwa = owaMinimaxChiarandini.doIt();
 
 		var metricsOwa = new MatchingMetrics.StudentProject(resultOwa);
