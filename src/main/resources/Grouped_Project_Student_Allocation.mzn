@@ -11,7 +11,11 @@ int: 'max group size';
 int: 'topic capacity';
 
 int: 'max students with topic' = 'topic capacity' * 'max group size';
-array[0..('max students with topic')] of bool: can_form_groups = array1d(0..25, [ true, false, false, false, true, true, false, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true ]);
+
+array[1..'max students with topic'+1] of bool: allowed_domain;
+array[0..'max students with topic'] of bool: can_form_groups = array1d(0..'max students with topic', allowed_domain);
+
+% array[0..('max students with topic')] of bool: can_form_groups = array1d(0..25, [ true, false, false, false, true, true, false, false, true, true, true, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true ]);
 
 
 % META

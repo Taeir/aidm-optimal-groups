@@ -133,7 +133,7 @@ public class GroupedProjectMinizincAllocation
 		var seqDataset = SequentualDatasetContext.from(ce);
 		var data = new StudentGroupProjectMatchingInstanceData(seqDataset, 1);
 
-		var henk = new GroupedProjectMinizincAllocation(ce, 5).matching();
+		var henk = new GroupedProjectMinizincAllocation(ce, ce.numMaxSlots()).matching();
 		MatchingMetrics.StudentProject metrics = new MatchingMetrics.StudentProject(henk);
 
 		return;
