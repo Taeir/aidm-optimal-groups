@@ -60,10 +60,10 @@ public class MiniZinc
 		InputStream errStream = proc.getErrorStream();
 		proc.waitFor(5, TimeUnit.MINUTES);
 
-		if (errStream.available() > 0) {
-			var errorOutput = new String(errStream.readAllBytes());
-			throw new RuntimeException(errorOutput);
-		}
+//		if (errStream.available() > 0) {
+//			var errorOutput = new String(errStream.readAllBytes());
+//			throw new RuntimeException(errorOutput);
+//		}
 
 		return new Solutions(inputStream);
 	}

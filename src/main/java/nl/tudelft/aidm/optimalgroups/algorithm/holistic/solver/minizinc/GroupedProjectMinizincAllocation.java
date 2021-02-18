@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividuall
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.datasets.ThesisDatasets;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
+import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
@@ -53,7 +54,7 @@ public class GroupedProjectMinizincAllocation
 
 		try {
 			long timelimit = Duration.ofMinutes(5).toMillis();
-			var solutions = minizinc.run(instanceData, "COIN-BC", timelimit);
+			var solutions = minizinc.run(instanceData, "gurobi", timelimit);
 
 			var bestRawSolution = solutions.bestRaw();
 			var bestSolution = new MinizincSolution(seqDataset, bestRawSolution);
@@ -135,6 +136,8 @@ public class GroupedProjectMinizincAllocation
 
 		var henk = new GroupedProjectMinizincAllocation(ce, ce.numMaxSlots()).matching();
 		MatchingMetrics.StudentProject metrics = new MatchingMetrics.StudentProject(henk);
+
+		new StudentRankDistributionInMatching(henk).displayChart("MiniZinc - MinSum");
 
 		return;
 	}
