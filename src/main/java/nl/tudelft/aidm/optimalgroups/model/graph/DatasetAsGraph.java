@@ -1,10 +1,14 @@
 package nl.tudelft.aidm.optimalgroups.model.graph;
 
+import com.vladsch.flexmark.ext.tables.internal.TableJiraRenderer;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import plouchtch.assertion.Assert;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 {
@@ -27,7 +31,7 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 		int numAgents = datasetContext.allAgents().count();
 		int numProjects = datasetContext.allProjects().count();
 
-		this.vertices = new Vertices(numAgents + numProjects);
+		this.vertices = new Vertices(numAgents + numProjects+1);
 		this.edges = new DatasetEdges();
 
 //		datasetContext.allProjects().forEach(project -> projectVertices.put(project, vertices.vertexOf(project)));
@@ -79,11 +83,23 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 			return (Vertex<T>) vertices[id];
 		}
 
-		public <T> Vertex<T> vertexOf(T obj)
+		public synchronized <T> Vertex<T> vertexOf(T obj)
 		{
 			//noinspection unchecked -- is safe
 			return (Vertex<T>) existing.computeIfAbsent(obj, o -> {
-				var vert = new Vertex<>(idOfNext++, o);
+				var vert = new Vertex<>(idOfNext, o);
+
+				idOfNext += 1;
+
+				if (vert.id() >= vertices.length) {
+
+					var zzz = existing.keySet().stream().sorted(Comparator.comparing(x -> x instanceof Agent ? ((Agent) x).id * 1000 : ((Project) x).id())).collect(Collectors.toList());
+
+					return null;
+				}
+
+				Assert.that(vertices[vert.id()] == null).orThrowMessage("BugCheck: vertex already exists...");
+
 				vertices[vert.id()] = vert;
 				asSet.add(vert);
 				return vert;

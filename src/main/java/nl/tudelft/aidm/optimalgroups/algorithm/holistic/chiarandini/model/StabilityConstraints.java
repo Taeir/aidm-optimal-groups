@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
 
 import gurobi.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -6,8 +6,6 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetC
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
-
-import static nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.AssignmentConstraint.*;
 
 public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 {
@@ -34,7 +32,16 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 			.or(Rethrow.asRuntime());
 	}
 
-	public static StabilityConstraints createInModel(GRBModel model, AssignmentConstraint assignmentCnstr, SequentualDatasetContext datasetContext) throws GRBException
+	/**
+	 * Note! After creating in model, the user still must do an additional call to {@code createStabilityFeasibilityConstraint}
+	 * to set the Stability as a constrained option. As the stability can also be done through the objective function (todo).
+	 * @param model
+	 * @param assignmentCnstr
+	 * @param datasetContext
+	 * @return
+	 * @throws GRBException
+	 */
+	public static StabilityConstraints createInModel(GRBModel model, AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext) throws GRBException
 	{
 		int u = datasetContext.groupSizeConstraint().maxSize();
 
@@ -73,14 +80,14 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 			});
 		});
 
-		D[][][] d = D.createInModelWithConstraints(model, datasetContext, assignmentCnstr.x, z);
+		D[][][] d = D.createInModelWithConstraints(model, datasetContext, assignmentCnstr.xVars, z);
 
 		return new StabilityConstraints(b, z, d);
 	}
 
 	public record D(Agent student, Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
-		public static D[][][] createInModelWithConstraints(GRBModel model, SequentualDatasetContext datasetContext, X[][][] x, Z[][][] z)
+		public static D[][][] createInModelWithConstraints(GRBModel model, SequentualDatasetContext datasetContext, XVars xVars, Z[][][] z)
 		{
 			var ub = datasetContext.allProjects().count() - 1;
 
@@ -123,7 +130,7 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 
 						project_i.slots().forEach(slot_i ->
 						{
-							var x_ki = x[k][project_i.id()][slot_i.index()];
+							var x_ki = xVars.of(student, slot_i).orElseThrow();
 							var d_ki = createVariable(model, student, slot_i, ub);
 
 							d[k][project_i.id()][slot_i.index()] = d_ki;
@@ -159,20 +166,21 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 		private static D createVariable(GRBModel model, Agent student, Project.ProjectSlot slot, int ub)
 		{
 			var name = "d_" + student + "_" + slot;
-			return new D(student, slot, name, makeIntegerVar(model, 0d, ub, name));
+			var asVar = GurobiHelperFns.makeIntegerVariable(model, 0d, ub, name);
+			return new D(student, slot, name, asVar);
 		}
 	}
 
 	public record Z(Agent student, Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
-		public static Z createInModelWithConstraint(GRBModel model, AssignmentConstraint assignmentCnstr, SequentualDatasetContext datasetContext, Agent student, Project.ProjectSlot slot, B b_sl)
+		public static Z createInModelWithConstraint(GRBModel model, AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext, Agent student, Project.ProjectSlot slot, B b_sl)
 		{
 			int u = datasetContext.groupSizeConstraint().maxSize();
 			int l = datasetContext.groupSizeConstraint().minSize();
 
 			// create Z-var for student-project
 			String z_name = "z_" + student + slot;
-			var z__s_sl = makeBinaryVar(model, z_name);
+			var z__s_sl = GurobiHelperFns.makeBinaryVariable(model, z_name);
 
 			// Constraint (31)
 			var lhExp31 = new GRBLinExpr();
@@ -187,13 +195,13 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 			// Constraint (32)
 			var lhExpr32 = new GRBLinExpr();
 			lhExpr32.addConstant(1 - l);
-			var y_sl = assignmentCnstr.y(slot).get().asVar();
-			lhExpr32.addTerm(-l, y_sl);
+			var y_sl = assignmentCnstr.yVars.of(slot).orElseThrow();
+			lhExpr32.addTerm(-l, y_sl.asVar());
 
 			var rhExpr32 = new GRBLinExpr();
 			Try.doing(() -> rhExpr32.add(rhExp31)) // Rly good api...
 				.or(Rethrow.asRuntime());
-			rhExpr32.addTerm(u+1, y_sl);
+			rhExpr32.addTerm(u+1, y_sl.asVar());
 
 			Try.doing(() -> model.addConstr(lhExpr32, GRB.LESS_EQUAL, rhExpr32, "constr_32_" + student + "_" + slot))
 				.or(Rethrow.asRuntime());
@@ -204,12 +212,12 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 
 	public record B(Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
-		public static B createInModelWithConstraint(GRBModel model, AssignmentConstraint assignmentCnstr, SequentualDatasetContext datasetContext, Project.ProjectSlot slot)
+		public static B createInModelWithConstraint(GRBModel model, AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext, Project.ProjectSlot slot)
 		{
 			// Make the Var:
 			var ub_sl = datasetContext.groupSizeConstraint().maxSize();
 			var name = "b_" + slot.id();
-			var b_slot = makeIntegerVar(model, 0, ub_sl, name);
+			var b_slot = GurobiHelperFns.makeIntegerVariable(model, 0, ub_sl, name);
 
 			// Make the Constraint:
 			var lhLinExp = new GRBLinExpr();
@@ -217,7 +225,7 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 			// b_sl = ub - |assigned to proj-slot sl|
 			datasetContext.allAgents().forEach(agent ->
 			{
-				assignmentCnstr.x(agent, slot).ifPresent(x -> {
+				assignmentCnstr.xVars.of(agent, slot).ifPresent(x -> {
 					lhLinExp.addTerm(1d, x.asVar());
 				});
 			});
@@ -225,7 +233,7 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 			lhLinExp.addTerm(1d, b_slot);
 
 			var rhLinExp = new GRBLinExpr();
-			var y_sl = assignmentCnstr.y(slot).orElseThrow();
+			var y_sl = assignmentCnstr.yVars.of(slot).orElseThrow();
 			rhLinExp.addTerm(ub_sl, y_sl.asVar());
 
 			Try.doing(() -> model.addConstr(lhLinExp, GRB.EQUAL, rhLinExp, "b_slack_constr_" + slot.id()))
@@ -233,17 +241,5 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 
 			return new B(slot, name, b_slot);
 		}
-	}
-
-	public static GRBVar makeBinaryVar(GRBModel model, String name)
-	{
-		return Try.getting(() -> model.addVar(0.0, 1.0, 0.0, GRB.BINARY, name))
-			.or(Rethrow.asRuntime());
-	}
-
-	private static GRBVar makeIntegerVar(GRBModel model, double lb, double ub, String name)
-	{
-		return Try.getting(() -> model.addVar(lb, ub, 1.0, GRB.INTEGER, name))
-			.or(Rethrow.asRuntime());
 	}
 }

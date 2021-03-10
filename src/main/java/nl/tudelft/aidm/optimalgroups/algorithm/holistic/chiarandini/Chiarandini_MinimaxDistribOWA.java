@@ -3,6 +3,9 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.AssignmentConstraints;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.DistributiveWeightsObjective;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
@@ -38,13 +41,13 @@ public class Chiarandini_MinimaxDistribOWA
 
 		var model = new GRBModel(env);
 
-		AssignmentConstraint assignmentConstraint = AssignmentConstraint.createInModel(model, seqDatasetContext);
-		DistributiveWeightsObjective.createInModel(model, seqDatasetContext, assignmentConstraint, weightScheme);
+		AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
+		DistributiveWeightsObjective.createInModel(model, seqDatasetContext, assignmentConstraints, weightScheme);
 
 		model.optimize();
 
 		// extract x's and map to matching
-		var matching = new AgentToProjectMatching(assignmentConstraint, model, seqDatasetContext);
+		var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
 
 		env.dispose();
 

@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
 
 import gurobi.GRB;
 import gurobi.GRBException;
@@ -13,7 +13,7 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetC
 public class DistributiveWeightsObjective
 {
 	public static void createInModel(GRBModel model, SequentualDatasetContext datasetContext,
-	                                 AssignmentConstraint assignmentVars, WeightScheme weightScheme)
+	                                 AssignmentConstraints assignmentVars, WeightScheme weightScheme)
 		throws GRBException
 	{
 		var objFnExpr = new GRBLinExpr();
@@ -29,8 +29,7 @@ public class DistributiveWeightsObjective
 
 						// Agent is not indiff and finds project acceptable
 						if (!rank.isCompletelyIndifferent() && !rank.unacceptable() && rank.asInt() == h) {
-							var x = assignmentVars.x(agent, slot).get();
-
+							var x = assignmentVars.xVars.of(agent, slot).orElseThrow();
 							numStudentsWithRankH.addTerm(1d, x.asVar());
 						}
 					});
@@ -46,8 +45,8 @@ public class DistributiveWeightsObjective
 		model.setObjective(objFnExpr, GRB.MINIMIZE);
 	}
 
-	interface WeightScheme
+	public interface WeightScheme
 	{
-		public double weight(int rank);
+		double weight(int rank);
 	}
 }

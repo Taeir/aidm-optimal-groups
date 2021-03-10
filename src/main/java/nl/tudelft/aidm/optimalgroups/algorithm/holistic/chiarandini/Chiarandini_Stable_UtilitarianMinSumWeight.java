@@ -3,6 +3,10 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.AssignmentConstraints;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.StabilityConstraints;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.UtilitarianWeightsObjective;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
@@ -50,17 +54,17 @@ public class Chiarandini_Stable_UtilitarianMinSumWeight
 
 		var model = new GRBModel(env);
 
-		AssignmentConstraint assignmentConstraint = AssignmentConstraint.createInModel(model, seqDatasetContext);
-		UtilitarianWeightsObjective.createInModel(model, seqDatasetContext, assignmentConstraint, weightScheme);
+		AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
+		UtilitarianWeightsObjective.createInModel(model, seqDatasetContext, assignmentConstraints, weightScheme);
 
-		var stability = StabilityConstraints.createInModel(model, assignmentConstraint, seqDatasetContext);
+		var stability = StabilityConstraints.createInModel(model, assignmentConstraints, seqDatasetContext);
 		stability.createStabilityFeasibilityConstraint(model);
 
 		model.optimize();
 
 		// extract x's and map to matching
 
-		var matching = new AgentToProjectMatching(assignmentConstraint, model, seqDatasetContext);
+		var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
 
 		env.dispose();
 
