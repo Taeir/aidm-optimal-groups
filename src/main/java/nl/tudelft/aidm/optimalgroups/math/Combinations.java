@@ -104,6 +104,11 @@ public class Combinations
 		if (n == 0) return 0;
 		if (n == take || take == 0) return 1;
 
+		var x = fac(take) * fac(n - take);
+		if (x == 0) {
+			return Long.MAX_VALUE;
+		}
+
 		return fac(n) / ( fac(take) * fac(n - take) );
 	}
 
