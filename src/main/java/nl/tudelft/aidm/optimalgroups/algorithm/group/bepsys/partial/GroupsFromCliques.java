@@ -33,13 +33,6 @@ public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 		return Collections.unmodifiableList(tentativeCliques);
 	}
 
-	public Agents asAgents()
-	{
-		return this.asList().stream()
-			.flatMap(tentativeGroup -> tentativeGroup.members().asCollection().stream())
-			.collect(Collectors.collectingAndThen(Collectors.toUnmodifiableList(), Agents::from));
-	}
-
 	private static List<Group.TentativeGroup> cliquesExtractedFrom(Agents agents, GroupSizeConstraint groupSizeConstraint)
 	{
 		var available = new HashSet<>(agents.asCollection());

@@ -52,8 +52,6 @@ public interface Group extends HasProjectPrefs
 
 	class TentativeGroup extends AbstractGroup
 	{
-		private int groupMatchScore;
-
 		public TentativeGroup(Agents members, ProjectPreference projectPreference)
 		{
 			super(members, projectPreference);

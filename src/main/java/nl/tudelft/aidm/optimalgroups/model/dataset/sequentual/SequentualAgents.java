@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.SeqentialGroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;
 import plouchtch.assertion.Assert;
 
@@ -27,6 +28,12 @@ public class SequentualAgents extends Agents
 		return ((SequentualAgent) agent).original;
 	}
 
+	public SequentualAgent correspondingSeqAgentOf(Agent agent)
+	{
+		return (SequentualAgent) asCollection().stream().filter(seqAgent -> ((SequentualAgent) seqAgent).original == agent)
+			.findFirst().orElseThrow();
+	}
+
 	private static LinkedHashSet<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects, SequentualDatasetContext datasetContext)
 	{
 		var originalSorted = new ArrayList<>(original);
@@ -48,7 +55,7 @@ public class SequentualAgents extends Agents
 		return resequenced;
 	}
 
-	private static class SequentualAgent extends Agent
+	public static class SequentualAgent extends Agent
 	{
 		private final Agent original;
 
@@ -62,14 +69,9 @@ public class SequentualAgents extends Agents
 		{
 			var owner = "SeqAgent_"+newId;
 			var sequentualProjectsPreference = SequentualProjectsPreference.fromOriginal(owner, agent.projectPreference(), sequentualProjects);
+			var seqGroupPreference = SeqentialGroupPreference.fromOriginal(context, agent.groupPreference);
 
-			return new SequentualAgent(newId, agent, sequentualProjectsPreference, agent.groupPreference, context);
-		}
-
-		@Override
-		public int groupPreferenceLength()
-		{
-			throw new RuntimeException("Group preferences not yet reampped to sequenced agents");
+			return new SequentualAgent(newId, agent, sequentualProjectsPreference, seqGroupPreference, context);
 		}
 	}
 }

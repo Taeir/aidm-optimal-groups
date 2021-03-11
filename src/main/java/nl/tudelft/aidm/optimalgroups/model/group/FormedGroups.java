@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.group;
 
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
@@ -29,6 +30,16 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 	public Collection<Group.FormedGroup> asCollection()
 	{
 		return Collections.unmodifiableList(this.groups);
+	}
+
+	@Override
+	public Agents asAgents()
+	{
+		var agents = this.groups.stream()
+			.map(Group::members)
+			.collect(Agents::from, Agents::with,  Agents::with);
+
+		return agents;
 	}
 
 	/**
