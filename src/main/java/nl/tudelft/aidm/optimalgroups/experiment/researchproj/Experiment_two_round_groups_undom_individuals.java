@@ -7,7 +7,9 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCl
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.GroupConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfRanks;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -31,8 +33,6 @@ public class Experiment_two_round_groups_undom_individuals
 		var datasetContext = datasetCE10();
 		
 		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
-		UtilitarianWeightsObjective.WeightScheme weightScheme = rank -> rank;
-		
 		var allAgents = seqDatasetContext.allAgents();
 //
 //			var algo = new Chiarandini_Utilitarian_MinSum_IdentityScheme();
@@ -55,7 +55,9 @@ public class Experiment_two_round_groups_undom_individuals
 			var model = new GRBModel(env);
 			
 			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
-			UtilitarianWeightsObjective.createInModel(model, seqDatasetContext, assignmentConstraints, weightScheme);
+			
+			var objFn = new MinimizeSumOfRanks(seqDatasetContext, assignmentConstraints);
+			objFn.apply(model);
 			
 			model.optimize();
 			

@@ -1,6 +1,8 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints;
 
 import gurobi.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.XVars;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.YVars;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
@@ -8,10 +10,11 @@ import plouchtch.util.Try;
 public class AssignmentConstraints
 {
 	private final SequentualDatasetContext datasetContext;
+	
 	public final XVars xVars;
 	public final YVars yVars;
 
-	private AssignmentConstraints(SequentualDatasetContext datasetContext, GRBModel model, XVars x, YVars y)
+	private AssignmentConstraints(SequentualDatasetContext datasetContext, XVars x, YVars y)
 	{
 		this.datasetContext = datasetContext;
 		this.xVars = x;
@@ -95,7 +98,7 @@ public class AssignmentConstraints
 			});
 		});
 
-		return new AssignmentConstraints(datasetContext, model, xVars, yVars);
+		return new AssignmentConstraints(datasetContext, xVars, yVars);
 	}
 
 }

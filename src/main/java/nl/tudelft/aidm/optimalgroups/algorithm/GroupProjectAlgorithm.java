@@ -5,10 +5,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.HumbleMiniMaxWithClosuresSearch;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_MinimaxDistribOWA;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_Stable_MinimaxDistribOWA;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_Stable_UtilitarianMinSumWeight;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.Chiarandini_UtilitarianMinSumWeight;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.WorstAmongBestHumblePairingsSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.GroupedProjectMinizincAllocation;
@@ -20,14 +17,11 @@ import nl.tudelft.aidm.optimalgroups.algorithm.project.RandomizedSerialDictators
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
-import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.Objects;
-import java.util.function.Predicate;
 
 public interface GroupProjectAlgorithm extends Algorithm
 {
@@ -371,17 +365,17 @@ public interface GroupProjectAlgorithm extends Algorithm
 	class MinizincMIP implements GroupProjectAlgorithm
 	{
 		@Override
+		public String name()
+		{
+			return "MiniZinc - MinRankSum";
+		}
+		
+		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
 			var matching = new GroupedProjectMinizincAllocation(datasetContext, 5).matching();
 
 			return FormedGroupToProjectMatching.from(matching);
-		}
-
-		@Override
-		public String name()
-		{
-			return "MiniZinc - MinRankSum";
 		}
 	}
 
@@ -396,7 +390,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = Chiarandini_UtilitarianMinSumWeight.withIdentityWeightScheme(datasetContext);
+			var algo = new Chiarandini_MinSumRank(datasetContext);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.from(matching);
@@ -414,7 +408,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = Chiarandini_UtilitarianMinSumWeight.withExpWeightScheme(datasetContext);
+			var algo = new Chiarandini_MinSumExpRank(datasetContext);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.from(matching);
@@ -432,7 +426,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = Chiarandini_Stable_UtilitarianMinSumWeight.withIdentityWeightScheme(datasetContext);
+			var algo = new Chiarandini_Stable_MinSumRank(datasetContext);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.from(matching);
@@ -450,7 +444,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = Chiarandini_Stable_UtilitarianMinSumWeight.withExpWeightScheme(datasetContext);
+			var algo = new Chiarandini_Stable_MinSumExpRank(datasetContext);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.from(matching);
@@ -468,7 +462,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = new Chiarandini_MinimaxDistribOWA(datasetContext);
+			var algo = new Chiarandini_MinimaxOWA(datasetContext);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.from(matching);

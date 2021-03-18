@@ -7,9 +7,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 import nl.tudelft.aidm.optimalgroups.model.pref.rank.UnacceptableAlternativeRank;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Note: currently these are total preferences (no ties) - but not necessarily complete. Only missing alternatives can be partially ordered (tied)
@@ -58,6 +56,21 @@ public interface ProjectPreference
 		}
 
 		return new PresentRankInPref(inArray.getAsInt());
+	}
+	
+	/**
+	 * Returns the worst rank in the prefs
+	 * @return Empty if indifferent
+	 */
+	default OptionalInt maxRank()
+	{
+		if (isCompletelyIndifferent()) {
+			return OptionalInt.empty();
+		}
+		
+		return asMap().values().stream()
+				   .mapToInt(Integer::intValue)
+			       .max();
 	}
 
 	/**

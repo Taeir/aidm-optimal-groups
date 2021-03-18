@@ -1,19 +1,34 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.model;
 
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
+import plouchtch.functional.actions.Rethrow;
+import plouchtch.util.Try;
 
-public class UtilitarianWeightsObjective
+public record UtilitarianWeightsObjective(SequentualDatasetContext datasetContext,
+                                         AssignmentConstraints assignmentVars,
+                                         WeightScheme weightScheme)
+	implements ObjectiveFunction
 {
-	public static void createInModel(GRBModel model,
-	                                 SequentualDatasetContext datasetContext,
-	                                 AssignmentConstraints assignmentVars,
-	                                 WeightScheme weightScheme)
-		throws GRBException
+	public interface WeightScheme
+	{
+		double weight(int rank);
+	}
+	
+	@Override
+	public void apply(GRBModel model)
+	{
+		Try.doing(
+			() -> applyDirty(model)
+		).or(Rethrow.asRuntime());
+	}
+	
+	private void applyDirty(GRBModel model) throws GRBException
 	{
 		var objFnExpr = new GRBLinExpr();
 
@@ -36,10 +51,5 @@ public class UtilitarianWeightsObjective
 		});
 
 		model.setObjective(objFnExpr, GRB.MINIMIZE);
-	}
-
-	public interface WeightScheme
-	{
-		double weight(int rank);
 	}
 }

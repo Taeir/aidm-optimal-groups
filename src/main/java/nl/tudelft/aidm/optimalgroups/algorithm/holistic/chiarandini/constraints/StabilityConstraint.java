@@ -1,65 +1,41 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints;
 
 import gurobi.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.GurobiHelperFns;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.XVars;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
-public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
+/**
+ * Creates the constraint to enforce "stability" as defined by Chiarandini, Fagerberg et al
+ */
+public record StabilityConstraint(AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext) implements Constraint
 {
+	//B[][] b, Z[][][] z, D[][][] d
+	
 	// Enforce stability through a constraint, in contrast to an objective function minimizing destability
-	public void createStabilityFeasibilityConstraint(GRBModel model)
+	
+	@Override
+	public void apply(GRBModel model) throws GRBException
 	{
-		var sum = new GRBLinExpr();
-
-		for (int k = 0; k < d.length; k++)
-		{
-			for (int p_j = 0; p_j < d[k].length; p_j++)
-			{
-				for (int slot_j = 0; slot_j < d[k][p_j].length; slot_j++)
-				{
-					var d_kj = d[k][p_j][slot_j];
-
-					if (d_kj != null)
-						sum.addTerm(1, d_kj.asVar());
-				}
-			}
-		}
-
-		Try.doing(() -> model.addConstr(sum, GRB.EQUAL, 0, "constr_stability_feasibility"))
-			.or(Rethrow.asRuntime());
-	}
-
-	/**
-	 * Note! After creating in model, the user still must do an additional call to {@code createStabilityFeasibilityConstraint}
-	 * to set the Stability as a constrained option. As the stability can also be done through the objective function (todo).
-	 * @param model
-	 * @param assignmentCnstr
-	 * @param datasetContext
-	 * @return
-	 * @throws GRBException
-	 */
-	public static StabilityConstraints createInModel(GRBModel model, AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext) throws GRBException
-	{
-		int u = datasetContext.groupSizeConstraint().maxSize();
-
 		int numAgents = datasetContext.allAgents().count();
 		int numProjs = datasetContext.allProjects().count();
 		int numMaxSlots = datasetContext.numMaxSlots();
-
+		
 		// Note: proj id's are 1-based, so +1 to index by their id's
 		B[][] b = new B[numProjs +1][numMaxSlots];
-
+		
 		datasetContext.allProjects().forEach(project -> {
 			project.slots().forEach(slot -> {
 				b[project.id()][slot.index()] = B.createInModelWithConstraint(model, assignmentCnstr, datasetContext, slot);
 			});
 		});
-
+		
 		Z[][][] z = new Z[numAgents+1][numProjs+1][numMaxSlots];
-
+		
 		datasetContext.allProjects().forEach(project ->
 		{
 			var p = project.id();
@@ -69,20 +45,42 @@ public record StabilityConstraints(B[][] b, Z[][][] z, D[][][] d)
 				datasetContext.allAgents().forEach(student ->
 				{
 					var s = student.id;
-
+					
 					var rank = student.projectPreference().rankOf(project);
 					if (rank.unacceptable() || rank.isCompletelyIndifferent())
 						return;
-
+					
 					var b_sl = b[p][sl];
 					z[s][p][sl] = Z.createInModelWithConstraint(model, assignmentCnstr, datasetContext, student, slot, b_sl);
 				});
 			});
 		});
-
+		
 		D[][][] d = D.createInModelWithConstraints(model, datasetContext, assignmentCnstr.xVars, z);
-
-		return new StabilityConstraints(b, z, d);
+		
+		createStabilityFeasibilityConstraint(model, d);
+	}
+	
+	private void createStabilityFeasibilityConstraint(GRBModel model, D[][][] d)
+	{
+		var sum = new GRBLinExpr();
+		
+		for (int k = 0; k < d.length; k++)
+		{
+			for (int p_j = 0; p_j < d[k].length; p_j++)
+			{
+				for (int slot_j = 0; slot_j < d[k][p_j].length; slot_j++)
+				{
+					var d_kj = d[k][p_j][slot_j];
+					
+					if (d_kj != null)
+						sum.addTerm(1, d_kj.asVar());
+				}
+			}
+		}
+		
+		Try.doing(() -> model.addConstr(sum, GRB.EQUAL, 0, "constr_stability_feasibility"))
+			.or(Rethrow.asRuntime());
 	}
 
 	public record D(Agent student, Project.ProjectSlot slot, String name, GRBVar asVar)
