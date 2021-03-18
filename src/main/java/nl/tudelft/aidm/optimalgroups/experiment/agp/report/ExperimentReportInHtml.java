@@ -16,8 +16,10 @@ import java.util.List;
 
 public class ExperimentReportInHtml
 {
-	private final List<Experiment> experiments;
-
+	private List<Experiment> experiments;
+	
+	private String asHtmlSource;
+	
 	public ExperimentReportInHtml(Experiment... experiments)
 	{
 		this(List.of(experiments));
@@ -27,9 +29,22 @@ public class ExperimentReportInHtml
 	{
 		this.experiments = experiments;
 	}
+	
+	public ExperimentReportInHtml(String asHtmlSource)
+	{
+		// Not pretty, this class was intended for generating reports from experiments
+		// But the quick n dirty is ok for now...
+		this.asHtmlSource = asHtmlSource;
+		this.experiments = List.of();
+	}
 
 	public String asHtmlSource()
 	{
+		if (asHtmlSource != null) {
+			return asHtmlSource;
+		}
+		
+		/* Quick n dirty: use Markdown report to generate HTML */
 		var markdown = new ExperimentReportInMarkdown(experiments).asMarkdownSource();
 
 		/* Markdown to Html stuff */
@@ -40,9 +55,9 @@ public class ExperimentReportInHtml
 		HtmlRenderer renderer = HtmlRenderer.builder(options).build();
 
 		Document parsed = parser.parse(markdown);
-		var html = renderer.render(parsed);
+		this.asHtmlSource = renderer.render(parsed);
 
-		return html;
+		return asHtmlSource;
 	}
 
 	public void writeHtmlSourceToFile(File file)

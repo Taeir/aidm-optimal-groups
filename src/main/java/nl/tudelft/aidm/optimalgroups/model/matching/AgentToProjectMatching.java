@@ -52,7 +52,7 @@ public interface AgentToProjectMatching extends Matching<Agent, Project>
 			super(datasetContext);
 		}
 
-		protected Simple(DatasetContext datasetContext, List<Match<Agent, Project>> backingList)
+		public Simple(DatasetContext datasetContext, List<Match<Agent, Project>> backingList)
 		{
 			super(datasetContext, backingList);
 		}

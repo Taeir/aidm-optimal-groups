@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.metric.rank.distribution;
+package nl.tudelft.aidm.optimalgroups.metric.profile;
 
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -20,17 +20,17 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StudentRankDistributionInMatching extends AbstractRankDistributionInMatching
+public class StudentRankProfile extends AbstractRankProfile
 {
 
     private final Matching<Agent, Project> matching;
 
-    public StudentRankDistributionInMatching(Matching<Agent, Project> matching) {
+    public StudentRankProfile(Matching<Agent, Project> matching) {
         this.matching = matching;
     }
 
     @Override
-    void calculate()
+    protected void calculate()
     {
         if (profile == null) {
 

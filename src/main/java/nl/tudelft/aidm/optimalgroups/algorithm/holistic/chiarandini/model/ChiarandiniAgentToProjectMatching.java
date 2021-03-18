@@ -1,8 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.XVars;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
@@ -13,18 +11,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ChiarandiniAgentToProjectMatching implements AgentToProjectMatching
+public class ChiarandiniAgentToProjectMatching
 {
-	private final List<Match<Agent, Project>> asList;
-	private final DatasetContext datasetContext;
-
-	public ChiarandiniAgentToProjectMatching(XVars xVars, SequentualDatasetContext datasetContext)
+	private final List<Match<Agent, Project>> asListOg;
+	private final List<Match<Agent, Project>> asListSeq;
+	
+	private final SequentualDatasetContext seqDatasetContext;
+	
+	public ChiarandiniAgentToProjectMatching(XVars xVars, SequentualDatasetContext seqDatasetContext)
 	{
-		var matches = new ArrayList<Match<Agent, Project>>();
+		var matchesOg = new ArrayList<Match<Agent, Project>>();
+		var matchesSeq = new ArrayList<Match<Agent, Project>>();
 
-		datasetContext.allAgents().forEach(agent ->
+		seqDatasetContext.allAgents().forEach(agent ->
 		{
-			datasetContext.allProjects().forEach(project ->
+			seqDatasetContext.allProjects().forEach(project ->
 			{
 				project.slots().forEach(slot ->
 				{
@@ -34,29 +35,33 @@ public class ChiarandiniAgentToProjectMatching implements AgentToProjectMatching
 
 						if (xValue > 0.9)
 						{
-							var ogAgent = datasetContext.mapToOriginal(agent);
-							var ogProject = datasetContext.mapToOriginal(project);
-							var match = new AgentToProjectMatch(ogAgent, ogProject);
-							matches.add(match);
+							var matchSeq = new AgentToProjectMatch(agent, project);
+							matchesSeq.add(matchSeq);
+							
+							var ogAgent = seqDatasetContext.mapToOriginal(agent);
+							var ogProject = seqDatasetContext.mapToOriginal(project);
+							
+							var matchOg = new AgentToProjectMatch(ogAgent, ogProject);
+							matchesOg.add(matchOg);
 						}
 					});
 				});
 			});
 		});
 
-		this.asList = Collections.unmodifiableList(matches);
-		this.datasetContext = datasetContext.originalContext();
+		this.asListOg = Collections.unmodifiableList(matchesOg);
+		this.asListSeq = Collections.unmodifiableList(matchesSeq);
+		
+		this.seqDatasetContext = seqDatasetContext;
 	}
-
-	@Override
-	public List<Match<Agent, Project>> asList()
+	
+	public AgentToProjectMatching original()
 	{
-		return this.asList;
+		return new AgentToProjectMatching.Simple(seqDatasetContext.originalContext(), asListOg);
 	}
-
-	@Override
-	public DatasetContext datasetContext()
+	
+	public AgentToProjectMatching sequential()
 	{
-		return datasetContext;
+		return new AgentToProjectMatching.Simple(seqDatasetContext, asListSeq);
 	}
 }

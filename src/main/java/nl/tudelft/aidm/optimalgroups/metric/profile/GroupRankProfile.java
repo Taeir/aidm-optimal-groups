@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.metric.rank.distribution;
+package nl.tudelft.aidm.optimalgroups.metric.profile;
 
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
@@ -16,17 +16,17 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GroupRankDistributionInMatching extends AbstractRankDistributionInMatching
+public class GroupRankProfile extends AbstractRankProfile
 {
 
     private final Matching<Group.FormedGroup, Project> matching;
 
-    public GroupRankDistributionInMatching(Matching<Group.FormedGroup, Project> matching) {
+    public GroupRankProfile(Matching<Group.FormedGroup, Project> matching) {
         this.matching = matching;
     }
 
     @Override
-    void calculate()
+    protected void calculate()
     {
         if (this.profile == null)
         {

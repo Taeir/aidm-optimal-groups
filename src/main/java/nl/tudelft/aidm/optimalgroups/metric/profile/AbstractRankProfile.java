@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.metric.rank.distribution;
+package nl.tudelft.aidm.optimalgroups.metric.profile;
 
 import java.io.PrintStream;
 import java.util.Map;
@@ -15,7 +15,7 @@ import java.util.Map;
  *         | -----------------
  * Rank -> | 1 2 3 4 5 6
  */
-public abstract class AbstractRankDistributionInMatching
+public abstract class AbstractRankProfile
 {
     // Mapping of Rank -> |Agents with Rank|
     protected Map<Integer, Integer> profile = null;
@@ -43,9 +43,9 @@ public abstract class AbstractRankDistributionInMatching
         return result;
     }
 
-    abstract void calculate();
-
-    public abstract void printResult(PrintStream printStream);
+    abstract protected void calculate();
+    
+    abstract public void printResult(PrintStream printStream);
 
     // Make sure all values are filled
     private void fillEmptyProfileValues() {

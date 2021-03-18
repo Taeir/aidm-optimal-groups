@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.metric.matching;
 import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficient;
 import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientGroupRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientStudentRank;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
@@ -77,9 +77,9 @@ public interface MatchingMetrics<FROM,TO>
 			return new AUPCRStudent(matching);
 		}
 
-		public StudentRankDistributionInMatching rankDistribution()
+		public StudentRankProfile rankDistribution()
 		{
-			return new StudentRankDistributionInMatching(matching);
+			return new StudentRankProfile(matching);
 		}
 	}
 

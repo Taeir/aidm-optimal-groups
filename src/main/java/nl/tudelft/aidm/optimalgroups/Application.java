@@ -9,9 +9,9 @@ import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.matching.group.GroupPreferenceSatisfactionHistogram;
 import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientGroupRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientStudentRank;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.GroupRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.profile.GroupRankProfile;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
 import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankGroupHistogram;
@@ -65,11 +65,11 @@ public class Application
 
 //			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 
-			var studentProfileCurve = new StudentRankDistributionInMatching(matchingFromStudentPerspective);
+			var studentProfileCurve = new StudentRankProfile(matchingFromStudentPerspective);
 			studentProfileCurve.displayChart("");
 
 
-			var groupAggRankProfile = new GroupRankDistributionInMatching(matching);
+			var groupAggRankProfile = new GroupRankProfile(matching);
 			groupAggRankProfile.displayChart();
 
 //			ProfileCurveOfMatching groupProfileCurve = new ProjectProfileCurveGroup(matching);

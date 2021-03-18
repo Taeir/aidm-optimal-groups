@@ -2,16 +2,14 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc;
 
 import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.datasets.ThesisDatasets;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 
@@ -137,7 +135,7 @@ public class GroupedProjectMinizincAllocation
 		var henk = new GroupedProjectMinizincAllocation(ce, ce.numMaxSlots()).matching();
 		MatchingMetrics.StudentProject metrics = new MatchingMetrics.StudentProject(henk);
 
-		new StudentRankDistributionInMatching(henk).displayChart("MiniZinc - MinSum");
+		new StudentRankProfile(henk).displayChart("MiniZinc - MinSum");
 
 		return;
 	}

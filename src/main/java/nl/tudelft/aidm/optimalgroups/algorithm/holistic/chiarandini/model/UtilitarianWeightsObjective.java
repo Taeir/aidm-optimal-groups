@@ -4,12 +4,15 @@ import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 
 public class UtilitarianWeightsObjective
 {
-	public static void createInModel(GRBModel model, SequentualDatasetContext datasetContext,
-	                                 AssignmentConstraints assignmentVars, WeightScheme weightScheme)
+	public static void createInModel(GRBModel model,
+	                                 SequentualDatasetContext datasetContext,
+	                                 AssignmentConstraints assignmentVars,
+	                                 WeightScheme weightScheme)
 		throws GRBException
 	{
 		var objFnExpr = new GRBLinExpr();

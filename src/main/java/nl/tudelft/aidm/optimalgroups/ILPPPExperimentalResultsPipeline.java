@@ -6,9 +6,9 @@ import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.metric.*;
 import nl.tudelft.aidm.optimalgroups.metric.matching.group.GroupPreferenceSatisfactionHistogram;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCR;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.GroupRankDistributionInMatching;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.AbstractRankDistributionInMatching;
-import nl.tudelft.aidm.optimalgroups.metric.rank.distribution.StudentRankDistributionInMatching;
+import nl.tudelft.aidm.optimalgroups.metric.profile.GroupRankProfile;
+import nl.tudelft.aidm.optimalgroups.metric.profile.AbstractRankProfile;
+import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRGroup;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
 import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankGroupHistogram;
@@ -91,10 +91,10 @@ public class ILPPPExperimentalResultsPipeline
 			Matching<Group.FormedGroup, Project> matching = new ILPPPDeterminedMatching(datasetContext);
 			var matchingFromStudentPerspective = AgentToProjectMatching.from(matching);
 
-			AbstractRankDistributionInMatching studentProfileCurve = new StudentRankDistributionInMatching(matchingFromStudentPerspective);
+			AbstractRankProfile studentProfileCurve = new StudentRankProfile(matchingFromStudentPerspective);
 			//studentProfile.printResult();
 
-			AbstractRankDistributionInMatching groupProfileCurve = new GroupRankDistributionInMatching(matching);
+			AbstractRankProfile groupProfileCurve = new GroupRankProfile(matching);
 			//groupProfile.printResult();
 
 			AUPCR studentAUPCR = new AUPCRStudent(matchingFromStudentPerspective, projects, agents);
