@@ -12,7 +12,6 @@ import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import org.apache.commons.codec.binary.Base64;
@@ -20,29 +19,18 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarPainter;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
-import org.jfree.chart.renderer.xy.StandardXYBarPainter;
-import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.*;
-import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TwoRoundExperimentReport
 {
@@ -131,12 +119,12 @@ public class TwoRoundExperimentReport
 			
 				var matchingRoundOneIndividualOnly = filterMatching(matchingRoundOne, individualAgents);
 				var matchingRoundOneGroupedOnly = filterMatching(matchingRoundOne, groupingAgents);
-				var chart = new RankProfileIndividualGrouped(matchingRoundOneIndividualOnly, matchingRoundOneGroupedOnly).asChart("Round one");
+				var chart = new RankProfileOfIndividualAndGroupingStudents(matchingRoundOneIndividualOnly, matchingRoundOneGroupedOnly).asChart("Round one");
 				
-				embed(chart);
 
 				// stacked matching profile bar chart - individual, pre-grouping students
 				// stackedbarchart_roundone
+				embed(chart);
 
 				// Objective functions
 				// obj x
@@ -147,7 +135,7 @@ public class TwoRoundExperimentReport
 		
 				var matchingRoundTwoIndividualOnly = filterMatching(matchingRoundTwo, individualAgents);
 				var matchingRoundTwoGroupedOnly = filterMatching(matchingRoundTwo, groupingAgents);
-				var chart2 = new RankProfileIndividualGrouped(matchingRoundTwoIndividualOnly, matchingRoundTwoGroupedOnly).asChart("Round two");
+				var chart2 = new RankProfileOfIndividualAndGroupingStudents(matchingRoundTwoIndividualOnly, matchingRoundTwoGroupedOnly).asChart("Round two");
 				
 				embed(chart2);
 				
@@ -219,50 +207,15 @@ public class TwoRoundExperimentReport
 		}
 	}
 	
-	public class RankProfileIndividualGrouped
+	public class RankProfileOfIndividualAndGroupingStudents
 	{
 		private final Matching<Agent, Project> individuals;
 		private final Matching<Agent, Project> pregrouping;
 		
-		public RankProfileIndividualGrouped(Matching<Agent, Project> individuals, Matching<Agent, Project> pregrouping)
+		public RankProfileOfIndividualAndGroupingStudents(Matching<Agent, Project> individuals, Matching<Agent, Project> pregrouping)
 		{
 			this.individuals = individuals;
 			this.pregrouping = pregrouping;
-		}
-		
-		private Map<Integer, Long> ranks(Matching<Agent, Project> matching)
-		{
-			var ranks = AssignedRank.ProjectToStudent.inStudentMatching(matching)
-				.filter(assignedRank -> !assignedRank.isOfIndifferentAgent())
-			    .map(assignedRank -> assignedRank.asInt().getAsInt())
-				.collect(Collectors.groupingBy(i -> i, Collectors.counting()));
-			
-			var maxRank = ranks.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
-			for (int i = 1; i < maxRank; i++)
-			{
-				ranks.putIfAbsent(i, 0L);
-			}
-			
-			return ranks;
-		}
-		
-		protected DefaultCategoryDataset dataset()
-		{
-			var dataset = new DefaultCategoryDataset();
-			
-			matchingToDataset(individuals, "Individual student", dataset);
-			matchingToDataset(pregrouping, "Grouping student", dataset);
-		
-			return dataset;
-		}
-		
-		private void matchingToDataset(Matching<Agent, Project> matching, String seriesName, DefaultCategoryDataset dataset)
-		{
-			var ranks = ranks(matching);
-			ranks.keySet().stream().sorted().forEach(key -> {
-				var value = ranks.get(key);
-				dataset.addValue(value, seriesName, key);
-			});
 		}
 		
 		public JFreeChart asChart(String titleHint)
@@ -280,28 +233,13 @@ public class TwoRoundExperimentReport
 				false
 			);
 			
-//			var categoryAxis = new CategoryAxis();
-			
-			
-			NumberAxis numberAxis = new NumberAxis();
-			numberAxis.setTickUnit(new NumberTickUnit(1));
-			numberAxis.setAutoRangeIncludesZero(false);
-			
-			
 			var plot = (CategoryPlot) chart.getPlot();
-//        plot.getRenderer().setSeriesPaint(0, Color.RED);
-//        plot.getRenderer().setSeriesFillPaint(0, Color.RED);
-//        plot.getRenderer().setSeriesStroke(0, new BasicStroke());
-//        plot.getRenderer().setSeries(0, new BasicStroke());
-			
 			BarPainter painter = new StandardBarPainter();
+			
 			((StackedBarRenderer) plot.getRenderer()).setBarPainter(painter);
 			plot.getRenderer().setSeriesOutlinePaint(0, Color.BLACK);
 			plot.getRenderer().setSeriesOutlineStroke(0, new BasicStroke(5));
 
-//        plot.setBackgroundPaint(ChartColor.LIGHT_RED);
-//			plot.setDomainAxis(numberAxis);
-//        plot.set
 			
 			return chart;
 		}
@@ -320,13 +258,40 @@ public class TwoRoundExperimentReport
 			chartFrame.setVisible(true);
 		}
 		
-//		public void printResult(PrintStream printStream) {
-//			printStream.println("Student project profile results:");
-//			for (Map.Entry<Integer, Integer> entry : this.asMap().entrySet()) {
-//				printStream.printf("\t- Rank %d: %d student(s)\n", entry.getKey(), entry.getValue());
-//			}
-//			printStream.printf("\t- Cumulative rank of students: %d\n\n", this.sumOfRanks());
-//		}
+		private Map<Integer, Long> ranks(Matching<Agent, Project> matching)
+		{
+			var ranks = AssignedRank.ProjectToStudent.inStudentMatching(matching)
+				.filter(assignedRank -> !assignedRank.isOfIndifferentAgent())
+			    .map(assignedRank -> assignedRank.asInt().getAsInt())
+				.collect(Collectors.groupingBy(i -> i, Collectors.counting()));
+			
+			var maxRank = ranks.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+			// Range is categorical, so make sure all ranks are present for readability and easy comparability between charts
+			for (int i = 1; i < maxRank; i++) {
+				ranks.putIfAbsent(i, 0L);
+			}
+			
+			return ranks;
+		}
+		
+		private DefaultCategoryDataset dataset()
+		{
+			var dataset = new DefaultCategoryDataset();
+			
+			matchingToDataset(individuals, "Individual student", dataset);
+			matchingToDataset(pregrouping, "Grouping student", dataset);
+		
+			return dataset;
+		}
+		
+		private void matchingToDataset(Matching<Agent, Project> matching, String seriesName, DefaultCategoryDataset dataset)
+		{
+			var ranks = ranks(matching);
+			ranks.keySet().stream().sorted().forEach(key -> {
+				var value = ranks.get(key);
+				dataset.addValue(value, seriesName, key);
+			});
+		}
 	}
 	
 }
