@@ -49,7 +49,7 @@ public class UndominatedByProfileConstraint implements Constraint
 		
 		var cumSumStudentsUpToRankH = new GRBLinExpr();
 		
-		for (var i = new AtomicInteger(); i.get() < profile.maxRank(); i.incrementAndGet())
+		for (var i = new AtomicInteger(); i.get() <= profile.maxRank(); i.incrementAndGet())
 		{
 			int h = i.getPlain();
 			
