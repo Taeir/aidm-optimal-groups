@@ -21,7 +21,7 @@ public class FormedGroupToProjectMatching extends ListBasedMatching<FormedGroup,
 		super(datasetContext, (List<Match<FormedGroup, Project>>) list);
 	}
 
-	public static FormedGroupToProjectMatching from(AgentToProjectMatching agentToProjectMatching)
+	public static FormedGroupToProjectMatching fromByTrivialPartitioning(AgentToProjectMatching agentToProjectMatching)
 	{
 		var datasetContext = agentToProjectMatching.datasetContext();
 

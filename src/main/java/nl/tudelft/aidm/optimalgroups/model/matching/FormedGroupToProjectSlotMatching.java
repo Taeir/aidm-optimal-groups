@@ -76,22 +76,4 @@ public class FormedGroupToProjectSlotMatching extends ListBasedMatching<Group.Fo
 		toProjectMatchingsResult = new WeakReference<>(formedGroupToProjectMatchings);
 		return formedGroupToProjectMatchings;
 	}
-
-//	@Override
-//	public GiniCoefficient giniCoefficient()
-//	{
-//		return new GiniCoefficientGroupRank(this.toProjectMatchings());
-//	}
-//
-//	@Override
-//	public AvgRank avgRank()
-//	{
-//		return new AvgRankAssignedProjectToGroup(this.toProjectMatchings());
-//	}
-//
-//	@Override
-//	public WorstRank worstRank()
-//	{
-//		return new WorstRankAssignedProjectToGroup(this.toProjectMatchings());
-//	}
 }
