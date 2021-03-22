@@ -3,9 +3,14 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints
 import gurobi.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.XVars;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.YVars;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.*;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
+
+import java.util.Optional;
 
 public class AssignmentConstraints
 {
@@ -67,15 +72,15 @@ public class AssignmentConstraints
 
 				agents.forEach(agent ->
 				{
-					var x = xVars.of(agent, slot).orElseThrow();
-
-					var rank = agent.projectPreference().rankOf(project);
-					var projectIsAcceptableToAgent = !rank.unacceptable();
-
-					if (projectIsAcceptableToAgent) {
-						numStudentsAssignedToSlot.addTerm(1, x.asVar());
+					if (agent.projectPreference().rankOf(project).unacceptable()) {
+						// Agent might not find this project acceptible, therefore no corresponding
+						// x-variable will exist. So skip here after checking for the case, instead of
+						// simply checking if the x-variable exists via the optional.isPresent check
+						return;
 					}
-
+					
+					var x = xVars.of(agent, slot).orElseThrow();
+					numStudentsAssignedToSlot.addTerm(1, x.asVar());
 				});
 
 				var y = yVars.of(slot).orElseThrow();
