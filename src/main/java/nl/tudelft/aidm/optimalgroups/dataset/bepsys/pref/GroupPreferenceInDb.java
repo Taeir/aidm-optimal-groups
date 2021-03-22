@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GroupPreferenceInDb implements GroupPreference
@@ -48,7 +49,11 @@ public class GroupPreferenceInDb implements GroupPreference
 		if (asList == null) {
 			asList = Arrays.stream(asArray())
 				.boxed()
-				.map(friendAgentId -> courseEdition.allAgents().findByAgentId(friendAgentId).get())
+				.map(friendAgentId -> courseEdition.allAgents().findByAgentId(friendAgentId).orElseGet(() -> {
+					System.out.printf("Warning, friend not found: %s of %s peer pref in CE %s\n", friendAgentId, userId, courseEdition.bepSysId());
+					return null;
+				}))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		}
 
