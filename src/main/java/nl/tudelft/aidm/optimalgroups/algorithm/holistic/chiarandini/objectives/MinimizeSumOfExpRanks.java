@@ -20,4 +20,10 @@ implements ObjectiveFunction
 		var obj = new UtilitarianWeightsObjective(datasetContext, assignmentConstraints, weightScheme);
         obj.apply(model);
 	}
+	
+	@Override
+	public String name()
+	{
+		return "min sum exp-ranks";
+	}
 }

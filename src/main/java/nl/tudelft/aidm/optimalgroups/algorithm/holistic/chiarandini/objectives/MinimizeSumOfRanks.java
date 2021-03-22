@@ -16,4 +16,10 @@ implements ObjectiveFunction
 		var obj = new UtilitarianWeightsObjective(sequentualDatasetContext, assignmentConstraints, rank -> rank);
 		obj.apply(model);
 	}
+	
+	@Override
+	public String name()
+	{
+		return "min sum of ranks";
+	}
 }

@@ -9,7 +9,9 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfExpRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfRanks;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -30,7 +32,8 @@ public class Experiment_two_round_groups_undom_individuals
 
 	public static void main(String[] args)
 	{
-		var datasetContext = datasetCE10();
+		var datasetContext = datasetResearchProj21();
+//		var datasetContext = datasetCE10();
 		
 		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
 		var allAgents = seqDatasetContext.allAgents();
@@ -56,7 +59,7 @@ public class Experiment_two_round_groups_undom_individuals
 			
 			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
 			
-			var objFn = new MinimizeSumOfRanks(seqDatasetContext, assignmentConstraints);
+			var objFn = new OWAObjective(seqDatasetContext, assignmentConstraints);
 			objFn.apply(model);
 			
 			model.optimize();
@@ -80,7 +83,7 @@ public class Experiment_two_round_groups_undom_individuals
 			
 			var report = new TwoRoundExperimentReport(matching, matching2, allAgents, individualAgents, groupingAgents, indifferentAgents);
 			report.asHtmlReport()
-				.writeHtmlSourceToFile(new File("reports/Experiment_2round_groups_undom_individuals.html"));
+				.writeHtmlSourceToFile(new File("reports/research_project/research_proj " + objFn.name() + ".html"));
 			
 		}
 		catch (GRBException e) {
@@ -107,6 +110,13 @@ public class Experiment_two_round_groups_undom_individuals
 	private static DatasetContext datasetCE10()
 	{
 		DatasetContext dataContext = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		return dataContext;
+	}
+	
+	private static DatasetContext datasetResearchProj21()
+	{
+		var dataContext = CourseEdition.fromLocalBepSysDbSnapshot(39);
+		
 		return dataContext;
 	}
 

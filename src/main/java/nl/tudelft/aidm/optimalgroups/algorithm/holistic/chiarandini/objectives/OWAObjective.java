@@ -21,6 +21,12 @@ implements ObjectiveFunction
 		obj.apply(model);
 	}
 	
+	@Override
+	public String name()
+	{
+		return "owa";
+	}
+	
 	private class OWA_distributiveWeightScheme implements DistributiveWeightsObjective.WeightScheme// withMinimaxOWAScheme(DatasetContext datasetContext)
 	{
 		private final int delta;

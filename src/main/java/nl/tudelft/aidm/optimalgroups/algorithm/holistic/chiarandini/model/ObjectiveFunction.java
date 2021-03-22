@@ -5,4 +5,6 @@ import gurobi.GRBModel;
 public interface ObjectiveFunction
 {
 	void apply(GRBModel model);
+	
+	String name();
 }

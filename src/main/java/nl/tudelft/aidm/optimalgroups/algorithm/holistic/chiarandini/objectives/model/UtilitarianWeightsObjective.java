@@ -13,14 +13,12 @@ import plouchtch.util.Try;
 public record UtilitarianWeightsObjective(SequentualDatasetContext datasetContext,
                                          AssignmentConstraints assignmentVars,
                                          WeightScheme weightScheme)
-	implements ObjectiveFunction
 {
 	public interface WeightScheme
 	{
 		double weight(int rank);
 	}
 	
-	@Override
 	public void apply(GRBModel model)
 	{
 		Try.doing(

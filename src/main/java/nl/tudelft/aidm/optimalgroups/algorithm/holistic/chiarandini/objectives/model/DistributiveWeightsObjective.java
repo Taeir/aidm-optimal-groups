@@ -17,7 +17,6 @@ import plouchtch.util.Try;
 public record DistributiveWeightsObjective(SequentualDatasetContext datasetContext,
                                            AssignmentConstraints assignmentVars,
                                            WeightScheme weightScheme)
-	implements ObjectiveFunction
 {
 	public interface WeightScheme
 	{
