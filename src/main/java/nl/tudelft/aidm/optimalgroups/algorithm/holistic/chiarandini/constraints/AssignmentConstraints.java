@@ -1,8 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints;
 
 import gurobi.*;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.XVars;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.YVars;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
@@ -105,5 +103,137 @@ public class AssignmentConstraints
 
 		return new AssignmentConstraints(datasetContext, xVars, yVars);
 	}
-
+	
+	public static record X(Agent student, Project project, Project.ProjectSlot slot, String name, GRBVar asVar)
+	{
+		public static X createInModel(Agent student, Project project, Project.ProjectSlot slot, GRBModel model)
+		{
+			var name = String.format("x[%s, %s]", student, slot);
+			var grbVar = GurobiHelperFns.makeBinaryVariable(model, name);
+	
+			return new X(student, project, slot, name, grbVar);
+		}
+	
+		public double getValueOrThrow()
+		{
+			return Try.getting(() -> this.asVar().get(GRB.DoubleAttr.X))
+				.or(Rethrow.asRuntime());
+		}
+	
+		@Override
+		public String toString()
+		{
+			return name;
+		}
+	}
+	
+	public static class XVars
+	{
+		private final X[][][] x;
+		private final SequentualDatasetContext datasetContext;
+	
+		public static XVars createInModel(GRBModel model, SequentualDatasetContext datasetContext)
+		{
+			var numAgents = datasetContext.allAgents().count();
+			var numProjects = datasetContext.allProjects().count();
+			var maxSlots = datasetContext.numMaxSlots();
+	
+			var x = new X[numAgents+1][numProjects+1][maxSlots];
+	
+			// Create the X variables (student assigned to slot)
+			datasetContext.allAgents().forEach(student ->
+			{
+				var s = student.id;
+	
+				// hacky: seqentualization does properly handles the varios pref profile types, so workaround
+				if (student.projectPreference().isCompletelyIndifferent())
+				{
+					datasetContext.allProjects().forEach(project ->
+					{
+						var p = project.id();
+						project.slots().forEach(slot ->
+						{
+							int sl = slot.index();
+							x[s][p][sl] = X.createInModel(student, project, slot, model);
+						});
+					});
+				}
+				else student.projectPreference().forEach((project, rank) ->
+				{
+					var p = project.id();
+					project.slots().forEach(slot ->
+					{
+						int sl = slot.index();
+						x[s][p][sl] = X.createInModel(student, project, slot, model);
+					});
+				});
+			});
+	
+			return new XVars(x, datasetContext);
+		}
+	
+		private XVars(X[][][] x, SequentualDatasetContext datasetContext)
+		{
+			this.x = x;
+			this.datasetContext = datasetContext;
+		}
+	
+		public Optional<X> of(Agent agent, Project.ProjectSlot slot)
+		{
+			return Optional.ofNullable(
+				x[agent.id][slot.belongingToProject().id()][slot.index()]
+			);
+		}
+	}
+	
+	public static record Y(Project.ProjectSlot project, String name, GRBVar asVar)
+	{
+		public static Y createInModel(Project.ProjectSlot slot, GRBModel model)
+		{
+			var name = String.format("y[%s]", slot.toString());
+			var grbVar = GurobiHelperFns.makeBinaryVariable(model, name);
+	
+			return new Y(slot, name, grbVar);
+		}
+	}
+	
+	public static class YVars
+	{
+		private final Y[][] y;
+		private final SequentualDatasetContext datasetContext;
+	
+		public static YVars createInModel(GRBModel model, SequentualDatasetContext datasetContext)
+		{
+			var numProjects = datasetContext.allProjects().count();
+			var maxSlots = datasetContext.numMaxSlots();
+	
+			var y = new Y[numProjects+1][maxSlots];
+	
+			// Create Y variables (project-slot is open)
+			datasetContext.allProjects().forEach(project ->
+			{
+				int p = project.id();
+				project.slots().forEach(slot -> {
+					var sl = slot.index();
+					y[p][sl] = Y.createInModel(slot, model);
+				});
+			});
+	
+			return new YVars(y, datasetContext);
+		}
+	
+		public YVars(Y[][] y, SequentualDatasetContext datasetContext)
+		{
+			this.y = y;
+			this.datasetContext = datasetContext;
+		}
+		public Optional<Y> of(Project.ProjectSlot slot)
+		{
+			// Todo: check if within bounds
+	
+			return Optional.ofNullable(
+				y[slot.belongingToProject().id()][slot.index()]
+			);
+		}
+	}
 }

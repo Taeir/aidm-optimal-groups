@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatch;
@@ -18,7 +19,7 @@ public class ChiarandiniAgentToProjectMatching
 	
 	private final SequentualDatasetContext seqDatasetContext;
 	
-	public ChiarandiniAgentToProjectMatching(XVars xVars, SequentualDatasetContext seqDatasetContext)
+	public ChiarandiniAgentToProjectMatching(AssignmentConstraints.XVars xVars, SequentualDatasetContext seqDatasetContext)
 	{
 		var matchesOg = new ArrayList<Match<Agent, Project>>();
 		var matchesSeq = new ArrayList<Match<Agent, Project>>();

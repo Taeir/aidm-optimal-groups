@@ -2,7 +2,6 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints
 
 import gurobi.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.GurobiHelperFns;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.XVars;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -85,7 +84,7 @@ public record StabilityConstraint(AssignmentConstraints assignmentCnstr, Sequent
 
 	public record D(Agent student, Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
-		public static D[][][] createInModelWithConstraints(GRBModel model, SequentualDatasetContext datasetContext, XVars xVars, Z[][][] z)
+		public static D[][][] createInModelWithConstraints(GRBModel model, SequentualDatasetContext datasetContext, AssignmentConstraints.XVars xVars, Z[][][] z)
 		{
 			var ub = datasetContext.allProjects().count() - 1;
 
