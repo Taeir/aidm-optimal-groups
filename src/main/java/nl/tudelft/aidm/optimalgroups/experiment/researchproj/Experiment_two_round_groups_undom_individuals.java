@@ -9,10 +9,9 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfExpRanks;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.export.ProjectStudentMatchingCSV;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
@@ -64,8 +63,8 @@ public class Experiment_two_round_groups_undom_individuals
 			
 			model.optimize();
 			
-			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext).sequential();
-			var profileIndividual = profileOfIndividualAgentsInMatching(seqDatasetContext, individualAgents, matching);
+			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
+			var profileIndividual = profileOfIndividualAgentsInMatching(seqDatasetContext, individualAgents, matching.sequential());
 			
 			var grpConstr = new GroupConstraint(assignmentConstraints, maxsizeCliques);
 			grpConstr.apply(model);
@@ -76,14 +75,19 @@ public class Experiment_two_round_groups_undom_individuals
 			model.update();
 			model.optimize();
 			
-			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext).sequential();
-			var groupToProjectMatching = FormedGroupToProjectMatching.from(matching2);
+			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
+			
+			Assert.that(datasetContext.numMaxSlots() == 1).orThrowMessage("TODO: get mapping slot to agent (projects in dataset have more than 1 slot)");
+			var csv = new ProjectStudentMatchingCSV(FormedGroupToProjectMatching.fromByTrivialPartitioning(matching2.original()));
+			csv.writeToFile("research_project " + objFn.name());
 			
 			
 			
-			var report = new TwoRoundExperimentReport(matching, matching2, allAgents, individualAgents, groupingAgents, indifferentAgents);
-			report.asHtmlReport()
-				.writeHtmlSourceToFile(new File("reports/research_project/research_proj " + objFn.name() + ".html"));
+			var report = new TwoRoundExperimentReport(matching.sequential(), matching2.sequential(),
+				seqDatasetContext.allAgents(), individualAgents, groupingAgents, indifferentAgents);
+			
+//			report.asHtmlReport()
+//				.writeHtmlSourceToFile(new File("reports/research_project/research_proj " + objFn.name() + ".html"));
 			
 		}
 		catch (GRBException e) {

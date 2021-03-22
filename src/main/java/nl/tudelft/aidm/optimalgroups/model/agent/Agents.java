@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.agent;
 
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import org.jetbrains.annotations.NotNull;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
@@ -11,7 +12,7 @@ import java.util.function.Function;
  * Collection class for Agent
  * TODO: Refactor into interface
  */
-public class Agents
+public class Agents implements Iterable<Agent>
 {
 	public final DatasetContext datasetContext;
 
@@ -76,7 +77,8 @@ public class Agents
 
 	public Agents with(Agents other)
 	{
-		Assert.that(datasetContext.equals(other.datasetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
+		Assert.that(/*((datasetContext == null && other.datasetContext != null) || (datasetContext != null && other.datasetContext == null) || (datasetContext != null && other.datasetContext != null))*/
+			datasetContext.equals(other.datasetContext)).orThrowMessage("Cannot combine Agents: datasetcontext mismatch");
 
 		var copyAgents = new LinkedHashSet<Agent>(this.agents.size() + other.agents.size());
 		copyAgents.addAll(this.agents);
@@ -112,11 +114,18 @@ public class Agents
 		return new Agents(datasetContext, without);
 	}
 
-	public void forEach(Consumer<Agent> fn)
+//	@Override
+//	public void forEach(Consumer<Agent> fn)
+//	{
+//		agents.forEach(fn);
+//	}
+	
+	@Override
+	public Iterator<Agent> iterator()
 	{
-		agents.forEach(fn);
+		return agents.iterator();
 	}
-
+	
 	/**
 	 * Checks if the agent is included in preference lists of all agents <b>(that are also in this Agents collection)</b> that the agent has included in his own preference list
 	 * <br /> TODO: Move into peer preferences class
