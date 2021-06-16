@@ -19,12 +19,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class UndominatedByProfileConstraint implements Constraint
 {
-	private final AssignmentConstraints assignmentConstraints;
 	private final Profile profile;
 	private final Agents undominatedAgents;
 	private final SequentualProjects allProjects;
 	
-	public UndominatedByProfileConstraint(AssignmentConstraints assignmentConstraints, Profile profile, Agents undominatedAgents, SequentualProjects allProjects)
+	public UndominatedByProfileConstraint(Profile profile, Agents undominatedAgents, SequentualProjects allProjects)
 	{
 		Assert.that(profile.size() == undominatedAgents.count())
 			.orThrowMessage("Given profile is not fit to use with given set of agents (different sizes)");
@@ -33,7 +32,6 @@ public class UndominatedByProfileConstraint implements Constraint
 		Assert.that(undominatedAgents.asCollection().stream().allMatch(agent -> agent instanceof SequentualAgents.SequentualAgent))
 			.orThrowMessage("UndominatedAgents are of wrong type");
 		
-		this.assignmentConstraints = assignmentConstraints;
 		this.profile = profile;
 		this.undominatedAgents = undominatedAgents;
 		this.allProjects = allProjects;
@@ -41,13 +39,13 @@ public class UndominatedByProfileConstraint implements Constraint
 	
 	
 	@Override
-	public void apply(GRBModel model) throws GRBException
+	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException
 	{
 		// Copied and modified from DistributiveWeightsObjective
 		
 		var cumsumInProfileUpToRankH = new AtomicInteger(0); // needs to be effectively final for lambda's
 		
-		var cumSumStudentsUpToRankH = new GRBLinExpr();
+		var cumsumStudentsUpToRankH = new GRBLinExpr();
 		
 		for (var i = new AtomicInteger(); i.get() <= profile.maxRank(); i.incrementAndGet())
 		{
@@ -61,7 +59,7 @@ public class UndominatedByProfileConstraint implements Constraint
 						// AND ranks project at h
 						if (!rank.isCompletelyIndifferent() && !rank.unacceptable() && rank.asInt() == h) {
 							var x = assignmentConstraints.xVars.of(agent, slot).orElseThrow();
-							cumSumStudentsUpToRankH.addTerm(1, x.asVar());
+							cumsumStudentsUpToRankH.addTerm(1, x.asVar());
 						}
 					});
 					
@@ -72,10 +70,9 @@ public class UndominatedByProfileConstraint implements Constraint
 			var with_h_in_profile = profile.numInRank(h);
 			cumsumInProfileUpToRankH.addAndGet(with_h_in_profile);
 			
-			
 			// Gurobi manual: Once you add a constraint to your model, subsequent changes to the expression object you used to build the constraint will not change the constraint
 			Try.doing(() ->
-				          model.addConstr(cumSumStudentsUpToRankH, GRB.GREATER_EQUAL, cumsumInProfileUpToRankH.getPlain(), "const_leximin_" + h)
+					model.addConstr(cumsumStudentsUpToRankH, GRB.GREATER_EQUAL, cumsumInProfileUpToRankH.getPlain(), "const_leximin_" + h)
 			).or(Rethrow.asRuntime());
 		}
 	}

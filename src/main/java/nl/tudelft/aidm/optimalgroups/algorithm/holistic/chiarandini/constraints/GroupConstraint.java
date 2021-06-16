@@ -9,10 +9,10 @@ import plouchtch.util.Try;
 
 import java.util.ArrayList;
 
-public record GroupConstraint(AssignmentConstraints assignmentConstraints, Groups<?> groups) implements Constraint
+public record GroupConstraint(Groups<?> groups) implements Constraint
 {
 	@Override
-	public void apply(GRBModel model) throws GRBException
+	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException
 	{
 		groups.forEach(group -> {
 			var projPrefs = group.projectPreference();

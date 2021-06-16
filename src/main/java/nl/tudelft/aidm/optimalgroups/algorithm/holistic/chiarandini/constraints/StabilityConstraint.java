@@ -11,14 +11,14 @@ import plouchtch.util.Try;
 /**
  * Creates the constraint to enforce "stability" as defined by Chiarandini, Fagerberg et al
  */
-public record StabilityConstraint(AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext) implements Constraint
+public record StabilityConstraint(SequentualDatasetContext datasetContext) implements Constraint
 {
 	//B[][] b, Z[][][] z, D[][][] d
 	
 	// Enforce stability through a constraint, in contrast to an objective function minimizing destability
 	
 	@Override
-	public void apply(GRBModel model) throws GRBException
+	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException
 	{
 		int numAgents = datasetContext.allAgents().count();
 		int numProjs = datasetContext.allProjects().count();
@@ -29,7 +29,7 @@ public record StabilityConstraint(AssignmentConstraints assignmentCnstr, Sequent
 		
 		datasetContext.allProjects().forEach(project -> {
 			project.slots().forEach(slot -> {
-				b[project.id()][slot.index()] = B.createInModelWithConstraint(model, assignmentCnstr, datasetContext, slot);
+				b[project.id()][slot.index()] = B.createInModelWithConstraint(model, assignmentConstraints, datasetContext, slot);
 			});
 		});
 		
@@ -50,12 +50,12 @@ public record StabilityConstraint(AssignmentConstraints assignmentCnstr, Sequent
 						return;
 					
 					var b_sl = b[p][sl];
-					z[s][p][sl] = Z.createInModelWithConstraint(model, assignmentCnstr, datasetContext, student, slot, b_sl);
+					z[s][p][sl] = Z.createInModelWithConstraint(model, assignmentConstraints, datasetContext, student, slot, b_sl);
 				});
 			});
 		});
 		
-		D[][][] d = D.createInModelWithConstraints(model, datasetContext, assignmentCnstr.xVars, z);
+		D[][][] d = D.createInModelWithConstraints(model, datasetContext, assignmentConstraints.xVars, z);
 		
 		createStabilityFeasibilityConstraint(model, d);
 	}

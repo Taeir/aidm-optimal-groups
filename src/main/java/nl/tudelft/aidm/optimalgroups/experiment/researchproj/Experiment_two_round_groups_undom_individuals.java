@@ -21,8 +21,6 @@ import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
 import plouchtch.assertion.Assert;
 
-import java.io.File;
-
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
@@ -66,11 +64,11 @@ public class Experiment_two_round_groups_undom_individuals
 			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
 			var profileIndividual = profileOfIndividualAgentsInMatching(seqDatasetContext, individualAgents, matching.sequential());
 			
-			var grpConstr = new GroupConstraint(assignmentConstraints, maxsizeCliques);
-			grpConstr.apply(model);
+			var grpConstr = new GroupConstraint(maxsizeCliques);
+			grpConstr.apply(model, assignmentConstraints);
 			
-			var domConstr = new UndominatedByProfileConstraint(assignmentConstraints, profileIndividual, individualAgents, seqDatasetContext.allProjects());
-			domConstr.apply(model);
+			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents, seqDatasetContext.allProjects());
+			domConstr.apply(model, assignmentConstraints);
 			
 			model.update();
 			model.optimize();

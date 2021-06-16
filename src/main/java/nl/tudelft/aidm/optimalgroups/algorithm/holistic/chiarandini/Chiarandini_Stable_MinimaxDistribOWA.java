@@ -44,8 +44,8 @@ public class Chiarandini_Stable_MinimaxDistribOWA
 		var objFn = new OWAObjective(seqDatasetContext, assignmentConstraints);
 		objFn.apply(model);
 
-		var stability = new StabilityConstraint(assignmentConstraints, seqDatasetContext);
-		stability.apply(model);
+		var stability = new StabilityConstraint(seqDatasetContext);
+		stability.apply(model, assignmentConstraints);
 		
 		model.optimize();
 

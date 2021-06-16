@@ -6,13 +6,8 @@ import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.StabilityConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfExpRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.model.UtilitarianWeightsObjective;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
-import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
-import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import plouchtch.functional.actions.Rethrow;
@@ -48,8 +43,8 @@ public class Chiarandini_Stable_MinSumRank
 		var objFn = new MinimizeSumOfRanks(seqDatasetContext, assignmentConstraints);
 		objFn.apply(model);
 		
-		var stability = new StabilityConstraint(assignmentConstraints, seqDatasetContext);
-		stability.apply(model);
+		var stability = new StabilityConstraint(seqDatasetContext);
+		stability.apply(model, assignmentConstraints);
 		
 		model.optimize();
 

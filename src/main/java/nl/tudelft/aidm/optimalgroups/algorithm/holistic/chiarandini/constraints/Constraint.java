@@ -5,5 +5,5 @@ import gurobi.GRBModel;
 
 public interface Constraint
 {
-	void apply(GRBModel model) throws GRBException;
+	void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException;
 }

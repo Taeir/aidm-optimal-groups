@@ -7,7 +7,6 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.StabilityConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfExpRanks;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.model.UtilitarianWeightsObjective;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
@@ -44,8 +43,8 @@ public class Chiarandini_Stable_MinSumExpRank
 		var objFn = new MinimizeSumOfExpRanks(seqDatasetContext, assignmentConstraints);
 		objFn.apply(model);
 		
-		var stability = new StabilityConstraint(assignmentConstraints, seqDatasetContext);
-		stability.apply(model);
+		var stability = new StabilityConstraint(seqDatasetContext);
+		stability.apply(model, assignmentConstraints);
 		
 		model.optimize();
 
