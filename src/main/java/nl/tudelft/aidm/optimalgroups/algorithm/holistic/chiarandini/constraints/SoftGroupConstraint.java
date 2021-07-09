@@ -2,7 +2,6 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints
 
 import gurobi.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.GurobiHelperFns;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Model;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import plouchtch.assertion.Assert;
@@ -15,15 +14,18 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * The soft-grouping constraint grants the grouping wish or lets the agents go "solo" if grouping is infeasible
+ */
 public class SoftGroupConstraint implements Constraint
 {
-	private final Collection<AllowGrpDecisionVar> allowGrpDecisionVars;
+	public final Collection<GrpLinkedDecisionVar> violateGroupingDecVars;
 	private final Groups<?> groups;
 	
 	public SoftGroupConstraint(Groups<?> groups)
 	{
 		this.groups = groups;
-		allowGrpDecisionVars = new ArrayList<>();
+		violateGroupingDecVars = new ArrayList<>();
 	}
 	
 	@Override
@@ -35,13 +37,10 @@ public class SoftGroupConstraint implements Constraint
 			var projPrefs = group.projectPreference();
 			var agents = new ArrayList<>(group.members().asCollection());
 			
-			// transitory constraints, if Xa = Xb and Xb = Xc and Xc = Xd imply Xa = Xd, Xa = Xc etc
-			//   so we set contraints that first student in group must have same assignment as the second,
-			//   the second same as the third etc. This suffices to ensure that all these students in a group
-			//   get the same assignment.
 			
 			// let this be 'g'
-			var allowGrpDecisionVar = AllowGrpDecisionVar.make(group, grpIdx.getAndIncrement(), model);
+			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, grpIdx.getAndIncrement(), model);
+			violateGroupingDecVars.add(violateGroupingDecVar);
 				
 			projPrefs.forEach(((project, rank) -> {
 				project.slots().forEach(slot -> {
@@ -52,34 +51,78 @@ public class SoftGroupConstraint implements Constraint
 						.map(AssignmentConstraints.X::asVar)
 						.collect(Collectors.toList());
 					
-					Try.doing(() -> {
-						    var lhs = new GRBLinExpr();
-							xToSlotVarsAgents.forEach(x -> lhs.addTerm(1.0, x));
-							// g -> x_1 + x_2 + x_3 ... x_n == n | where x is the decision var of assigning agent to slot (context)
-							model.addGenConstrIndicator(allowGrpDecisionVar.asVar(), 1, lhs, GRB.EQUAL, agents.size(), "cnstr_" + allowGrpDecisionVar.name + slot.id());
-					}).or(Rethrow.asRuntime());
+					Assert.that(xToSlotVarsAgents.size() == agents.size())
+						.orThrowMessage("Could not find all assignment vars for agents in clique to group together...");
 					
+					try
+					{
+						var leaderAssVar = xToSlotVarsAgents.get(0);
+						for (int i = 1; i < agents.size(); i++)
+						{
+							var otherAssVar = xToSlotVarsAgents.get(i);
+							
+						    var lhs = new GRBLinExpr();
+						    
+						    // Let a desired group be: grp = {s1, s2, s3, s4, s5}
+							// Let 'g' be the decision variable for granting the group wish.
+							//
+							//   Using a binary variable to switch a constraint is not something LP/IP can handle,
+							//   luckily, gurobi has a special constraint for this called the indicator constraint that
+							//   is switched on/off by an indicator variable. Defined in their docs as "z -> constr".
+							
+							// To save on the amount of extra constraints added (because the indicator constr is more expensive),
+							// the grouping is done as follows:
+							//    a "leader" member is randomly chosen whose project-slot-assignment decision variable (x_leader)
+							//    is chosen to be linked to the assignment decision variables of everyone else in the group (x2...xn),
+							//    through transitivity this links everyone. Then, these linking constraints are all conditional on the
+							//    decision variable (g) of granting the group wish
+							
+							// Indicator constraint can only handle vars on lhs, so rewrite x_leader = x_2  <==> x_leader - x_2 = 0
+							lhs.addTerm(1.0, otherAssVar);
+							lhs.addTerm(-1.0, leaderAssVar);
+							
+							var constName = "cnstr_%s_%d_%s".formatted(violateGroupingDecVar.name, i, slot.id());
+							
+							// note that g == 0 is indicator for doing the linking, this way we can express not-linking as a big penalty in the objective
+							model.addGenConstrIndicator(violateGroupingDecVar.asVar(), 0,
+								lhs, '=', 0,
+								constName);
+						}
+					}
+					catch (GRBException ex)
+					{
+						throw new RuntimeException(ex);
+					}
 				});
 			}));
 		});
 		
-		var objective = (GRBLinExpr) model.getObjective();
+		var objective = new GRBLinExpr((GRBLinExpr) model.getObjective());
 		
+		var ogSize = objective.size();
 		Assert.that(objective.size() > 0).orThrowMessage("Objective function must be set before adding the Soft Grouping constraint");
 		
-		allowGrpDecisionVars.forEach(allowGrpVar -> {
-			// Ensure coefficient is sufficiently small that the grouping of all agents is never at the expense of a rank
-			objective.addTerm(-1.0 / (groups.count() * 10), allowGrpVar.asVar()) ;
+		violateGroupingDecVars.forEach(violateGroupingDecVar -> {
+			// Hefty penalty if the group is unlinked (var == 1)
+			objective.addTerm(100000, violateGroupingDecVar.asVar());
 		});
+		
+		model.setObjective(objective, GRB.MINIMIZE);
+		model.update();
+		
+		var newSize = ((GRBLinExpr) model.getObjective()).size();
+		Assert.that(newSize == ogSize + violateGroupingDecVars.size()).orThrowMessage("Objective did not get updated");
 	}
 	
-	record AllowGrpDecisionVar(GRBVar softGrpVar, String name)
+	}
+	
+	public record GrpLinkedDecisionVar(Group group, GRBVar softGrpVar, String name)
 	{
-		static AllowGrpDecisionVar make(Group grp, Integer grpIdx, GRBModel model)
+		static GrpLinkedDecisionVar make(Group group, Integer grpIdx, GRBModel model)
 		{
-			String name = "allow_g" + grpIdx;
+			String name = "link_g" + grpIdx;
 			var softGrpVar = GurobiHelperFns.makeBinaryVariable(model, name);
-			return new AllowGrpDecisionVar(softGrpVar, name);
+			return new GrpLinkedDecisionVar(group, softGrpVar, name);
 		}
 		
 		public GRBVar asVar()
