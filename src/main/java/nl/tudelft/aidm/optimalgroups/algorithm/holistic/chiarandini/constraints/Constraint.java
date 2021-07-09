@@ -6,4 +6,6 @@ import gurobi.GRBModel;
 public interface Constraint
 {
 	void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException;
+	
+	String simpleName();
 }

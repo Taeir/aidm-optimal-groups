@@ -76,4 +76,10 @@ public class UndominatedByProfileConstraint implements Constraint
 			).or(Rethrow.asRuntime());
 		}
 	}
+	
+	@Override
+	public String simpleName()
+	{
+		return "undom";
+	}
 }

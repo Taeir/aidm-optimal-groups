@@ -60,6 +60,12 @@ public record StabilityConstraint(SequentualDatasetContext datasetContext) imple
 		createStabilityFeasibilityConstraint(model, d);
 	}
 	
+	@Override
+	public String simpleName()
+	{
+		return "stability";
+	}
+	
 	private void createStabilityFeasibilityConstraint(GRBModel model, D[][][] d)
 	{
 		var sum = new GRBLinExpr();

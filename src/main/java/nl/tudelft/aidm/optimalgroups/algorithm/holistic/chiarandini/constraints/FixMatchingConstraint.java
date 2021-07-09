@@ -38,4 +38,10 @@ public class FixMatchingConstraint implements Constraint
 		
 		model.addConstr(lhs, GRB.EQUAL, 1, String.format("agent%s_fixedto_proj%s", agent.id, project.id()));
 	}
+	
+	@Override
+	public String simpleName()
+	{
+		return "fix_matching_" + agent.toString() + "_to_" + project.name();
+	}
 }

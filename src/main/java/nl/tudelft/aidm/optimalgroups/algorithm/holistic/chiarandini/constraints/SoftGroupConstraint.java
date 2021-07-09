@@ -114,6 +114,10 @@ public class SoftGroupConstraint implements Constraint
 		Assert.that(newSize == ogSize + violateGroupingDecVars.size()).orThrowMessage("Objective did not get updated");
 	}
 	
+	@Override
+	public String simpleName()
+	{
+		return "softgrps";
 	}
 	
 	public record GrpLinkedDecisionVar(Group group, GRBVar softGrpVar, String name)

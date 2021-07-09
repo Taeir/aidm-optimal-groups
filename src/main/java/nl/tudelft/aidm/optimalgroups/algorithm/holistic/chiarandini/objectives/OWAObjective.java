@@ -56,7 +56,7 @@ implements ObjectiveFunction
 			
 			if (rank == 1)
 				return rescale * f_(rank) * Math.pow(Beta, delta - 1
-					                                                   / Math.pow(1 + Beta, delta - 1));
+                           / Math.pow(1 + Beta, delta - 1));
 			
 			else
 				return rescale * f_(rank) * Math.pow(Beta, delta - rank)
