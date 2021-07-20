@@ -13,6 +13,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
+
 public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
 {
 	private final Agents agents;

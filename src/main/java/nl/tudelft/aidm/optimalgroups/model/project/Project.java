@@ -103,7 +103,7 @@ public interface Project
 				this.index = index;
 				this.projectBelongsTo = projectBelongsTo;
 
-				this.id = projectBelongsTo + "_slot_ " + index;
+				this.id = projectBelongsTo + "_slot_" + index;
 			}
 
 			public String id()

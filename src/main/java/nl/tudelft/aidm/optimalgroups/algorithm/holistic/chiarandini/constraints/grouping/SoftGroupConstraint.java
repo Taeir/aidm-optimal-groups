@@ -1,6 +1,8 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping;
 
 import gurobi.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.Constraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.GurobiHelperFns;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;

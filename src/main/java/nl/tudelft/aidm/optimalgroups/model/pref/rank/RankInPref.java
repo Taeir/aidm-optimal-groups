@@ -1,8 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.model.pref.rank;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.OptionalInt;
 
-public interface RankInPref
+public interface RankInPref extends Comparable<RankInPref>
 {
 	/**
 	 * Indicates the agent does not have preferences - indifferent over all alternatives
@@ -31,5 +33,29 @@ public interface RankInPref
 	{
 		return !(isCompletelyIndifferent() || unacceptable());
 	}
-
+	
+	@Override
+	default int compareTo(@NotNull RankInPref o)
+	{
+		if (o == null)
+			throw new NullPointerException();
+		
+		if (this.isCompletelyIndifferent())
+		{
+			if (o.isCompletelyIndifferent())
+				return 0;
+			
+			return -1;
+		}
+		
+		if (this.unacceptable())
+		{
+			if (o.unacceptable())
+				return 0;
+			
+			return 1;
+		}
+		
+		return asInt().compareTo(o.asInt());
+	}
 }

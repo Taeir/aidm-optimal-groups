@@ -29,4 +29,21 @@ public class PresentRankInPref implements RankInPref
 	{
 		return rank;
 	}
+	
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		PresentRankInPref that = (PresentRankInPref) o;
+		return rank.equals(that.rank);
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(rank);
+	}
 }

@@ -1,8 +1,10 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping;
 
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBModel;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.Constraint;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
