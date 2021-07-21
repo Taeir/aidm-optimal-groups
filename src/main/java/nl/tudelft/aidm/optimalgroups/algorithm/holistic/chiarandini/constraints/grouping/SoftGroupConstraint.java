@@ -33,15 +33,13 @@ public class SoftGroupConstraint implements Constraint
 	@Override
 	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException
 	{
-		var grpIdx = new AtomicInteger(1);
-		
 		groups.forEach(group -> {
 			var projPrefs = group.projectPreference();
 			var agents = new ArrayList<>(group.members().asCollection());
-			
+			var leaderId = agents.get(0).id;
 			
 			// let this be 'g'
-			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, grpIdx.getAndIncrement(), model);
+			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leaderId, model);
 			violateGroupingDecVars.add(violateGroupingDecVar);
 				
 			projPrefs.forEach(((project, rank) -> {

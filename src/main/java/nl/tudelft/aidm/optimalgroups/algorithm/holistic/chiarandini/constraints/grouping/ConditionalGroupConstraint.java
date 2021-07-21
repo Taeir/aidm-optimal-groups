@@ -34,14 +34,13 @@ public class ConditionalGroupConstraint implements Constraint
 	@Override
 	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException
 	{
-		var grpIdx = new AtomicInteger(1);
-		
 		groups.forEach(group -> {
 			var projPrefs = group.projectPreference();
 			var agents = new ArrayList<>(group.members().asCollection());
+			var leaderId = agents.get(0).id;
 			
 			// let this be 'g'
-			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, grpIdx.getAndIncrement(), model);
+			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leaderId, model);
 			violateGroupingDecVars.add(violateGroupingDecVar);
 				
 			projPrefs.forEach(((project, rank) ->
@@ -52,7 +51,7 @@ public class ConditionalGroupConstraint implements Constraint
 				
 				project.slots().forEach(slot ->
 				{
-					// the x's (assignment decision var) of all agents in group for assignment to project slot 'slot'
+					// the x's (assignment decision var of agent to project slot) of all agents in group
 					var xToSlotVarsAgents = agents.stream().map(agent -> assignmentConstraints.xVars.of(agent, slot))
 						.flatMap(Optional::stream)
 						.map(AssignmentConstraints.X::asVar)
@@ -79,7 +78,7 @@ public class ConditionalGroupConstraint implements Constraint
 							
 							// To save on the amount of extra constraints added (because the indicator constr is more expensive),
 							// the grouping is done as follows:
-							//    a "leader" member is randomly chosen whose project-slot-assignment decision variable (x_leader)
+							//    a "leader" member is quasi-randomly chosen whose project-slot-assignment decision variable (x_leader)
 							//    is chosen to be linked to the assignment decision variables of everyone else in the group (x2...xn),
 							//    through transitivity this links everyone. Then, these linking constraints are all conditional on the
 							//    decision variable (g) of granting the group wish
@@ -88,12 +87,12 @@ public class ConditionalGroupConstraint implements Constraint
 							lhs.addTerm(1.0, otherAssVar);
 							lhs.addTerm(-1.0, leaderAssVar);
 							
-							var constName = "cnstr_%s_%d_%s".formatted(violateGroupingDecVar.name, i, slot.id());
+							var cnstrName = "cnstr_%s_%d_%s".formatted(violateGroupingDecVar.name, i, slot.id());
 							
 							// note that g == 0 is indicator for doing the linking, this way we can express not-linking as a big penalty in the objective
 							model.addGenConstrIndicator(violateGroupingDecVar.asVar(), 0,
 								lhs, '=', 0,
-								constName);
+								cnstrName);
 						}
 					}
 					catch (GRBException ex)
@@ -127,6 +126,9 @@ public class ConditionalGroupConstraint implements Constraint
 		return "condgrps";
 	}
 	
+	/**
+	 * The grouping decision variable
+	 */
 	public record GrpLinkedDecisionVar(Group group, GRBVar softGrpVar, String name)
 	{
 		static GrpLinkedDecisionVar make(Group group, Integer grpIdx, GRBModel model)
