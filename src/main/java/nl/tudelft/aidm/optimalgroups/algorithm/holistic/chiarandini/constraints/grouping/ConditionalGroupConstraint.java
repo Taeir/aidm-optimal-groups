@@ -11,7 +11,6 @@ import plouchtch.assertion.Assert;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -37,11 +36,17 @@ public class ConditionalGroupConstraint implements Constraint
 		groups.forEach(group -> {
 			var projPrefs = group.projectPreference();
 			var agents = new ArrayList<>(group.members().asCollection());
-			var leaderId = agents.get(0).id;
+			var leader = agents.get(0);
 			
 			// let this be 'g'
-			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leaderId, model);
+			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leader.id, model);
 			violateGroupingDecVars.add(violateGroupingDecVar);
+			
+			// Let 'g' imply that the agents _must_ be assigned one of their top-k choices
+			// and implement this by adding constraints only to one of the group's agents, which by transitity will
+			// cause all agents in the group to be assigned the same project slot. Because 'g' also implies the agents
+			// have the same allocation for their top-k choices.
+			var leaderAssignmentsToTopK = new GRBLinExpr();
 				
 			projPrefs.forEach(((project, rank) ->
 			{
@@ -63,6 +68,8 @@ public class ConditionalGroupConstraint implements Constraint
 					try
 					{
 						var leaderAssVar = xToSlotVarsAgents.get(0);
+						leaderAssignmentsToTopK.addTerm(1, leaderAssVar);
+						
 						for (int i = 1; i < agents.size(); i++)
 						{
 							var otherAssVar = xToSlotVarsAgents.get(i);
@@ -101,6 +108,23 @@ public class ConditionalGroupConstraint implements Constraint
 					}
 				});
 			}));
+			
+			try {
+				// If the grouping constraint is not violated, then all agents must be assigned together to a top-k choice
+				// this is enforced only by ensuring so for only one of the agents, the so called 'leader'. By the other indicator
+				// constraint, the other member's assignment variables are linked to those of the leader, forcing whole group
+				// to have the same assignment iff (two-way is forced by the penalty to the obj function) the decision variable
+				// 'violate grouping' is false (not violated, or alternatively: the decision is made to assigned the group together
+				// to one of their top-k choices)
+				var constName = violateGroupingDecVar.name() + "_force_topk";
+				model.addGenConstrIndicator(violateGroupingDecVar.asVar(), 0,
+					leaderAssignmentsToTopK, '=', 1,
+					constName);
+			}
+			catch (GRBException ex)
+			{
+				throw new RuntimeException(ex);
+			}
 		});
 		
 		var objective = new GRBLinExpr((GRBLinExpr) model.getObjective());
@@ -129,18 +153,13 @@ public class ConditionalGroupConstraint implements Constraint
 	/**
 	 * The grouping decision variable
 	 */
-	public record GrpLinkedDecisionVar(Group group, GRBVar softGrpVar, String name)
+	public record GrpLinkedDecisionVar(Group group, GRBVar asVar, String name)
 	{
 		static GrpLinkedDecisionVar make(Group group, Integer grpIdx, GRBModel model)
 		{
 			String name = "condlink_g" + grpIdx;
 			var softGrpVar = GurobiHelperFns.makeBinaryVariable(model, name);
 			return new GrpLinkedDecisionVar(group, softGrpVar, name);
-		}
-		
-		public GRBVar asVar()
-		{
-			return this.softGrpVar;
 		}
 	}
 }

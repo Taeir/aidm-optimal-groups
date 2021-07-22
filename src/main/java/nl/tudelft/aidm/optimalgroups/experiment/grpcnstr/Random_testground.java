@@ -37,9 +37,11 @@ public class Random_testground
 {
 	public static void main(String[] args)
 	{
-		var ce = 10;
+//		var ce = 10;
+//		var dataset = CourseEdition.fromLocalBepSysDbSnapshot(ce);
 		
-		var dataset = CourseEdition.fromLocalBepSysDbSnapshot(ce);
+		var dataset = ResearchProject2021Q4Dataset.getInstance();
+		var ce = dataset.courseEditionId();
 		
 		var seqDataset = SequentualDatasetContext.from(dataset);
 		var allAgents = seqDataset.allAgents();
@@ -90,7 +92,7 @@ public class Random_testground
 			
 //			var grpConstr = new GroupConstraint(maxsizeCliques);
 //			var grpConstr = new SoftGroupConstraint(maxsizeCliques);
-			var grpConstr = new ConditionalGroupConstraint(maxsizeCliques, 10);
+			var grpConstr = new ConditionalGroupConstraint(maxsizeCliques, 3);
 			grpConstr.apply(model, assignmentConstraints);
 			
 			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents, seqDataset.allProjects());
@@ -102,10 +104,12 @@ public class Random_testground
 			// results round 2
 			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDataset);
 			
-//			var groupingViolation = grpConstr.violateGroupingDecVars.stream()
-//				          .map(ConditionalGroupConstraint.GrpLinkedDecisionVar::asVar)
-//				          .map(grbVar -> Try.getting(() -> grbVar.get(GRB.DoubleAttr.X)).or(Rethrow.asRuntime()))
-//				          .collect(Collectors.toList());
+			var groupingViolations = grpConstr.violateGroupingDecVars.stream()
+				                        .map(ConditionalGroupConstraint.GrpLinkedDecisionVar::asVar)
+				                        .map(grbVar -> Try.getting(() -> grbVar.get(GRB.DoubleAttr.X)).or(Rethrow.asRuntime()))
+				                        .filter(v -> v > 0.0)
+				                        .count();
+//			var groupingViolations = 0;
 			
 			// assert all groups in final output
 			var numCliquesTogether = new AtomicInteger(0);
@@ -116,14 +120,14 @@ public class Random_testground
 			});
 			
 			var matchingByRank = matching2.sequential().asList().stream()
-				.collect(Collectors.groupingBy(o -> {
-					var agent = o.from();
-					var project = o.to();
-					
-					return agent.projectPreference().rankOf(project);
-				}));
+					.collect(Collectors.groupingBy(o -> {
+						var agent = o.from();
+						var project = o.to();
+						
+						return agent.projectPreference().rankOf(project);
+					}));
 			
-			Assert.that(numCliquesTogether.get() == maxsizeCliques.count())
+			Assert.that(numCliquesTogether.get() == (maxsizeCliques.count() - groupingViolations))
 				.orThrowMessage("There is a clique not together, grp constr: " + grpConstr.simpleName());
 			
 			// EXPORT RESULTS
