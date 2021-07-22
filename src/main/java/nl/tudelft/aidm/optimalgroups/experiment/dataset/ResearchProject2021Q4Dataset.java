@@ -10,25 +10,29 @@ import plouchtch.assertion.Assert;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
 public class ResearchProject2021Q4Dataset extends ManualDatasetContext
 {
+	private static final int courseEditionId = 39;
+	
 	/**
 	 * Creates a processed instance of the RP 2021 Q4 dataset
 	 * @return The filtered dataset
 	 */
 	public static ResearchProject2021Q4Dataset getInstance()
 	{
-		
-		var dataset = CourseEdition.fromLocalBepSysDbSnapshot(39);
+		var dataset = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
 		
 		var agentsFiltered = filterAgents(dataset);
 		var projects = dataset.allProjects();
 		
-		return new ResearchProject2021Q4Dataset(dataset.identifier() + "_processed", projects, agentsFiltered, dataset.groupSizeConstraint());
+		var updatedIdentifier = dataset.identifier().replaceAll("\\[s\\d+", "[s" + agentsFiltered.count());
+		
+		return new ResearchProject2021Q4Dataset(updatedIdentifier + "_processed", projects, agentsFiltered, dataset.groupSizeConstraint());
 	}
 	
 	/**
@@ -47,21 +51,22 @@ public class ResearchProject2021Q4Dataset extends ManualDatasetContext
 		return RP21Q4Aux.matchesToFix(this);
 	}
 	
+	/**
+	 * @return the course edition id this dataset has in bepsys
+	 */
+	public int courseEditionId()
+	{
+		return courseEditionId;
+	}
+	
 	private static Agents filterAgents(CourseEdition dataset)
 	{
 		Assert.that(dataset.bepSysId() == 39).orThrowMessage("Dataset must be for course edition 39");
 		
 		var agentsToFilterAsIdList = RP21Q4Aux.agentsToFilterOut();
 		
-		return agentsToFilterAsIdList.stream()
-			       .flatMap(id -> dataset.allAgents()
-				                      .findByAgentId(id)
-				                      .or(() -> {
-					                      System.out.printf("Warning: Agent %s already filtered\n", id);
-					                      return Optional.empty();
-				                      })
-				                      .stream()
-			       )
-			       .collect(collectingAndThen(toList(), Agents::from));
+		return dataset.allAgents().asCollection().stream()
+			.filter(agent -> !agentsToFilterAsIdList.contains(agent.id))
+			.collect(Collectors.collectingAndThen(toList(), Agents::from));
 	}
 }
