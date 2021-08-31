@@ -11,7 +11,7 @@ import plouchtch.util.Try;
 /**
  * Creates the constraint to enforce "stability" as defined by Chiarandini, Fagerberg et al
  */
-public record StabilityConstraint(SequentualDatasetContext datasetContext) implements Constraint
+public class StabilityConstraint implements Constraint
 {
 	//B[][] b, Z[][][] z, D[][][] d
 	
@@ -20,6 +20,8 @@ public record StabilityConstraint(SequentualDatasetContext datasetContext) imple
 	@Override
 	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints) throws GRBException
 	{
+		var datasetContext = assignmentConstraints.datasetContext;
+		
 		int numAgents = datasetContext.allAgents().count();
 		int numProjs = datasetContext.allProjects().count();
 		int numMaxSlots = datasetContext.numMaxSlots();
@@ -29,7 +31,7 @@ public record StabilityConstraint(SequentualDatasetContext datasetContext) imple
 		
 		datasetContext.allProjects().forEach(project -> {
 			project.slots().forEach(slot -> {
-				b[project.id()][slot.index()] = B.createInModelWithConstraint(model, assignmentConstraints, datasetContext, slot);
+				b[project.id()][slot.index()] = B.createInModelWithConstraint(model, assignmentConstraints, slot);
 			});
 		});
 		
@@ -215,8 +217,10 @@ public record StabilityConstraint(SequentualDatasetContext datasetContext) imple
 
 	public record B(Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
-		public static B createInModelWithConstraint(GRBModel model, AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext, Project.ProjectSlot slot)
+		public static B createInModelWithConstraint(GRBModel model, AssignmentConstraints assignmentCnstr, Project.ProjectSlot slot)
 		{
+			var datasetContext = assignmentCnstr.datasetContext;
+			
 			// Make the Var:
 			var ub_sl = datasetContext.groupSizeConstraint().maxSize();
 			var name = "b_" + slot.id();

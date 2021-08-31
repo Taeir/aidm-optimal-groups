@@ -26,34 +26,12 @@ public class Chiarandini_MinimaxOWA
 
 	public AgentToProjectMatching doIt()
 	{
-		return Try.getting(this::doItDirty)
-			.or(Rethrow.asRuntime());
-	}
-
-	public AgentToProjectMatching doItDirty() throws GRBException
-	{
-		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
-
-		var env = new GRBEnv();
-		env.start();
-
-		var model = new GRBModel(env);
-
-		AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
+		var objFn = new OWAObjective();
 		
-		var objFn = new OWAObjective(seqDatasetContext, assignmentConstraints);
-		objFn.apply(model);
-
-		model.optimize();
-
-		// extract x's and map to matching
-		var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
-
-		env.dispose();
-
-		return matching.original();
+		return new ChiarandiniBaseModel(datasetContext, objFn).doIt();
 	}
 
+	/* test */
 	public static void main(String[] args) throws Exception
 	{
 		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);

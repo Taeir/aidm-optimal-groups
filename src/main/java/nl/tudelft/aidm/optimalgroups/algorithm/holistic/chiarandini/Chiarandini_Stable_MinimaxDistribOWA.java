@@ -6,12 +6,14 @@ import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.StabilityConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfExpRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
@@ -24,40 +26,15 @@ public class Chiarandini_Stable_MinimaxDistribOWA
 		this.datasetContext = datasetContext;
 	}
 
-	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doIt()
+	public AgentToProjectMatching doIt()
 	{
-		return Try.getting(this::doItDirty)
-			.or(Rethrow.asRuntime());
-	}
-
-	public nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching doItDirty() throws GRBException
-	{
-		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
-
-		var env = new GRBEnv();
-		env.start();
-
-		var model = new GRBModel(env);
-
-		AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
+		var objFn = new OWAObjective();
+		var stability = new StabilityConstraint();
 		
-		var objFn = new OWAObjective(seqDatasetContext, assignmentConstraints);
-		objFn.apply(model);
-
-		var stability = new StabilityConstraint(seqDatasetContext);
-		stability.apply(model, assignmentConstraints);
-		
-		model.optimize();
-
-		// extract x's and map to matching
-
-		var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
-
-		env.dispose();
-
-		return matching.original();
+		return new ChiarandiniBaseModel(datasetContext, objFn, stability).doIt();
 	}
-
+	
+	/* test */
 	public static void main(String[] args) throws Exception
 	{
 		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);

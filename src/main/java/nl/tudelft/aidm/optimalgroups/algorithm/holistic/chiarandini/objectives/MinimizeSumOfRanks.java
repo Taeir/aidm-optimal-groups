@@ -6,14 +6,12 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Object
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.model.UtilitarianWeightsObjective;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 
-public record MinimizeSumOfRanks(SequentualDatasetContext sequentualDatasetContext,
-                                 AssignmentConstraints assignmentConstraints)
-implements ObjectiveFunction
+public class MinimizeSumOfRanks implements ObjectiveFunction
 {
 	@Override
-	public void apply(GRBModel model)
+	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints)
 	{
-		var obj = new UtilitarianWeightsObjective(sequentualDatasetContext, assignmentConstraints, rank -> rank);
+		var obj = new UtilitarianWeightsObjective(assignmentConstraints, rank -> rank);
 		obj.apply(model);
 	}
 	

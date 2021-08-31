@@ -4,19 +4,15 @@ import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.model.DistributiveWeightsObjective;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import plouchtch.assertion.Assert;
 
-public record OWAObjective(SequentualDatasetContext sequentualDatasetContext,
-                           AssignmentConstraints assignmentConstraints)
-implements ObjectiveFunction
+public class OWAObjective implements ObjectiveFunction
 {
 	@Override
-	public void apply(GRBModel model)
+	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints)
 	{
 		var owaWeightingScheme = new OWA_distributiveWeightScheme();
-		var obj = new DistributiveWeightsObjective(sequentualDatasetContext, assignmentConstraints, owaWeightingScheme);
+		var obj = new DistributiveWeightsObjective(assignmentConstraints, owaWeightingScheme);
 
 		obj.apply(model);
 	}
@@ -27,7 +23,7 @@ implements ObjectiveFunction
 		return "owa";
 	}
 	
-	private class OWA_distributiveWeightScheme implements DistributiveWeightsObjective.WeightScheme// withMinimaxOWAScheme(DatasetContext datasetContext)
+	private static class OWA_distributiveWeightScheme implements DistributiveWeightsObjective.WeightScheme// withMinimaxOWAScheme(DatasetContext datasetContext)
 	{
 		private final int delta;
 		private final double Beta;

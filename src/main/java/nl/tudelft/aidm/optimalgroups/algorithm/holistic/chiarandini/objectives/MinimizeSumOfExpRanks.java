@@ -7,17 +7,16 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.m
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 
-public record MinimizeSumOfExpRanks(SequentualDatasetContext datasetContext,
-                                    AssignmentConstraints assignmentConstraints)
-implements ObjectiveFunction
+public class MinimizeSumOfExpRanks implements ObjectiveFunction
 {
 	@Override
-	public void apply(GRBModel model)
+	public void apply(GRBModel model, AssignmentConstraints assignmentConstraints)
 	{
-		var maxRank = datasetContext.worstRank().orElse(0);
+		var maxRank = assignmentConstraints.datasetContext.worstRank().orElse(0);
+		
 		UtilitarianWeightsObjective.WeightScheme weightScheme = rank -> -1 * Math.pow(2, Math.max(0, maxRank - rank));
 		
-		var obj = new UtilitarianWeightsObjective(datasetContext, assignmentConstraints, weightScheme);
+		var obj = new UtilitarianWeightsObjective(assignmentConstraints, weightScheme);
         obj.apply(model);
 	}
 	

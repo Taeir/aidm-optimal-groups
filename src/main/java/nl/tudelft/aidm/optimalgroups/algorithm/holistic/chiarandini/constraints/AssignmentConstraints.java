@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class AssignmentConstraints
 {
-	private final SequentualDatasetContext datasetContext;
+	public final SequentualDatasetContext datasetContext;
 	
 	public final XVars xVars;
 	public final YVars yVars;
@@ -28,9 +28,6 @@ public class AssignmentConstraints
 	{
 		var agents = datasetContext.allAgents();
 		var projects = datasetContext.allProjects();
-
-		// num slots per projects (the max)
-		var SL = datasetContext.numMaxSlots();
 
 		XVars xVars = XVars.createInModel(model, datasetContext);
 		YVars yVars = YVars.createInModel(model, datasetContext);

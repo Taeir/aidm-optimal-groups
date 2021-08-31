@@ -10,9 +10,7 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetC
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
-public record UtilitarianWeightsObjective(SequentualDatasetContext datasetContext,
-                                         AssignmentConstraints assignmentVars,
-                                         WeightScheme weightScheme)
+public record UtilitarianWeightsObjective(AssignmentConstraints assignmentVars, WeightScheme weightScheme)
 {
 	public interface WeightScheme
 	{
@@ -28,6 +26,7 @@ public record UtilitarianWeightsObjective(SequentualDatasetContext datasetContex
 	
 	private void applyDirty(GRBModel model) throws GRBException
 	{
+		var datasetContext = assignmentVars.datasetContext;
 		var objFnExpr = new GRBLinExpr();
 
 		datasetContext.allAgents().forEach(agent -> {
