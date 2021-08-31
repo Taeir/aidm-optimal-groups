@@ -98,7 +98,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String name()
 		{
 			// TODO include Pref agg method
-			return "BepSys (rew)";
+			return "BepSys (reworked)";
 		}
 
 		@Override
@@ -278,7 +278,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			WorstAmongBestHumblePairingsSearch p = new WorstAmongBestHumblePairingsSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var agentsToProjects = p.matching();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(agentsToProjects);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(agentsToProjects);
 		}
 
 		@Override
@@ -297,7 +297,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var sdpc = new SDPC(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matchingStudentsToProjects);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matchingStudentsToProjects);
 		}
 
 		@Override
@@ -316,7 +316,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var sdpc = new SDPCOrderedByPotentialGroupmates(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matchingStudentsToProjects);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matchingStudentsToProjects);
 		}
 
 		@Override
@@ -334,7 +334,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var sdpc = new SDPCPessimism(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.matching();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matchingStudentsToProjects);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matchingStudentsToProjects);
 		}
 
 		@Override
@@ -352,7 +352,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new HumbleMiniMaxWithClosuresSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = algo.matching();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matchingStudentsToProjects);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matchingStudentsToProjects);
 		}
 
 		@Override
@@ -375,7 +375,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		{
 			var matching = new GroupedProjectMinizincAllocation(datasetContext, 5).matching();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matching);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
 
@@ -393,7 +393,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_MinSumRank(datasetContext);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matching);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
 
@@ -411,7 +411,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_MinSumExpRank(datasetContext);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matching);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
 
@@ -429,7 +429,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_Stable_MinSumRank(datasetContext);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matching);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
 
@@ -447,7 +447,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_Stable_MinSumExpRank(datasetContext);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matching);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
 
@@ -465,7 +465,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_MinimaxOWA(datasetContext);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matching);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
 
@@ -483,7 +483,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.fromByTrivialPartitioning(matching);
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
 }

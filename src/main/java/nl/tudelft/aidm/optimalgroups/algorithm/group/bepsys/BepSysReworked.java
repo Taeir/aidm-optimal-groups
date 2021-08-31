@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.GroupFormingAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCliques;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -10,7 +10,6 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
-import plouchtch.assertion.Assert;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -122,7 +121,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
 
     private void constructGroupsFromCliques()
     {
-        var groupsFromCliques = new GroupsFromCliques(Agents.from(availableStudents));
+        var groupsFromCliques = new CliqueGroups(Agents.from(availableStudents));
 
         var studentsInCliqueGroups = groupsFromCliques.asAgents().asCollection();
 

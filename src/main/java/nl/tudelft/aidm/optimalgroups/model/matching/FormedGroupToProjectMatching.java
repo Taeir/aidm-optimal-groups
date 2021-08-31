@@ -8,6 +8,7 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Group.FormedGroup;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import plouchtch.assertion.Assert;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,9 +22,11 @@ public class FormedGroupToProjectMatching extends ListBasedMatching<FormedGroup,
 		super(datasetContext, (List<Match<FormedGroup, Project>>) list);
 	}
 
-	public static FormedGroupToProjectMatching fromByTrivialPartitioning(AgentToProjectMatching agentToProjectMatching)
+	public static FormedGroupToProjectMatching byTriviallyPartitioning(AgentToProjectMatching agentToProjectMatching)
 	{
 		var datasetContext = agentToProjectMatching.datasetContext();
+		
+		Assert.that(datasetContext.numMaxSlots() == 1).orThrowMessage("TODO: get mapping slot to agent (projects in dataset have more than 1 slot)");
 
 		var result = new HashMap<Project, Collection<FormedGroup>>();
 

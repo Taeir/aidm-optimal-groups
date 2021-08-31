@@ -4,35 +4,27 @@ import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCliques;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.ConditionalGroupConstraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.GroupConstraint;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.HardGroupingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.experiment.dataset.ResearchProject2021Q4Dataset;
-import nl.tudelft.aidm.optimalgroups.experiment.researchproj.ResearchProject2021Q1;
-import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFix;
 import nl.tudelft.aidm.optimalgroups.experiment.researchproj.TwoRoundExperimentReport;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.ManualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFixes;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
 import java.io.File;
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -50,7 +42,7 @@ public class RP21_testground
 //
 //			var algo = new Chiarandini_Utilitarian_MinSum_IdentityScheme();
 		
-		var maxsizeCliques = new GroupsFromCliques(allAgents).ofSize(seqDataset.groupSizeConstraint().maxSize());
+		var maxsizeCliques = new CliqueGroups(allAgents).ofSize(seqDataset.groupSizeConstraint().maxSize());
 		
 		// Indifferent agents don't care, don't include them in the profile as they consider any project to be equal.
 		var groupingAgents = maxsizeCliques.asAgents();
@@ -154,7 +146,7 @@ public class RP21_testground
 		for (var matchFix : matchFixes.asList())
 		{
 			if (matchFix.group().members().count() > 1) {
-				new GroupConstraint(Groups.of(matchFix.group()))
+				new HardGroupingConstraint(Groups.of(matchFix.group()))
 					.apply(model, assignmentConstraints);
 			}
 			

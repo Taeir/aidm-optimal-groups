@@ -16,14 +16,19 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
-public class GroupsFromCliques extends Groups.ListBacked<Group.TentativeGroup>
+public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 {
 	private final Agents agents;
 	private List<Group.TentativeGroup> tentativeCliques;
 
-	public GroupsFromCliques(Agents agents)
+	public CliqueGroups(Agents agents)
 	{
 		this.agents = agents;
+	}
+	
+	public static CliqueGroups from(Agents agents)
+	{
+		return new CliqueGroups(agents);
 	}
 
 	@Override

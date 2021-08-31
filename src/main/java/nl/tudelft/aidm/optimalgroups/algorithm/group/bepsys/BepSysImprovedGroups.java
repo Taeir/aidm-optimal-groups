@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.group.GroupFormingAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCliques;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -120,7 +120,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
 
     private void constructGroupsFromCliques()
     {
-        var groupsFromCliques = new GroupsFromCliques(Agents.from(availableStudents));
+        var groupsFromCliques = new CliqueGroups(Agents.from(availableStudents));
 
         var studentsInCliqueGroups = groupsFromCliques.asAgents().asCollection();
 

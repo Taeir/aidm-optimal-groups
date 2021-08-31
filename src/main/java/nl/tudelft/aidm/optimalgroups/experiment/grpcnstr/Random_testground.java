@@ -4,12 +4,12 @@ import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCliques;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.FixMatchingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.ConditionalGroupConstraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.GroupConstraint;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.HardGroupingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
@@ -48,7 +48,7 @@ public class Random_testground
 //
 //			var algo = new Chiarandini_Utilitarian_MinSum_IdentityScheme();
 		
-		var maxsizeCliques = new GroupsFromCliques(allAgents).ofSize(seqDataset.groupSizeConstraint().maxSize());
+		var maxsizeCliques = new CliqueGroups(allAgents).ofSize(seqDataset.groupSizeConstraint().maxSize());
 		
 		// Indifferent agents don't care, don't include them in the profile as they consider any project to be equal.
 		var groupingAgents = maxsizeCliques.asAgents();
@@ -154,7 +154,7 @@ public class Random_testground
 		for (var matchFix : matchFixes.asList())
 		{
 			if (matchFix.group().members().count() > 1) {
-				new GroupConstraint(Groups.of(matchFix.group()))
+				new HardGroupingConstraint(Groups.of(matchFix.group()))
 					.apply(model, assignmentConstraints);
 			}
 			

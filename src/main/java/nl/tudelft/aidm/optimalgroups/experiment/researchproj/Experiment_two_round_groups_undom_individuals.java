@@ -3,9 +3,9 @@ package nl.tudelft.aidm.optimalgroups.experiment.researchproj;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCliques;
+import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.GroupConstraint;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.HardGroupingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
@@ -37,7 +37,7 @@ public class Experiment_two_round_groups_undom_individuals
 //
 //			var algo = new Chiarandini_Utilitarian_MinSum_IdentityScheme();
 		
-		var cliques = new GroupsFromCliques(allAgents);
+		var cliques = new CliqueGroups(allAgents);
 		
 		var maxsizeCliques = cliques.asCollection().stream()
 			                     .filter(tentativeGroup -> tentativeGroup.members().count() == seqDatasetContext.groupSizeConstraint().maxSize())
@@ -64,7 +64,7 @@ public class Experiment_two_round_groups_undom_individuals
 			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
 			var profileIndividual = profileOfIndividualAgentsInMatching(seqDatasetContext, individualAgents, matching.sequential());
 			
-			var grpConstr = new GroupConstraint(maxsizeCliques);
+			var grpConstr = new HardGroupingConstraint(maxsizeCliques);
 			grpConstr.apply(model, assignmentConstraints);
 			
 			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents, seqDatasetContext.allProjects());
@@ -76,7 +76,7 @@ public class Experiment_two_round_groups_undom_individuals
 			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
 			
 			Assert.that(datasetContext.numMaxSlots() == 1).orThrowMessage("TODO: get mapping slot to agent (projects in dataset have more than 1 slot)");
-			var csv = new ProjectStudentMatchingCSV(FormedGroupToProjectMatching.fromByTrivialPartitioning(matching2.original()));
+			var csv = new ProjectStudentMatchingCSV(FormedGroupToProjectMatching.byTriviallyPartitioning(matching2.original()));
 			csv.writeToFile("research_project " + objFn.name());
 			
 			

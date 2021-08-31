@@ -84,7 +84,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 		var optimalMatchingWithMetric = ILPPPSolutionFor(projects).solution().orElseThrow();
 		var resultingMatching  = optimalMatchingWithMetric.matching;
 
-		return FormedGroupToProjectMatching.fromByTrivialPartitioning(resultingMatching);
+		return FormedGroupToProjectMatching.byTriviallyPartitioning(resultingMatching);
 	}
 
 	boolean canFormValidGroupsWithoutRemainders(AgentProjectMaxFlowMatching matching, GroupSizeConstraint groupSizeConstraint)
