@@ -20,7 +20,7 @@ public class ProposingAgent extends Agent
 		this.agent = agent;
 		this.proposalTemplate = proposalTemplate;
 
-		var prefProjects = new ArrayList<>(agent.projectPreference().asListOfProjects());
+		var prefProjects = new ArrayList<>(agent.projectPreference().asList());
 		Collections.reverse(prefProjects);
 
 		unproposedInDecreasingPreferentialOrder = new Stack<>();

@@ -34,6 +34,13 @@ public interface RankInPref extends Comparable<RankInPref>
 		return !(isCompletelyIndifferent() || unacceptable());
 	}
 	
+	/**
+	 * Compares this rank with the other. Desirable ranks come "before" the undesirable ranks,
+	 * with rank 1 being the "highest" (most desirable rank). Thus, rank 1 is < rank 2, or,
+	 * (rank 1).compareTo(rank 2) = -1
+	 * @param o
+	 * @return -1 if current is better than other, 0 if equal, 1 if worse than other
+	 */
 	@Override
 	default int compareTo(@NotNull RankInPref o)
 	{

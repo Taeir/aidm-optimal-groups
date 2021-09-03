@@ -39,7 +39,7 @@ public class LeastWorstIndividualRankAttainableInGroup
 
 		var allProjects = members.stream()
 			.map(Agent::projectPreference)
-			.flatMap(projectPreference -> projectPreference.asListOfProjects().stream())
+			.flatMap(projectPreference -> projectPreference.asList().stream())
 			.distinct()
 			.collect(Collectors.toList());
 

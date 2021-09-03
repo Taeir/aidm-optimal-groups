@@ -20,18 +20,16 @@ import java.util.Objects;
  */
 public abstract class AbstractListBasedProjectPreferences implements ProjectPreference
 {
-	private Integer[] asArray = null;
-	private Map<Integer, Integer> asMap;
+	private Project[] asArray = null;
+	private Map<Project, RankInPref> asMap;
 
 	private final IdentityHashMap<Project, RankInPref> rankOfProject = new IdentityHashMap<>();
 
 	@Override
-	public Integer[] asArray()
+	public Project[] asArray()
 	{
 		if (asArray == null) {
-			asArray = asListOfProjects().stream()
-				.map(Project::id)
-				.toArray(Integer[]::new);
+			asArray = asList().toArray(Project[]::new);
 		}
 
 		return asArray;
@@ -60,7 +58,7 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 	@Override
 	public boolean isCompletelyIndifferent()
 	{
-		if (asListOfProjects().isEmpty()) {
+		if (asList().isEmpty()) {
 			return true;
 		}
 
@@ -68,9 +66,10 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 	}
 
 	@Override
-	public Map<Integer, Integer> asMap()
+	public Map<Project, RankInPref> asMap()
 	{
 		if (asMap == null) {
+			// use default method and cache result
 			asMap = ProjectPreference.super.asMap();
 		}
 
@@ -90,12 +89,12 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 		if (!(o instanceof AbstractListBasedProjectPreferences)) throw new RuntimeException("Hmm AbsLBProjPref is being compared with some other type. Check if use-case is alright.");
 
 		var that = (AbstractListBasedProjectPreferences) o;
-		return this.asListOfProjects().equals(that.asListOfProjects());
+		return this.asList().equals(that.asList());
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(this.asListOfProjects());
+		return Objects.hash(this.asList());
 	}
 }

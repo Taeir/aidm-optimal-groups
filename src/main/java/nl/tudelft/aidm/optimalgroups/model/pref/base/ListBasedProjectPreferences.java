@@ -25,7 +25,7 @@ public class ListBasedProjectPreferences extends AbstractListBasedProjectPrefere
 	}
 
 	@Override
-	public List<Project> asListOfProjects()
+	public List<Project> asList()
 	{
 		return Collections.unmodifiableList(preferencesAsList);
 	}

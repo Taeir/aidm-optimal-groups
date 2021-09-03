@@ -81,7 +81,7 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 		}
 
 		@Override
-		public List<Project> asListOfProjects()
+		public List<Project> asList()
 		{
 			return Collections.unmodifiableList(prefProfile);
 		}

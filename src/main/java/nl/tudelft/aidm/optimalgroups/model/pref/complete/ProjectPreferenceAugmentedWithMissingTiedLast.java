@@ -6,9 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.rank.PresentRankInPref;
 import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import plouchtch.lang.exception.ImplementMe;
 
-import java.sql.Array;
 import java.util.*;
 
 /**
@@ -24,15 +22,15 @@ public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProj
 	{
 		super(
 			projectPreference.owner(),
-			projectPreference.asListOfProjects()
+			projectPreference.asList()
 		);
 
-		this.rankOfMissing = projectPreference.asListOfProjects().size() + 1;
+		this.rankOfMissing = projectPreference.asList().size() + 1;
 
-		var absent = allProjects.without(Projects.from(projectPreference.asListOfProjects())).asCollection();
+		var absent = allProjects.without(Projects.from(projectPreference.asList())).asCollection();
 		tiedAtEnd = absent;
 
-		var combined = new ArrayList<>(projectPreference.asListOfProjects());
+		var combined = new ArrayList<>(projectPreference.asList());
 		combined.addAll(absent);
 		asCompleteList = Collections.unmodifiableList(combined);
 	}
@@ -43,13 +41,13 @@ public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProj
 		var rankOriginalList = super.rankOf(project);
 
 		if (rankOriginalList.unacceptable())
-			return new PresentRankInPref(this.asListOfProjects().size()+1);
+			return new PresentRankInPref(this.asList().size()+1);
 
 		return rankOriginalList;
 	}
 
 	@Override
-	public void forEach(ProjectPreferenceObjectRankConsumer iter)
+	public void forEach(ProjecPrefIterFn iter)
 	{
 		asCompleteList.forEach(project -> {
 			iter.apply(project, rankOf(project));
@@ -74,7 +72,7 @@ public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProj
 	}
 
 	@Override
-	public List<Project> asListOfProjects()
+	public List<Project> asList()
 	{
 		return this.asCompleteList;
 	}

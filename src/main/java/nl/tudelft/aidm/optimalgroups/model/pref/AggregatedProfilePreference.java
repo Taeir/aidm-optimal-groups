@@ -5,10 +5,19 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.base.AbstractListBasedProjectPreferences;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.PresentRankInPref;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankOfCompletelyIndifferentAgent;
+import nl.tudelft.aidm.optimalgroups.model.pref.rank.UnacceptableAlternativeRank;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
+import plouchtch.assertion.Assert;
+import plouchtch.lang.Lazy;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 /**
  * ProjectPreference implementation for a whole group. This is an average of the group member preferences (as implemented in BepSYS)
@@ -17,9 +26,9 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 {
 	protected final Agents agents;
 
-	protected Integer[] avgPreferenceAsArray;
-	protected List<Project> avgPreferenceAsProjectList;
-	protected Map<Integer, Integer> avgPreferenceMap;
+	protected Project[] asArray;
+	protected List<Project> asList;
+	protected Lazy<Map<Project, RankInPref>> asMap = new Lazy<>(this::calculateAverageOfGroup);
 
 	protected DatasetContext datasetContext;
 
@@ -29,40 +38,39 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		this.datasetContext = agents.datasetContext;
 	}
 
-	protected abstract Integer[] calculateAverageOfGroup();
+	protected abstract Map<Project, RankInPref> calculateAverageOfGroup();
 
 	public Agents agentsAggregatedFrom()
 	{
 		return agents;
 	}
 
+	@Deprecated
 	@Override
-	public synchronized Integer[] asArray()
+	public synchronized Project[] asArray()
 	{
-		if (avgPreferenceAsArray == null) {
-			avgPreferenceAsArray = calculateAverageOfGroup();
+		if (asArray == null) {
+			asArray = asList().toArray(Project[]::new);
 		}
 
-		return avgPreferenceAsArray;
+		return asArray;
 	}
 
+	@Deprecated
 	@Override
-	public synchronized List<Project> asListOfProjects()
+	public synchronized List<Project> asList()
 	{
-		if (avgPreferenceAsProjectList == null) {
-			var projectIdsInOrder = asArray();
-
-			Projects allProjects = datasetContext.allProjects();
-			List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
-
-			for (var projId : projectIdsInOrder) {
-				projectList.add(allProjects.findWithId(projId).get());
-			}
-
-			avgPreferenceAsProjectList = Collections.unmodifiableList(projectList);
+		if (asList == null) {
+			
+			var asMap = this.asMap.get();
+			asList = asMap.entrySet().stream()
+					.filter(entry -> entry.getValue().isPresent())
+					.sorted(Map.Entry.comparingByValue()) // RankInPref is a Comparable
+					.map(Map.Entry::getKey) // Once ordered, extract the projects, tie-breaking is then quasi-random
+					.toList();
 		}
 
-		return avgPreferenceAsProjectList;
+		return asList;
 	}
 
 	public static AggregatedProfilePreference usingGloballyConfiguredMethod(Agents agents)
@@ -88,13 +96,13 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		if (!(o instanceof ProjectPreference)) return false;
 		if (!(o instanceof AggregatedProfilePreference)) throw new RuntimeException("Hmm AggregatedProfilePreference is being compared with some other type. Check if use-case is alright.");
 		AggregatedProfilePreference that = (AggregatedProfilePreference) o;
-		return Arrays.equals(avgPreferenceAsArray, that.avgPreferenceAsArray);
+		return Arrays.equals(asArray, that.asArray);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Arrays.hashCode(avgPreferenceAsArray);
+		return Arrays.hashCode(asArray);
 	}
 
 	public static class Borda extends AggregatedProfilePreference
@@ -111,28 +119,56 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		}
 
 		@Override
-		protected Integer[] calculateAverageOfGroup()
+		protected Map<Project, RankInPref> calculateAverageOfGroup()
 		{
-			// mapping: Project --> Preference-rank
-			Map<Integer, Integer> prefs = new LinkedHashMap<>();
+			// exception: handle fully indifferent groups
+			if (agents.asCollection().stream().allMatch(agent -> agent.projectPreference().isCompletelyIndifferent())) {
+				var map = new HashMap<Project, RankInPref>();
+				var allProjects = agents.datasetContext.allProjects();
+				allProjects.forEach(project -> map.put(project, new RankOfCompletelyIndifferentAgent(agents, project)));
+				return map;
+			}
+			
+			// mapping: Project --> score
+			Map<Project, Integer> prefs = new LinkedHashMap<>();
+			
+			int maxRank = this.agents.datasetContext.worstRank().getAsInt() + 1;
+			int unacceptableScore = maxRank + 1; // if project is unacceptible
 
 			for (Agent agent : this.agents.asCollection()) {
-				Integer[] preferences = agent.projectPreference().asArray();
-
-				for (int priority = 0; priority < preferences.length; priority++) {
-					int project = preferences[priority];
-					int currentPreferences = prefs.getOrDefault(project, 0);
-					prefs.put(project, currentPreferences + priority);
-				}
+				agent.projectPreference().forEach((project, rank) -> {
+					int currentScoreSubtotal = prefs.getOrDefault(project, 0);
+					
+					var score = rank.unacceptable() ? unacceptableScore : rank.asInt();
+					prefs.put(project, currentScoreSubtotal + rank.asInt());
+					
+					return true; // continue loop
+				});
 			}
-
-			// obtain a list of preferences (id's of) sorted by the rank of the preference
-			Integer[] avgPreference = new ArrayList<>(prefs.entrySet()).stream()
-					.sorted(Map.Entry.comparingByValue())
-					.map(Map.Entry::getKey)
-					.toArray(Integer[]::new);
-
-			return avgPreference;
+			
+			var groupedByScore = prefs.entrySet().stream()
+					.collect(groupingBy(Map.Entry::getValue, mapping(Map.Entry::getKey, toList())));
+			
+			// note: index-0 is rank 1
+			var rankToScore = prefs.values().stream().sorted().toArray(Integer[]::new);
+			
+			var preferencesAsMap = new HashMap<Project, RankInPref>();
+			
+			for (int i = 0; i < rankToScore.length; i++)
+			{
+				var rank = i + 1;
+				var score = rankToScore[i];
+				var projects = groupedByScore.get(score);
+				
+				Assert.that(projects != null).orThrowMessage("BUGCHECK: no projects present at a certain score, but were expected");
+				
+				if (score == unacceptableScore * agents.count()) // unacceptible to all
+					projects.forEach(project -> preferencesAsMap.put(project, new UnacceptableAlternativeRank(agents, project)));
+				else
+					projects.forEach(project -> preferencesAsMap.put(project, new PresentRankInPref(rank)));
+			}
+			
+			return preferencesAsMap;
 		}
 	}
 
@@ -150,90 +186,109 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		}
 
 		@Override
-		protected Integer[] calculateAverageOfGroup()
+		protected Map<Project, RankInPref> calculateAverageOfGroup()
 		{
-			Set<Integer> projects = null;
+			// exception: handle fully indifferent groups
+			if (agents.asCollection().stream().allMatch(agent -> agent.projectPreference().isCompletelyIndifferent())) {
+				var map = new HashMap<Project, RankInPref>();
+				var allProjects = agents.datasetContext.allProjects();
+				allProjects.forEach(project -> map.put(project, new RankOfCompletelyIndifferentAgent(agents, project)));
+				return map;
+			}
+			
+			final Set<Project> projects = new HashSet<>();
 
 			// Retrieve the projects
-			for (Agent agent : this.agents.asCollection()) {
-				Integer[] preferences = agent.projectPreference().asArray();
-				if (preferences.length > 0) {
-					projects = agent.projectPreference().asMap().keySet();
-					break;
-				}
-			}
-
-			if (projects == null) {
-				return new Integer[0];
-			}
+			agents.forEach(agent -> {
+				projects.addAll(agent.projectPreference().asList());
+			});
 
 			// Start comparing projects
-			Map<Integer, Map<Integer, Boolean>> pairwiseComparison = new HashMap<>(projects.size());
-			for (int project : projects) {
+			
+			// Local comparison outcome types
+			enum Outcome { Win, Lose, Tie }
+			
+			// Mapping of: Project x Project --> Win / Loss
+			Map<Project, Map<Project, Outcome>> pairwiseComparison = new HashMap<>(projects.size());
+			for (var currentProject : projects) {
 
-				HashMap<Integer, Boolean> currentComparison = new HashMap<>(projects.size());
+				HashMap<Project, Outcome> currentComparison = new HashMap<>(projects.size());
 
-				for (int compareProject : projects) {
-					if (project == compareProject)
+				for (var otherProject : projects) {
+					if (currentProject == otherProject)
 						continue;
 
 					int wins = 0;
 					int defeats = 0;
 					for (Agent a : this.agents.asCollection()) {
-						Map<Integer, Integer> preferences = a.projectPreference().asMap();
-						if (preferences.get(project) == null || preferences.get(compareProject) == null) {
-							continue;
-						}
-
-						if (preferences.get(project) < preferences.get(compareProject)) {
-							wins++;
-						} else {
-							defeats++;
-						}
+						var rankCurrent = a.projectPreference().rankOf(currentProject);
+						var rankOther = a.projectPreference().rankOf(otherProject);
+						
+						var comp = rankCurrent.compareTo(rankOther);
+						
+						if (comp < 0) wins++;
+						else if (comp > 0) defeats++;
 					}
 
 					if (wins > defeats) {
-						currentComparison.put(compareProject, true);
+						currentComparison.put(otherProject, Outcome.Win);
 					} else if (wins < defeats) {
-						currentComparison.put(compareProject, false);
+						currentComparison.put(otherProject, Outcome.Lose);
 					} else {
-						// Its a tie, does not matter if it gets put as true or false in map
-						currentComparison.put(compareProject, false);
+						currentComparison.put(otherProject, Outcome.Tie);
 					}
 				}
 
-				pairwiseComparison.put(project, currentComparison);
+				pairwiseComparison.put(currentProject, currentComparison);
 			}
+		
 
-			// Score here means the amount of wins minus the amount of defeats.
-			// Note that ties get denoted as losses in the above algorithm but as long as this is done consistently (which it is)
-			//  then it does not matter.
-			Map<Integer, Integer> projectScore = new HashMap<>();
-			for (Map.Entry<Integer, Map<Integer, Boolean>> entry : pairwiseComparison.entrySet()) {
+			// Here, "score" is the amount of wins minus the amount of defeats
+			Map<Project, Integer> projectScore = new HashMap<>();
+			
+			for (var entry : pairwiseComparison.entrySet()) {
 
-				int project = entry.getKey();
-				Map<Integer, Boolean> comparisonResult = entry.getValue();
+				var project = entry.getKey();
+				var comparisonResult = entry.getValue();
 
 				// Start neutral
 				projectScore.put(project, 0);
-				for (boolean win : comparisonResult.values()) {
-
-					// Increment or decrement the value based on win or loss
-					if (win) {
-						projectScore.put(project, projectScore.get(project) + 1);
-					} else {
-						projectScore.put(project, projectScore.get(project) - 1);
+				
+				for (var outcome : comparisonResult.values()) {
+					switch (outcome) {
+						case Win -> projectScore.merge(project, 1, Integer::sum);
+						case Lose -> projectScore.merge(project, -1, Integer::sum);
 					}
 				}
 			}
-
-			// obtain a list of preferences (id's of) sorted by the rank of the preference
-			Integer[] avgPreference = new ArrayList<>(projectScore.entrySet()).stream()
-					.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-					.map(Map.Entry::getKey)
-					.toArray(Integer[]::new);
-
-			return avgPreference;
+			
+			// TODO: properly handle unacceptible alternatives -- for example, how to handle aggregation when one of the angents considers
+			// the project unacceptible, but the others don't?
+			
+			var groupedByScore = projectScore.entrySet().stream()
+					.collect(groupingBy(Map.Entry::getValue, mapping(Map.Entry::getKey, toList())));
+			
+			// note: index-0 is rank 1
+			var rankToScore = projectScore.values().stream().sorted().toArray(Integer[]::new);
+			
+			var preferencesAsMap = new HashMap<Project, RankInPref>();
+			
+			for (int i = 0; i < rankToScore.length; i++)
+			{
+				var rank = i + 1;
+				var score = rankToScore[i];
+				var projectsAtScore = groupedByScore.get(score);
+				
+				Assert.that(projects != null).orThrowMessage("BUGCHECK: no projects present at a certain score, but were expected");
+			
+				projectsAtScore.forEach(project -> preferencesAsMap.put(project, new PresentRankInPref(rank)));
+			}
+			
+			// While we don't handle the unacceptible case, we do know that everything that's missing in the projectScores is unacceptible to all agents
+			var unacceptibleToAllInvolved = datasetContext.allProjects().without(Projects.from(projects));
+			unacceptibleToAllInvolved.forEach(unacceptibleProj -> preferencesAsMap.put(unacceptibleProj, new UnacceptableAlternativeRank(agents, unacceptibleProj)));
+			
+			return preferencesAsMap;
 		}
 	}
 }

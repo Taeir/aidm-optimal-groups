@@ -191,7 +191,7 @@ public class VariantvakkenData2020 implements DatasetContext
 		}
 
 		@Override
-		public List<Project> asListOfProjects()
+		public List<Project> asList()
 		{
 			return List.of(asListOfProjects);
 		}

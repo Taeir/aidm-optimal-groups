@@ -24,7 +24,7 @@ public class ProjectPreferenceAugmentedWithMissingAlternativesCmmnRnd extends Li
 	{
 		super(
 			projectPreference.owner(),
-			augmentWithMissing(projectPreference.asListOfProjects(), projectsInCommonSeq)
+			augmentWithMissing(projectPreference.asList(), projectsInCommonSeq)
 		);
 	}
 

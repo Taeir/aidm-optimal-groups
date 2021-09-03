@@ -5,21 +5,15 @@ import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenCommonly;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
-import nl.tudelft.aidm.optimalgroups.model.project.ListBasedProjects;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import org.apache.commons.math3.util.Pair;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
 import java.util.function.Predicate;
 
 import static java.lang.Math.max;
-import static java.util.stream.Collectors.*;
 
 public class SDPC
 {
@@ -69,7 +63,7 @@ public class SDPC
 			var activeProjects = new ActiveProjects(partialMatching, projects, remainingAgents, groupSizeConstraint);
 			System.out.printf("Dictator@[t:\t%s]: %s\n", t, dictatorInThisStep);
 
-			var chosenProject = dictatorInThisStep.projectPreference().asListOfProjects().stream()
+			var chosenProject = dictatorInThisStep.projectPreference().asList().stream()
 				.dropWhile(Predicate.not(activeProjects::contains))
 				.findFirst().orElseThrow();
 

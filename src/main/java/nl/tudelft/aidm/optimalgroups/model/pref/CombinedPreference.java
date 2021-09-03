@@ -45,12 +45,12 @@ public class CombinedPreference implements ProjectPreference {
     }
 
     @Override
-    public synchronized List<Project> asListOfProjects()
+    public synchronized List<Project> asList()
     {
         if (combinedPreferenceAsProjectList == null) {
             var projectIdsInOrder = asArray();
 
-            Projects projects = Projects.from(projectPreference.asListOfProjects());
+            Projects projects = Projects.from(projectPreference.asList());
             List<Project> projectList = new ArrayList<>(projectIdsInOrder.length);
 
             for (var projId : projectIdsInOrder) {

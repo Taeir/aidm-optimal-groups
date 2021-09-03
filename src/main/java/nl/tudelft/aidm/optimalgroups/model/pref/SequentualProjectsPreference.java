@@ -1,9 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
-import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
-import plouchtch.assertion.Assert;
 
 import java.util.*;
 
@@ -23,7 +21,7 @@ public class SequentualProjectsPreference implements ProjectPreference
 		for (int i = 0; i < originalProfile.length; i++)
 			asList.add(null);
 
-		var originalProfileAsList = projectPreference.asListOfProjects();
+		var originalProfileAsList = projectPreference.asList();
 		for (int i = 0; i < originalProfileAsList.size(); i++)
 		{
 			Project origProject = originalProfileAsList.get(i);
@@ -56,7 +54,7 @@ public class SequentualProjectsPreference implements ProjectPreference
 	}
 
 	@Override
-	public List<Project> asListOfProjects()
+	public List<Project> asList()
 	{
 		return preferenceProfileAsProjectList;
 	}

@@ -1,13 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.dataset.generated.prefs;
 
-import nl.tudelft.aidm.optimalgroups.metric.rank.RankInArray;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
-import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankOfCompletelyIndifferentAgent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -48,9 +45,9 @@ public class UnanimousProjectPreferencesGenerator implements PreferenceGenerator
 		}
 
 		@Override
-		public List<Project> asListOfProjects()
+		public List<Project> asList()
 		{
-			return theOne.asListOfProjects();
+			return theOne.asList();
 		}
 
 		@Override

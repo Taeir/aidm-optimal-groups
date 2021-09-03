@@ -4,11 +4,12 @@ import java.util.OptionalInt;
 
 public class RankInArray
 {
-	public OptionalInt determineRank(int value, int[] array)
+	public <T> OptionalInt determineRank(T value, T[] array)
 	{
 		int rankNumber = array.length;
+		
 		for (int i = 0; i < array.length; i++) {
-			if (array[i] == value) {
+			if (array[i].equals(value)) {
 				rankNumber = i + 1;
 				return OptionalInt.of(rankNumber);
 			}
@@ -17,17 +18,17 @@ public class RankInArray
 		return OptionalInt.empty();
 	}
 
-	public OptionalInt determineRank(int value, Integer[] array)
-	{
-		int rankNumber = array.length;
-		for (int i = 0; i < array.length; i++) {
-			if (array[i] == value) {
-				rankNumber = i + 1;
-				return OptionalInt.of(rankNumber);
-			}
-		}
-
-		return OptionalInt.empty();
-	}
+//	public <T> OptionalInt determineRank(T value, T[] array)
+//	{
+//		int rankNumber = array.length;
+//		for (int i = 0; i < array.length; i++) {
+//			if (array[i] == value) {
+//				rankNumber = i + 1;
+//				return OptionalInt.of(rankNumber);
+//			}
+//		}
+//
+//		return OptionalInt.empty();
+//	}
 
 }

@@ -14,23 +14,27 @@ import java.util.*;
  */
 public interface ProjectPreference
 {
-	// TODO: determine representation (let algo guide this choice)
-	Integer[] asArray();
-
-	List<Project> asListOfProjects();
+	Project[] asArray();
+	List<Project> asList();
 
 	/**
 	 * Whose preferences are these?
 	 * @return the owner
 	 */
 	Object owner();
-
-	default void forEach(ProjectPreferenceObjectRankConsumer iter)
+	
+	/**
+	 * Iterate over this project preference in order from most to least desired
+	 * @param iter The function/consumer taking in a project and rank - returning false to break iteration
+	 */
+	default void forEach(ProjecPrefIterFn iter)
 	{
-		List<Project> projectList = asListOfProjects();
+		List<Project> projectList = asList();
 		for (Project proj : projectList) {
 			var rank = rankOf(proj);
-			iter.apply(proj, rank);
+			var continu = iter.apply(proj, rank);
+			
+			if (!continu) return;
 		}
 	}
 
@@ -42,15 +46,22 @@ public interface ProjectPreference
 	 */
 	default boolean isCompletelyIndifferent()
 	{
-		return asListOfProjects().size() == 0;
+		return asList().size() == 0;
 	}
-
-	default RankInPref rankOf(Project project) {
+	
+	/**
+	 * Indicates the rank of the given project in preferences.
+	 * TODO: Proper handling of acceptible/indifferent/ties - currently, a project is deemed unaccptable if it is missing from the array/list
+	 * @param project
+	 * @return
+	 */
+	default RankInPref rankOf(Project project)
+	{
 		if (isCompletelyIndifferent()) {
 			return new RankOfCompletelyIndifferentAgent(owner(), project);
 		}
 
-		var inArray = new RankInArray().determineRank(project.id(), this.asArray());
+		var inArray = new RankInArray().determineRank(project, this.asArray());
 		if (inArray.isEmpty()) {
 			return new UnacceptableAlternativeRank(owner(), project);
 		}
@@ -69,7 +80,8 @@ public interface ProjectPreference
 		}
 		
 		return asMap().values().stream()
-				   .mapToInt(Integer::intValue)
+				   .filter(RankInPref::isPresent)
+				   .mapToInt(RankInPref::asInt)
 			       .max();
 	}
 
@@ -81,24 +93,23 @@ public interface ProjectPreference
 	 *
 	 * @return Map
 	 */
-	default Map<Integer, Integer> asMap()
+	default Map<Project, RankInPref> asMap()
 	{
-		Integer[] preferences = this.asArray();
-		var preferencesMap = new HashMap<Integer, Integer>(preferences.length);
-
-		for (int rank = 1; rank <= preferences.length; rank++) {
-			int project = preferences[rank - 1];
+		var preferencesMap = new HashMap<Project, RankInPref>(this.asList().size());
+		
+		for (Project project : asList())
+		{
+			var rank = rankOf(project);
 			preferencesMap.put(project, rank);
 		}
 
 		return preferencesMap;
 	}
-
-
+	
 	default int differenceTo(ProjectPreference otherPreference)
 	{
-		Map<Integer, Integer> own = asMap();
-		Map<Integer, Integer> other = otherPreference.asMap();
+		var own = asMap();
+		var other = otherPreference.asMap();
 
 		// If the other does not have any preferences, return maximum difference to
 		// avoid picking this matchings over people that do have preferences
@@ -107,20 +118,36 @@ public interface ProjectPreference
 		}
 
 		int difference = 0;
-		for (Map.Entry<Integer, Integer> entry : own.entrySet()) {
-			difference += Math.abs(entry.getValue() - other.get(entry.getKey()));
+		for (var entry : own.entrySet()) {
+			var ownRank = entry.getValue();
+			var othersRank = other.get(entry.getKey());
+			
+			
+			if (ownRank.isPresent() && othersRank.isPresent()) {
+				var rankOwn = entry.getValue().asInt();
+				var rankOthers = other.get(entry.getKey()).asInt();
+				
+				difference += Math.abs(rankOwn - rankOthers);
+			}
+			// exactly one of us finds the project unacceptible
+			else if (ownRank.unacceptable() ^ othersRank.unacceptable()) {
+				var presentRank = ownRank.isPresent() ? ownRank.asInt() : othersRank.asInt();
+				
+				difference += (Math.max(own.size(), other.size()) + 1) - presentRank;
+			}
 		}
 
 		return difference;
 	}
 
-	interface ProjectPreferenceObjectRankConsumer
+	interface ProjecPrefIterFn
 	{
 		/**
 		 * @param project The project with the given rank
 		 * @param rank Rank in preference, 1 being highest - empty if indifferent
+		 * @return true if iteration should continue
 		 */
-		void apply(Project project, RankInPref rank);
+		boolean apply(Project project, RankInPref rank);
 	}
 
 }
