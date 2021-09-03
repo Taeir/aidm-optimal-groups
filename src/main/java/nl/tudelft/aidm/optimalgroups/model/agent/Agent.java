@@ -57,45 +57,9 @@ public abstract class Agent implements HasProjectPrefs
 		return this.groupPreference.asArray().length;
 	}
 
-	/**
-	 * Is the group proposed by the agent mutual? That is, do the agents
-	 * that form part of the proposal have identical proposal? A.k.a. "a clique" of friends
-	 * @return True if "friends" have 'identical' peer preferences
-	 */
-	public boolean groupProposalIsMutual()
-	{
-		if(this.groupPreference.count() == 0) {
-			// No preference, therefore also no clique
-			return false;
-		}
-
-		// Function that maps the Agent's "group preferences" to a Set of agents (including himself)
-		// intuitively, this is the agent's proposal for a (partial) group formation.
-		Function<Agent, Set<Agent>> agentPreferencesToProposedGroup = (Agent x) -> {
-			var groupProposal = new HashSet<Agent>();
-			//Add agent himself to set to make comparing preferences easy
-			groupProposal.add(x);
-			groupProposal.addAll(x.groupPreference.asListOfAgents());
-
-			return groupProposal;
-		};
-
-		// The proposal of the given agent
-		var proposedGroupOfAgent = agentPreferencesToProposedGroup.apply(this);
-
-		// A group proposal is completely  mutual if all agents in the proposal
-		// would propose exactly the same proposal
-		var agentProposalIsCompletelyMutual = this.groupPreference.asListOfAgents().stream()
-			// Now check if the proposals of the peers, that are part of this agents proposal
-			.map(agentPreferencesToProposedGroup)
-			// are exactly the same as the proposal of "this" agent
-			.allMatch(proposedGroupOfAgent::equals);
-
-		return agentProposalIsCompletelyMutual;
-	}
-
 	@Override
-	public ProjectPreference projectPreference() {
+	public ProjectPreference projectPreference()
+	{
 		return (usingCombinedPreference) ? this.combinedPreference : this.projectPreference;
 	}
 

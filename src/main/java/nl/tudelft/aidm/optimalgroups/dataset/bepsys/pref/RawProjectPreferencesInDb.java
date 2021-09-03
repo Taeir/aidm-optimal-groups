@@ -9,6 +9,7 @@ import org.sql2o.Sql2o;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class RawProjectPreferencesInDb extends AbstractListBasedProjectPreferences
@@ -17,8 +18,8 @@ public class RawProjectPreferencesInDb extends AbstractListBasedProjectPreferenc
 	private final Integer userId;
 	private final CourseEdition courseEdition;
 
-	private Integer[] preferences = null;
-	private List<Project> preferencesAsProjectList = null;
+	private Project[] asArray = null;
+	private List<Project> asList = null;
 
 	public RawProjectPreferencesInDb(DataSource dataSource, Integer userId, CourseEdition courseEdition)
 	{
@@ -34,29 +35,31 @@ public class RawProjectPreferencesInDb extends AbstractListBasedProjectPreferenc
 	}
 
 	@Override
-	public synchronized Integer[] asArray()
+	public synchronized Project[] asArray()
 	{
-		if (preferences == null)
+		if (asArray == null)
 		{
-			var asList = asListOfProjects();
-			preferences = asList.stream()
-				.map(Project::id)
-				.toArray(Integer[]::new);
+			asArray = asList().toArray(Project[]::new);
 		}
 
-		return preferences;
+		return asArray;
 	}
 
 	@Override
-	public synchronized List<Project> asListOfProjects()
+	public synchronized List<Project> asList()
 	{
-		if (preferencesAsProjectList == null) {
-			preferencesAsProjectList = fetchFromDb().stream()
-				.map(id -> courseEdition.allProjects().findWithId(id).orElseThrow())
-				.collect(Collectors.toUnmodifiableList());
+		if (asList == null)
+		{
+			Function<Integer, Project> findProjectWithBepSysId = bepSysId -> courseEdition.allProjects().asCollection().stream()
+					.filter(project -> ((Project.BepSysProject) project).bepsysId == bepSysId)
+					.findAny().orElseThrow();
+			
+			asList = fetchFromDb().stream()
+					.map(findProjectWithBepSysId)
+					.toList();
 		}
 
-		return preferencesAsProjectList;
+		return asList;
 	}
 
 	@Override

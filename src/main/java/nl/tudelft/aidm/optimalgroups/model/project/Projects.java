@@ -10,8 +10,6 @@ public interface Projects
 	int count();
 	int countAllSlots();
 
-	List<Project.ProjectSlot> slotsForProject(int projectId);
-
 	void forEach(Consumer<Project> fn);
 	Projects without(Project project);
 

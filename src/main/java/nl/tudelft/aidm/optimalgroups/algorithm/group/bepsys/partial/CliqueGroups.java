@@ -11,10 +11,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
 
 public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 {
@@ -59,12 +55,14 @@ public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 				continue;
 			}
 
+			// Todo: move out to another layer? - this method should just identify cliques
 			if (student.groupPreferenceLength() > groupSizeConstraint.maxSize()) {
 				// Don't allow cliques larger than max group size
 				continue;
 			}
 
-			if (student.groupProposalIsMutual()) {
+			// TODO: What if not completely mutual, but has a subclique? So some members have included an additional student??
+			if (student.groupPreference.isMutual()) {
 				var peers = student.groupPreference.asListOfAgents();
 				var proposedGroup = Agents.from(student).with(peers);
 

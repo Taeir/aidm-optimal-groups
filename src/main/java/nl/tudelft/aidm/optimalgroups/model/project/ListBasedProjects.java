@@ -29,16 +29,6 @@ public abstract class ListBasedProjects implements Projects
 		return new FilteredProjects(this.projectList(), toExclude);
 	}
 
-	@Override
-	public List<Project.ProjectSlot> slotsForProject(int projectId) {
-		String projectName = "proj_" + String.valueOf(projectId);
-		Project project = this.projectList().stream()
-			.filter(p -> p.name().equals(projectName))
-			.findAny().get();
-
-		return project.slots();
-	}
-
 	private int numTotalSlots = -1;
 
 	@Override

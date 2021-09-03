@@ -43,7 +43,7 @@ public class VariantvakkenSinglePmf implements DatasetContext
 				new Agent.AgentInDatacontext(
 					id,
 					prefGen.generateNew(() -> allAgents().findByAgentId(id).get()),
-					GroupPreference.none(),
+					new GroupPreference.None(() -> allAgents().findByAgentId(id).get()),
 					this)
 			).collect(Collectors.toList())
 		);

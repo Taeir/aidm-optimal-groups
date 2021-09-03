@@ -65,8 +65,13 @@ public class GroupPreferenceInDb implements GroupPreference
 	{
 		return asArray().length;
 	}
-
-
+	
+	@Override
+	public Agent owner()
+	{
+		return courseEdition.allAgents().findByAgentId(bepSysUserId).get();
+	}
+	
 	@Override
 	public String toString()
 	{
