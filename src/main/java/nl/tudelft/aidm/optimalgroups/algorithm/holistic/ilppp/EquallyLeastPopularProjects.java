@@ -95,13 +95,7 @@ public class EquallyLeastPopularProjects implements Projects
 	{
 		return  equallyLeastPopularProjects().countAllSlots();
 	}
-
-	@Override
-	public List<Project.ProjectSlot> slotsForProject(int projectId)
-	{
-		return equallyLeastPopularProjects().slotsForProject(projectId);
-	}
-
+	
 	@Override
 	public void forEach(Consumer<Project> fn)
 	{
