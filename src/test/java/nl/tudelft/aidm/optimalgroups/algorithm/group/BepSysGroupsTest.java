@@ -3,6 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.group;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.group.PeerPreferenceSatisfaction;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ class BepSysGroupsTest
 	@Test
 	void reworkWorksSameAsOriginalImproved()
 	{
-		var courseEdition = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		var courseEdition = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 
 		var og = new BepSysImprovedGroups(courseEdition.allAgents(), courseEdition.groupSizeConstraint(), true);
 		var reworked = new BepSysReworked(courseEdition.allAgents(), courseEdition.groupSizeConstraint());

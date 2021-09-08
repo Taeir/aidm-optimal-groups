@@ -6,8 +6,7 @@ import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import plouchtch.assertion.Assert;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
@@ -21,20 +20,13 @@ public class UndominatedByProfileConstraint implements Constraint
 {
 	private final Profile profile;
 	private final Agents undominatedAgents;
-	private final SequentualProjects allProjects;
-	
-	public UndominatedByProfileConstraint(Profile profile, Agents undominatedAgents, SequentualProjects allProjects)
+	public UndominatedByProfileConstraint(Profile profile, Agents undominatedAgents)
 	{
 		Assert.that(profile.size() == undominatedAgents.count())
 			.orThrowMessage("Given profile is not fit to use with given set of agents (different sizes)");
-
-		// Ugly because my SequentualAgents type is messy
-		Assert.that(undominatedAgents.asCollection().stream().allMatch(agent -> agent instanceof SequentualAgents.SequentualAgent))
-			.orThrowMessage("UndominatedAgents are of wrong type");
 		
 		this.profile = profile;
 		this.undominatedAgents = undominatedAgents;
-		this.allProjects = allProjects;
 	}
 	
 	

@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.model.dataset.sequentual;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.model;
 
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;

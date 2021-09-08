@@ -1,7 +1,7 @@
-package nl.tudelft.aidm.optimalgroups.model.pref;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.model;
 
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 
 import java.util.*;
 

@@ -12,11 +12,11 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
+// NOTE: unused!
 public class UndominatedStudentsProfile
 {
 	private final DatasetContext datasetContext;
@@ -38,25 +38,23 @@ public class UndominatedStudentsProfile
 	
 	public AgentToProjectMatching doItDirty() throws GRBException
 	{
-		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
-		
 		var env = new GRBEnv();
 		env.start();
 		
 		var model = new GRBModel(env);
 		
-		AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
+		AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, datasetContext);
 		
 		objectiveFunction.apply(model, assignmentConstraints);
 		
 		model.optimize();
 		
 		// extract x's and map to matching
-		var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
+		var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, datasetContext);
 		
 		env.dispose();
 		
-		return matching.original();
+		return matching;
 	}
 	
 	public static void main(String[] args) throws Exception

@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints
 import gurobi.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.GurobiHelperFns;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
@@ -92,7 +92,7 @@ public class StabilityConstraint implements Constraint
 
 	public record D(Agent student, Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
-		public static D[][][] createInModelWithConstraints(GRBModel model, SequentualDatasetContext datasetContext, AssignmentConstraints.XVars xVars, Z[][][] z)
+		public static D[][][] createInModelWithConstraints(GRBModel model, DatasetContext datasetContext, AssignmentConstraints.XVars xVars, Z[][][] z)
 		{
 			var ub = datasetContext.allProjects().count() - 1;
 
@@ -178,7 +178,7 @@ public class StabilityConstraint implements Constraint
 
 	public record Z(Agent student, Project.ProjectSlot slot, String name, GRBVar asVar)
 	{
-		public static Z createInModelWithConstraint(GRBModel model, AssignmentConstraints assignmentCnstr, SequentualDatasetContext datasetContext, Agent student, Project.ProjectSlot slot, B b_sl)
+		public static Z createInModelWithConstraint(GRBModel model, AssignmentConstraints assignmentCnstr, DatasetContext datasetContext, Agent student, Project.ProjectSlot slot, B b_sl)
 		{
 			int u = datasetContext.groupSizeConstraint().maxSize();
 			int l = datasetContext.groupSizeConstraint().minSize();

@@ -18,7 +18,6 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.ManualDatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFixes;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
@@ -37,14 +36,13 @@ public class ResearchProject2021Q1
 {
 	public static void main(String[] args)
 	{
-		var ogDatasetContext = ResearchProject2021Q4Dataset.getInstance();
-		var seqDatasetContext = SequentualDatasetContext.from(ogDatasetContext);
+		var datasetContext = ResearchProject2021Q4Dataset.getInstance();
 		
-		var allAgents = seqDatasetContext.allAgents();
+		var allAgents = datasetContext.allAgents();
 //
 //			var algo = new Chiarandini_Utilitarian_MinSum_IdentityScheme();
 		
-		var maxsizeCliques = new CliqueGroups(allAgents).ofSize(seqDatasetContext.groupSizeConstraint().maxSize());
+		var maxsizeCliques = new CliqueGroups(allAgents).ofSize(datasetContext.groupSizeConstraint().maxSize());
 		
 		// Indifferent agents don't care, don't include them in the profile as they consider any project to be equal.
 		var groupingAgents = maxsizeCliques.asAgents();
@@ -54,7 +52,6 @@ public class ResearchProject2021Q1
 		// dgb info
 		var values = maxsizeCliques.asCollection().stream().map(group -> {
 			return group.members().asCollection().stream()
-				       .map(agent -> seqDatasetContext.mapToOriginal(agent))
 				       .map(agent -> agent.sequenceNumber.toString())
 				       .collect(Collectors.joining(", ", "[", "]"));
 		}).collect(Collectors.joining("\n"));
@@ -68,20 +65,20 @@ public class ResearchProject2021Q1
 			/*         */
 			/* ROUND 1 */
 			/*         */
-			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
+			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, datasetContext);
 			
 			var objFn = new OWAObjective();
 			objFn.apply(model, assignmentConstraints);
 			
 			// process match-fixes
-			var matchFixesSeq = ogDatasetContext.matchesToFix().forSequentual(seqDatasetContext);
+			var matchFixesSeq = datasetContext.matchesToFix();
 			applyManualMatchFixes(matchFixesSeq, model, assignmentConstraints);
 			
 			model.optimize();
 			
 			// results round 1
-			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
-			var profileIndividual = profileOfIndividualAgentsInMatching(seqDatasetContext, individualAgents, matching.sequential());
+			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, datasetContext);
+			var profileIndividual = profileOfIndividualAgentsInMatching(datasetContext, individualAgents, matching);
 			
 			/*         */
 			/* ROUND 2 */
@@ -89,7 +86,7 @@ public class ResearchProject2021Q1
 			var grpConstr = new HardGroupingConstraint(maxsizeCliques);
 			grpConstr.apply(model, assignmentConstraints);
 			
-			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents, seqDatasetContext.allProjects());
+			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents);
 			domConstr.apply(model, assignmentConstraints);
 			
 			model.update();
@@ -98,17 +95,17 @@ public class ResearchProject2021Q1
 //			model.write();
 			
 			// results round 2
-			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
+			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, datasetContext);
 			
 			// EXPORT RESULTS
-			Assert.that(ogDatasetContext.numMaxSlots() == 1).orThrowMessage("TODO: get mapping slot to agent (projects in dataset have more than 1 slot)");
-			var csv = new ProjectStudentMatchingCSV(FormedGroupToProjectMatching.byTriviallyPartitioning(matching2.original()));
+			Assert.that(datasetContext.numMaxSlots() == 1).orThrowMessage("TODO: get mapping slot to agent (projects in dataset have more than 1 slot)");
+			var csv = new ProjectStudentMatchingCSV(FormedGroupToProjectMatching.byTriviallyPartitioning(matching2));
 			csv.writeToFile("research_project/research_proj " + objFn.name() + " 23_03_21 - w optional");
 			
 			
 			
-			var report = new TwoRoundExperimentReport(matching.sequential(), matching2.sequential(),
-				seqDatasetContext.allAgents(), individualAgents, groupingAgents, indifferentAgents);
+			var report = new TwoRoundExperimentReport(matching, matching2,
+				datasetContext.allAgents(), individualAgents, groupingAgents, indifferentAgents);
 			
 			report.asHtmlReport()
 				.writeHtmlSourceToFile(new File("reports/research_project/research_proj " + objFn.name() + " 23_03_21 - w optional" + ".html"));
@@ -156,7 +153,7 @@ public class ResearchProject2021Q1
 	}
 	
 	
-	private static Profile.listBased profileOfIndividualAgentsInMatching(SequentualDatasetContext seqDatasetContext, Agents individualAgents, AgentToProjectMatching matching)
+	private static Profile.listBased profileOfIndividualAgentsInMatching(DatasetContext datasetContext, Agents individualAgents, AgentToProjectMatching matching)
 	{
 		return matching.asList().stream()
 			       // Only agents that are 'individual'

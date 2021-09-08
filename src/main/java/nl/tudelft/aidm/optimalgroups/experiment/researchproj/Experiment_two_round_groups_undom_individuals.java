@@ -14,7 +14,6 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.export.ProjectStudentMatchingCSV;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
@@ -32,15 +31,14 @@ public class Experiment_two_round_groups_undom_individuals
 		var datasetContext = datasetResearchProj21();
 //		var datasetContext = datasetCE10();
 		
-		var seqDatasetContext = SequentualDatasetContext.from(datasetContext);
-		var allAgents = seqDatasetContext.allAgents();
+		var allAgents = datasetContext.allAgents();
 //
 //			var algo = new Chiarandini_Utilitarian_MinSum_IdentityScheme();
 		
 		var cliques = new CliqueGroups(allAgents);
 		
 		var maxsizeCliques = cliques.asCollection().stream()
-			                     .filter(tentativeGroup -> tentativeGroup.members().count() == seqDatasetContext.groupSizeConstraint().maxSize())
+			                     .filter(tentativeGroup -> tentativeGroup.members().count() == datasetContext.groupSizeConstraint().maxSize())
 			                     .collect(collectingAndThen(toList(), Groups.ListBackedImpl<Group.TentativeGroup>::new));
 		
 		// Indifferent agents don't care, don't include them in the profile as they consider any project to be equal.
@@ -54,35 +52,35 @@ public class Experiment_two_round_groups_undom_individuals
 			env.start();
 			var model = new GRBModel(env);
 			
-			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
+			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, datasetContext);
 			
 			var objFn = new OWAObjective();
 			objFn.apply(model, assignmentConstraints);
 			
 			model.optimize();
 			
-			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
-			var profileIndividual = profileOfIndividualAgentsInMatching(seqDatasetContext, individualAgents, matching.sequential());
+			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, datasetContext);
+			var profileIndividual = profileOfIndividualAgentsInMatching(individualAgents, matching);
 			
 			var grpConstr = new HardGroupingConstraint(maxsizeCliques);
 			grpConstr.apply(model, assignmentConstraints);
 			
-			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents, seqDatasetContext.allProjects());
+			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents);
 			domConstr.apply(model, assignmentConstraints);
 			
 			model.update();
 			model.optimize();
 			
-			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDatasetContext);
+			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, datasetContext);
 			
 			Assert.that(datasetContext.numMaxSlots() == 1).orThrowMessage("TODO: get mapping slot to agent (projects in dataset have more than 1 slot)");
-			var csv = new ProjectStudentMatchingCSV(FormedGroupToProjectMatching.byTriviallyPartitioning(matching2.original()));
+			var csv = new ProjectStudentMatchingCSV(FormedGroupToProjectMatching.byTriviallyPartitioning(matching2));
 			csv.writeToFile("research_project " + objFn.name());
 			
 			
 			
-			var report = new TwoRoundExperimentReport(matching.sequential(), matching2.sequential(),
-				seqDatasetContext.allAgents(), individualAgents, groupingAgents, indifferentAgents);
+			var report = new TwoRoundExperimentReport(matching, matching2,
+				datasetContext.allAgents(), individualAgents, groupingAgents, indifferentAgents);
 			
 //			report.asHtmlReport()
 //				.writeHtmlSourceToFile(new File("reports/research_project/research_proj " + objFn.name() + ".html"));
@@ -94,7 +92,7 @@ public class Experiment_two_round_groups_undom_individuals
 	}
 	
 	
-	private static Profile.listBased profileOfIndividualAgentsInMatching(SequentualDatasetContext seqDatasetContext, Agents individualAgents, AgentToProjectMatching matching)
+	private static Profile.listBased profileOfIndividualAgentsInMatching(Agents individualAgents, AgentToProjectMatching matching)
 	{
 		return matching.asList().stream()
 			       // Only agents that are 'individual'

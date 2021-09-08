@@ -1,11 +1,11 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.model.SequentualAgents;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.model.SequentualDatasetContext;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.model.SequentualProjects;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.Arrays;

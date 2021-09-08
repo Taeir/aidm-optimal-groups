@@ -1,6 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.experiment.grpcnstr;
 
-import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
@@ -8,7 +7,6 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.FixMatchingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.ConditionalGroupConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.HardGroupingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
@@ -18,13 +16,10 @@ import nl.tudelft.aidm.optimalgroups.experiment.dataset.ResearchProject2021Q4Dat
 import nl.tudelft.aidm.optimalgroups.experiment.researchproj.TwoRoundExperimentReport;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFixes;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import plouchtch.assertion.Assert;
-import plouchtch.functional.actions.Rethrow;
-import plouchtch.util.Try;
 
 import java.io.File;
 import java.time.Instant;
@@ -40,12 +35,11 @@ public class RP21_testground
 	{
 		var dataset = ResearchProject2021Q4Dataset.getInstance();
 		
-		var seqDataset = SequentualDatasetContext.from(dataset);
-		var allAgents = seqDataset.allAgents();
+		var allAgents = dataset.allAgents();
 //
 //			var algo = new Chiarandini_Utilitarian_MinSum_IdentityScheme();
 		
-		var maxsizeCliques = new CliqueGroups(allAgents).ofSize(seqDataset.groupSizeConstraint().maxSize());
+		var maxsizeCliques = new CliqueGroups(allAgents).ofSize(dataset.groupSizeConstraint().maxSize());
 		
 		// Indifferent agents don't care, don't include them in the profile as they consider any project to be equal.
 		var indifferentAgents = allAgents.asCollection().stream().filter(agent -> agent.projectPreference().isCompletelyIndifferent()).collect(collectingAndThen(toList(), Agents::from));
@@ -54,7 +48,6 @@ public class RP21_testground
 		
 		var values = maxsizeCliques.asCollection().stream().map(group -> {
 			return group.members().asCollection().stream()
-				       .map(agent -> seqDataset.mapToOriginal(agent))
 				       .map(agent -> agent.sequenceNumber.toString())
 				       .collect(Collectors.joining(", ", "[", "]"));
 		}).collect(Collectors.joining("\n"));
@@ -68,20 +61,20 @@ public class RP21_testground
 			/*         */
 			/* ROUND 1 */
 			/*         */
-			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDataset);
+			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, dataset);
 			
 			var objFn = new OWAObjective();
 			objFn.apply(model, assignmentConstraints);
 			
 			// process match-fixes
-			var matchFixesSeq = dataset.matchesToFix().forSequentual(seqDataset);
+			var matchFixesSeq = dataset.matchesToFix();
 			applyManualMatchFixes(matchFixesSeq, model, assignmentConstraints);
 			
 			model.optimize();
 			
 			// results round 1
-			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDataset);
-			var profileIndividual = profileOfIndividualAgentsInMatching(seqDataset, individualAgents, matching.sequential());
+			var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, dataset);
+			var profileIndividual = profileOfIndividualAgentsInMatching(individualAgents, matching);
 			
 			/*         */
 			/* ROUND 2 */
@@ -92,14 +85,14 @@ public class RP21_testground
 //			var grpConstr = new ConditionalGroupConstraint(maxsizeCliques, 3);
 			grpConstr.apply(model, assignmentConstraints);
 			
-			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents, seqDataset.allProjects());
+			var domConstr = new UndominatedByProfileConstraint(profileIndividual, individualAgents);
 			domConstr.apply(model, assignmentConstraints);
 			
 			model.update();
 			model.optimize();
 			
 			// results round 2
-			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, seqDataset);
+			var matching2 = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, dataset);
 			
 //			var groupingViolation = grpConstr.violateGroupingDecVars.stream()
 //				          .map(ConditionalGroupConstraint.GrpLinkedDecisionVar::asVar)
@@ -108,13 +101,13 @@ public class RP21_testground
 			
 			// assert all groups in final output
 			var numCliquesTogether = new AtomicInteger(0);
-			var matchingByProject = matching2.sequential().groupedByProject();
+			var matchingByProject = matching2.groupedByProject();
 			maxsizeCliques.asCollection().forEach(clique ->{
 				var cliqueIsTogether = matchingByProject.values().stream().anyMatch(agents -> agents.containsAll(clique.members().asCollection()));
 				if (cliqueIsTogether) numCliquesTogether.incrementAndGet();
 			});
 			
-			var matchingByRank = matching2.sequential().asList().stream()
+			var matchingByRank = matching2.asList().stream()
 				.collect(Collectors.groupingBy(o -> {
 					var agent = o.from();
 					var project = o.to();
@@ -132,8 +125,8 @@ public class RP21_testground
 //			csv.writeToFile("research_project/research_proj " + objFn.name() + " 23_03_21 - w optional");
 			
 			
-			var report = new TwoRoundExperimentReport(matching.sequential(), matching2.sequential(),
-				seqDataset.allAgents(), individualAgents, groupingAgents, indifferentAgents);
+			var report = new TwoRoundExperimentReport(matching, matching2,
+				dataset.allAgents(), individualAgents, groupingAgents, indifferentAgents);
 			
 			var epoch = Instant.now().getEpochSecond();
 			
@@ -163,7 +156,7 @@ public class RP21_testground
 		}
 	}
 	
-	private static Profile.listBased profileOfIndividualAgentsInMatching(SequentualDatasetContext seqDatasetContext, Agents individualAgents, AgentToProjectMatching matching)
+	private static Profile.listBased profileOfIndividualAgentsInMatching(Agents individualAgents, AgentToProjectMatching matching)
 	{
 		return matching.asList().stream()
 			       // Only agents that are 'individual'

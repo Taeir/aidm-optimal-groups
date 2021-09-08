@@ -1,11 +1,9 @@
-package nl.tudelft.aidm.optimalgroups.model.dataset.sequentual;
+package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.model;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.SeqentialGroupPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.SequentualProjectsPreference;
 import plouchtch.assertion.Assert;
 
 import java.util.*;

@@ -3,7 +3,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints
 import gurobi.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.*;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
@@ -12,19 +12,19 @@ import java.util.Optional;
 
 public class AssignmentConstraints
 {
-	public final SequentualDatasetContext datasetContext;
+	public final DatasetContext datasetContext;
 	
 	public final XVars xVars;
 	public final YVars yVars;
 
-	private AssignmentConstraints(SequentualDatasetContext datasetContext, XVars x, YVars y)
+	private AssignmentConstraints(DatasetContext datasetContext, XVars x, YVars y)
 	{
 		this.datasetContext = datasetContext;
 		this.xVars = x;
 		this.yVars = y;
 	}
 
-	public static AssignmentConstraints createInModel(GRBModel model, SequentualDatasetContext datasetContext) throws GRBException
+	public static AssignmentConstraints createInModel(GRBModel model, DatasetContext datasetContext) throws GRBException
 	{
 		var agents = datasetContext.allAgents();
 		var projects = datasetContext.allProjects();
@@ -127,15 +127,15 @@ public class AssignmentConstraints
 	public static class XVars
 	{
 		private final X[][][] x;
-		private final SequentualDatasetContext datasetContext;
+		private final DatasetContext datasetContext;
 	
-		public static XVars createInModel(GRBModel model, SequentualDatasetContext datasetContext)
+		public static XVars createInModel(GRBModel model, DatasetContext datasetContext)
 		{
-			var numAgents = datasetContext.allAgents().count();
-			var numProjects = datasetContext.allProjects().count();
+			var maxAgentSeqNum = datasetContext.allAgents().asCollection().stream().mapToInt(value -> value.sequenceNumber).max().orElseThrow();
+			var maxProjectSeqNum = datasetContext.allProjects().asCollection().stream().mapToInt(Project::sequenceNum).max().orElseThrow();
 			var maxSlots = datasetContext.numMaxSlots();
 	
-			var x = new X[numAgents+1][numProjects+1][maxSlots];
+			var x = new X[maxAgentSeqNum+1][maxProjectSeqNum+1][maxSlots];
 	
 			// Create the X variables (student assigned to slot)
 			datasetContext.allAgents().forEach(student ->
@@ -170,7 +170,7 @@ public class AssignmentConstraints
 			return new XVars(x, datasetContext);
 		}
 	
-		private XVars(X[][][] x, SequentualDatasetContext datasetContext)
+		private XVars(X[][][] x, DatasetContext datasetContext)
 		{
 			this.x = x;
 			this.datasetContext = datasetContext;
@@ -198,9 +198,9 @@ public class AssignmentConstraints
 	public static class YVars
 	{
 		private final Y[][] y;
-		private final SequentualDatasetContext datasetContext;
+		private final DatasetContext datasetContext;
 	
-		public static YVars createInModel(GRBModel model, SequentualDatasetContext datasetContext)
+		public static YVars createInModel(GRBModel model, DatasetContext datasetContext)
 		{
 			var numProjects = datasetContext.allProjects().count();
 			var maxSlots = datasetContext.numMaxSlots();
@@ -220,7 +220,7 @@ public class AssignmentConstraints
 			return new YVars(y, datasetContext);
 		}
 	
-		public YVars(Y[][] y, SequentualDatasetContext datasetContext)
+		public YVars(Y[][] y, DatasetContext datasetContext)
 		{
 			this.y = y;
 			this.datasetContext = datasetContext;

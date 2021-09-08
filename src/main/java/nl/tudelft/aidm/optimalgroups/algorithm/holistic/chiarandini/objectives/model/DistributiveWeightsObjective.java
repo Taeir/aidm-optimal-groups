@@ -5,10 +5,6 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 

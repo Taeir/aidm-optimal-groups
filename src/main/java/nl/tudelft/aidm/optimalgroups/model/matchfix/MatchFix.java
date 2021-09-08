@@ -1,17 +1,11 @@
 package nl.tudelft.aidm.optimalgroups.model.matchfix;
 
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import plouchtch.assertion.Assert;
 
 import java.util.Arrays;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public record MatchFix(Group group, Project project)
 {
