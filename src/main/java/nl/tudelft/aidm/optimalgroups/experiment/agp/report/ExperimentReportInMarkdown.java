@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 public class ExperimentReportInMarkdown
 {
+	private StringBuffer doc;
+	
 	private final List<Experiment> experiments;
 
 	public ExperimentReportInMarkdown(Experiment... experiments)
@@ -37,26 +39,25 @@ public class ExperimentReportInMarkdown
 
 	private String experimentToMarkdown()
 	{
-		var doc = new StringBuilder();
+		doc = new StringBuffer();
 
-		doc.append(Markdown.heading("Simulation results", 1));
-		doc.append("\n");
+		heading("Simulation results", 1);
 
 		for (Experiment experiment : experiments)
 		{
-			doc.append( Markdown.heading("Experiment - " + experiment.datasetContext.identifier(), 2).toString() )
-				.append("\n");
-			doc.append( datasetInfo(experiment) );
-			doc.append( summary(experiment.result()) );
-			doc.append( algoResultsInMarkdown(experiment.result().results) );
-			doc.append( Markdown.rule() )
-				.append("\n");
+			heading("Experiment - " + experiment.datasetContext.identifier(), 2);
+			
+				datasetInfo(experiment);
+				summary(experiment.result()) ;
+				
+				doc.append( algoResultsInMarkdown(experiment.result().results) );
+				horizontalLine();
 		}
 
 		return doc.toString();
 	}
 
-	private StringBuffer datasetInfo(Experiment experiment)
+	private void datasetInfo(Experiment experiment)
 	{
 		var dataContext = experiment.datasetContext;
 		var numAgents = dataContext.allAgents().count();
@@ -67,25 +68,22 @@ public class ExperimentReportInMarkdown
 		boolean allProjectsHaveSameAmountOfSlots = dataContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).distinct().count() == 1;
 		Assert.that(allProjectsHaveSameAmountOfSlots).orThrowMessage("Not implemented: handling projects with heterogeneous amount of slots");
 		var numSlots = dataContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).findAny().getAsInt();
+		
 
-		var doc = new StringBuffer();
-		doc.append(Markdown.heading("Dataset info", 3).toString()).append("\n");
+		heading("Dataset info", 3);
 
-		doc.append(Markdown.unorderedList(
+		unorderedList(
 			"\\#agents: " + numAgents,
 			"\\#projects: " + numProjects,
 			"\\#slots per project: " + numSlots,
 			"group sizes, min: " + groupSize.minSize() + ", max: " + groupSize.maxSize()
-		)).append("\n");
+		);
 
 		JFreeChart distribProjectsInPreferencesChart = experiment.projectRankingDistribution.asChart();
 		doc.append(Markdown.image(embed(distribProjectsInPreferencesChart))).append("\n\n");
 
 		var binnedProjectPreferences = BinnedProjectPreferences.exactTopRanksBins(dataContext, 3, 30);
 		doc.append(binnedProjectPreferences.asMarkdownTable()).append("\n");
-
-
-		return doc;
 	}
 
 	private StringBuffer algoResultsInMarkdown(List<ExperimentAlgorithmSubresult> algoResults)
@@ -103,48 +101,72 @@ public class ExperimentReportInMarkdown
 	{
 		var doc = new StringBuffer();
 
-		doc.append(Markdown.heading("Algorithm: " + algoResult.algo().name(), 3).toString()).append("\n");
+		heading("Algorithm: " + algoResult.algo().name(), 3);
+
+			heading("Student perspective", 4);
+	
+				var numStudentsMatched = NumberAgentsMatched.fromGroupMatching(algoResult.producedMatching()).asInt();
+				int numStudentsInDataset = algoResult.producedMatching().datasetContext().allAgents().count();
+				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
+		
+				var rankDistribution = algoResult.studentPerspectiveMetrics.rankDistribution().asChart(algoResult.algo().name());
+				image(rankDistribution);
+		
+				var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
+				var bestWorstIndividualRankInGroupDistribution = new LeastWorstIndividualRankInGroupDistribution(groups).asChart();
+				image(bestWorstIndividualRankInGroupDistribution);
+		
+				unorderedList(
+					"Gini: " + algoResult.studentPerspectiveMetrics.giniCoefficient().asDouble(),
+					"AUPCR: " + algoResult.studentPerspectiveMetrics.aupcr().asDouble(),
+					"Worst rank: " + algoResult.studentPerspectiveMetrics.worstRank().asInt()
+				);
 
 
-		doc.append(Markdown.heading("Student perspective", 4)).append("\n");
-
-		var numStudentsMatched = NumberAgentsMatched.fromGroupMatching(algoResult.producedMatching()).asInt();
-		int numStudentsInDataset = algoResult.producedMatching().datasetContext().allAgents().count();
-		doc.append(Markdown.text(String.format("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset)));
-
-		var rankDistribution = algoResult.studentPerspectiveMetrics.rankDistribution().asChart(algoResult.algo().name());
-		doc.append(Markdown.image(embed(rankDistribution))).append("\n\n");
-
-		var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
-		var bestWorstIndividualRankInGroupDistribution = new LeastWorstIndividualRankInGroupDistribution(groups).asChart();
-		doc.append(Markdown.image(embed(bestWorstIndividualRankInGroupDistribution))).append("\n\n");
-
-		doc.append(Markdown.unorderedList(
-			"Gini: " + algoResult.studentPerspectiveMetrics.giniCoefficient().asDouble(),
-			"AUPCR: " + algoResult.studentPerspectiveMetrics.aupcr().asDouble(),
-			"Worst rank: " + algoResult.studentPerspectiveMetrics.worstRank().asInt()
-		)).append("\n");
-
-
-		doc.append(Markdown.heading("Group perspective", 4)).append("\n");
+			heading("Group perspective", 4);
 //			doc.append(Markdown.image(embed(algoResult.projectProfileCurveGroup.asChart())) + "\n");
-		doc.append(Markdown.unorderedList(
-			"Gini: " + algoResult.groupPerspectiveMetrics.giniCoefficient().asDouble(),
-			"AUPCR: " + algoResult.groupPerspectiveMetrics.aupcr().asDouble()
-		)).append("\n");
+		
+				unorderedList(
+					"Gini: " + algoResult.groupPerspectiveMetrics.giniCoefficient().asDouble(),
+					"AUPCR: " + algoResult.groupPerspectiveMetrics.aupcr().asDouble()
+				);
 
 		return doc;
 	}
-
-	private String summary(ExperimentResult experimentResult)
+	
+	private void heading(String value, int level)
 	{
-		String doc = Markdown.heading("Summary of results", 3) + "\n";
+		doc.append(Markdown.heading(value, level)).append("\n");
+	}
+	
+	private void unorderedList(String... items)
+	{
+		doc.append(Markdown.unorderedList((Object[]) items)).append("\n");
+	}
+	
+	private void text(String text)
+	{
+		doc.append(Markdown.text(text));
+	}
+	
+	private void text(String format, Object... args)
+	{
+		text(String.format(format, args));
+	}
 
-		 doc += Markdown.heading("Algorithm popularity", 4) + "\n" +
-			 Markdown.italic("Algorithm name followed by the number of agents, in braces, that prefer it over the other") + "\n" +
-			Markdown.unorderedList((Object[]) experimentResult.popularityMatrix.asSet().toArray(Object[]::new)) + "\n";
+	private void summary(ExperimentResult experimentResult)
+	{
+		heading("Summary of results", 3);
 
-		return doc;
+			heading("Algorithm popularity", 4);
+				doc.append(Markdown.italic("Algorithm name followed by the number of agents, in braces, that prefer it over the other") + "\n");
+				
+				unorderedList((String[]) experimentResult.popularityMatrix.asSet().toArray(Object[]::new));
+	}
+	
+	private void image(JFreeChart chart)
+	{
+		doc.append(Markdown.image(embed(chart))).append("\n\n");
 	}
 
 	private String embed(JFreeChart chart)
@@ -158,5 +180,11 @@ public class ExperimentReportInMarkdown
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	private void horizontalLine()
+	{
+		doc.append(Markdown.rule())
+			.append("\n");
 	}
 }
