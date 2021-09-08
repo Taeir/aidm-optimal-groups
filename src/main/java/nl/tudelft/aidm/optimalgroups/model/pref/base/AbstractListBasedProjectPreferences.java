@@ -39,20 +39,7 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 	public RankInPref rankOf(Project project)
 	{
 		// Cache results - pessimism makes heavy use of this fn
-		return rankOfProject.computeIfAbsent(project, p ->
-		{
-			if (isCompletelyIndifferent()) {
-				return new RankOfCompletelyIndifferentAgent(owner(), project);
-			}
-
-			var rankInArray = new RankInArray().determineRank(p.sequenceNum(), asArray());
-
-			// Alternative is missing, hence it is unacceptable to agent
-			if (rankInArray.isEmpty())
-				return new UnacceptableAlternativeRank(owner(), project);
-
-			return new PresentRankInPref(rankInArray.getAsInt());
-		});
+		return rankOfProject.computeIfAbsent(project, ProjectPreference.super::rankOf);
 	}
 
 	@Override
