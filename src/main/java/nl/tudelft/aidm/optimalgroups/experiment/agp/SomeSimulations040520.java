@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.experiment.agp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributedProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PreferenceGenerator;
@@ -30,7 +30,7 @@ public class SomeSimulations040520
 		var groupSize = GroupSizeConstraint.manual(4, 5);
 
 		/* CE 10 */
-		DatasetContext dataContext = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		DatasetContext dataContext = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 
 		int numSlots = 5;
 		int numProjects = dataContext.allProjects().count();

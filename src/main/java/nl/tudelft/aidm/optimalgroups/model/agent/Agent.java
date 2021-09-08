@@ -6,7 +6,6 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.RawProjectPreferencesIn
 import nl.tudelft.aidm.optimalgroups.model.HasProjectPrefs;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
-import nl.tudelft.aidm.optimalgroups.model.pref.complete.ProjectPreferenceAugmentedWithMissingTiedLast;
 
 import javax.sql.DataSource;
 import java.util.HashSet;
@@ -15,27 +14,32 @@ import java.util.function.Function;
 
 public abstract class Agent implements HasProjectPrefs
 {
-	public final Integer id;
+	public final DatasetContext context;
+	
+	/**
+	 * The sequence number of this agent, a sort of a local identifier
+	 * within the context of the dataset. So, in a dataset agents are numbered 1 till N
+	*/
+	public final Integer sequenceNumber;
+	
 	private final ProjectPreference projectPreference;
 	public final GroupPreference groupPreference;
-
-	public final DatasetContext context;
-
-	// TODO: extract to own type?
+	
+	// TODO: remove, transform agent with a new datasetcontext
 	private boolean usingCombinedPreference = false;
 	private CombinedPreference combinedPreference = null;
 
 	protected Agent(Agent agent)
 	{
-		this(agent.id, agent.projectPreference, agent.groupPreference, agent.context);
+		this(agent.sequenceNumber, agent.projectPreference, agent.groupPreference, agent.context);
 
 		usingCombinedPreference = agent.usingCombinedPreference;
 		combinedPreference = agent.combinedPreference;
 	}
 
-	protected Agent(Integer id, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
+	protected Agent(Integer sequenceNumber, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
 	{
-		this.id = id;
+		this.sequenceNumber = sequenceNumber;
 		this.projectPreference = projectPreference;
 		this.groupPreference = groupPreference;
 		this.context = context;
@@ -71,37 +75,46 @@ public abstract class Agent implements HasProjectPrefs
 		if ((obj instanceof Agent) == false) return false;
 
 		Agent that = (Agent) obj;
-		return this.context.equals(that.context) && this.id.equals(that.id);
+		return this.context.equals(that.context) && this.sequenceNumber.equals(that.sequenceNumber);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "agent_" + id;
+		return "agent_" + sequenceNumber;
 	}
-
-
 
 	/**
 	 * Represents an Agent whose data is retrieved from a data source
 	 */
 	public static class AgentInBepSysSchemaDb extends Agent
 	{
-		private Integer userId;
+		/**
+		 * This agent comes from a BepSys/PF database and has a user_id. For such datasets,
+		 * we need to communicate the matching back to the other application and for that
+		 * we need the original identifier.
+		 */
+		public final Integer bepSysUserId;
 
-		public AgentInBepSysSchemaDb(DataSource dataSource, Integer userId, CourseEdition courseEdition)
+		public AgentInBepSysSchemaDb(DataSource dataSource, Integer sequenceNumber, Integer bepSysUserId, CourseEdition courseEdition)
 		{
 			super(
-				userId,
-				new RawProjectPreferencesInDb(dataSource, userId, courseEdition),
-				new GroupPreferenceInDb(dataSource, userId, courseEdition),
+				sequenceNumber,
+				new RawProjectPreferencesInDb(dataSource, bepSysUserId, courseEdition),
+				new GroupPreferenceInDb(dataSource, bepSysUserId, courseEdition),
 				courseEdition
 			);
 
-			this.userId = userId;
+			this.bepSysUserId = bepSysUserId;
 		}
-
-//		private static DataSource datasourceOfCache;
+		
+		@Override
+		public String toString()
+		{
+			return "student_" + bepSysUserId;
+		}
+		
+		//		private static DataSource datasourceOfCache;
 //		private static final HashMap<String, AgentInBepSysSchemaDb> cache = new HashMap<>();
 //		public static Agent from(DataSource dataSource, Integer userId, Integer courseEditionId)
 //		{
@@ -120,9 +133,9 @@ public abstract class Agent implements HasProjectPrefs
 
 	public static class AgentInDatacontext extends Agent
 	{
-		public AgentInDatacontext(Integer id, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
+		public AgentInDatacontext(Integer sequenceNumber, ProjectPreference projectPreference, GroupPreference groupPreference, DatasetContext context)
 		{
-			super(id, projectPreference, groupPreference, context);
+			super(sequenceNumber, projectPreference, groupPreference, context);
 		}
 	}
 }

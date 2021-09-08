@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.group.GroupFactorization;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.matching.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.project.AgentProjectMaxFlowMatching;
@@ -34,7 +35,7 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 	public static void main(String[] args)
 	{
 		var dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
-		var matching = new ILPPPDeterminedMatching(CourseEdition.fromBepSysDatabase(dataSource, 10));
+		var matching = new ILPPPDeterminedMatching(CourseEditionFromDb.fromBepSysDatabase(dataSource, 10));
 
 		List<Match<Group.FormedGroup, Project>> matches = matching.asList();
 
@@ -42,10 +43,10 @@ public class ILPPPDeterminedMatching implements GroupToProjectMatching<Group.For
 			AssignedRank.ProjectToGroup assignedProjectRank = new AssignedRank.ProjectToGroup(match);
 
 			int rankNumber = assignedProjectRank.asInt().orElse(-1);
-			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");
+			System.out.println("Group " + match.from().groupId() + " got project " + match.to().sequenceNum() + " (ranked as number " + rankNumber + ")");
 
 			assignedProjectRank.studentRanks().forEach(metric -> {
-				System.out.printf("\t\t-Student %s", metric.student().id);
+				System.out.printf("\t\t-%s", metric.student());
 				System.out.printf(", rank: %s", metric.asInt());
 
 				System.out.printf("\t\t group satisfaction: %s\n", new PeerPreferenceSatisfaction(match.from(), metric.student()).asFraction());

@@ -9,6 +9,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.Min
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -29,7 +30,7 @@ public class WorstAmongBestHumblePairingsSearchBFS extends DynamicSearch<AgentTo
 
 	public static void main(String[] args)
 	{
-		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		CourseEdition ce = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 		var thing = new WorstAmongBestHumblePairingsSearchBFS(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 

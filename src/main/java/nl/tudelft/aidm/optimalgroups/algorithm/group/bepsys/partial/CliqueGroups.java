@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,7 +63,7 @@ public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 			}
 
 			// TODO: What if not completely mutual, but has a subclique? So some members have included an additional student??
-			if (student.groupPreference.isMutual()) {
+			if (GroupPreference.isMutual(student)) {
 				var peers = student.groupPreference.asListOfAgents();
 				var proposedGroup = Agents.from(student).with(peers);
 

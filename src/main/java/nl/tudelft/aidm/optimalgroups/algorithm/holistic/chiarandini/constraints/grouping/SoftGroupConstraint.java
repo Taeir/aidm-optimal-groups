@@ -7,13 +7,10 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Gurobi
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import plouchtch.assertion.Assert;
-import plouchtch.functional.actions.Rethrow;
-import plouchtch.util.Try;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +33,7 @@ public class SoftGroupConstraint implements Constraint
 		groups.forEach(group -> {
 			var projPrefs = group.projectPreference();
 			var agents = new ArrayList<>(group.members().asCollection());
-			var leaderId = agents.get(0).id;
+			var leaderId = agents.get(0).sequenceNumber;
 			
 			// let this be 'g'
 			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leaderId, model);
@@ -94,6 +91,8 @@ public class SoftGroupConstraint implements Constraint
 						throw new RuntimeException(ex);
 					}
 				});
+				
+				return true; // continue iter
 			}));
 		});
 		

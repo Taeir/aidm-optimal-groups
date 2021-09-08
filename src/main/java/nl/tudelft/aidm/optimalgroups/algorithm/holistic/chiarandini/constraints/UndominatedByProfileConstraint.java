@@ -63,6 +63,7 @@ public class UndominatedByProfileConstraint implements Constraint
 						}
 					});
 					
+					return true; // continue iter
 				});
 			});
 			

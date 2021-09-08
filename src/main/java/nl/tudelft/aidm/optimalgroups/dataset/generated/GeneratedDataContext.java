@@ -24,18 +24,18 @@ public class GeneratedDataContext implements DatasetContext
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
 
-	public GeneratedDataContext(int numAgents, Projects projects, GroupSizeConstraint groupSizeConstraint, PreferenceGenerator generator)
+	public GeneratedDataContext(int numAgents, Projects projects, GroupSizeConstraint groupSizeConstraint, PreferenceGenerator projPrefGenerator)
 	{
 		this.groupSizeConstraint = groupSizeConstraint;
 
 		var hexEpochSeconds = Long.toHexString(Instant.now().getEpochSecond());
 		id = String.format("DC[RND_a%s_p%s_%s]_%s", numAgents, projects.count(), hexEpochSeconds, groupSizeConstraint);
 
-		Function<Integer, Supplier<Agent>> supplierForAgentWithId = (Integer id) -> (() -> this.allAgents().findByAgentId(id).get());
+		Function<Integer, Supplier<Agent>> findAgentBySeqNum = (Integer seqNum) -> (() -> this.allAgents().findBySequenceNumber(seqNum).get());
 
 		agents = new Agents(this,
 			IntStream.rangeClosed(1, numAgents)
-				.mapToObj(i -> new Agent.AgentInDatacontext(i, generator.generateNew(supplierForAgentWithId.apply(i)), GroupPreference.none(), this))
+				.mapToObj(seqNum -> new Agent.AgentInDatacontext(seqNum, projPrefGenerator.generateNew(findAgentBySeqNum.apply(seqNum)), GroupPreference.none(), this))
 				.collect(Collectors.toCollection(LinkedHashSet::new))
 		);
 

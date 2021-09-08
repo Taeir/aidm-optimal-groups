@@ -54,6 +54,7 @@ public record DistributiveWeightsObjective(AssignmentConstraints assignmentVars,
 						}
 					});
 					
+					return true; // continue iter
 				});
 			});
 			

@@ -32,9 +32,9 @@ public class LeastPopularProject implements Project
 	}
 
 	@Override
-	public int id()
+	public int sequenceNum()
 	{
-		return getOrDetermine().id();
+		return getOrDetermine().sequenceNum();
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public class AssignmentConstraints
 		agents.forEach(agent ->
 		{
 			var numSlotsAssignedToAgentExpr = new GRBLinExpr();
-			var s = agent.id;
+			var s = agent.sequenceNumber;
 
 			projects.forEach(project ->
 			{
@@ -58,7 +58,7 @@ public class AssignmentConstraints
 		// - project is either closed or adheres to it's occupation size requirements:
 		projects.forEach(project ->
 		{
-			var p = project.id();
+			var p = project.sequenceNum();
 
 			project.slots().forEach(slot ->
 			{
@@ -140,14 +140,14 @@ public class AssignmentConstraints
 			// Create the X variables (student assigned to slot)
 			datasetContext.allAgents().forEach(student ->
 			{
-				var s = student.id;
+				var s = student.sequenceNumber;
 	
 				// hacky: seqentualization does properly handles the varios pref profile types, so workaround
 				if (student.projectPreference().isCompletelyIndifferent())
 				{
 					datasetContext.allProjects().forEach(project ->
 					{
-						var p = project.id();
+						var p = project.sequenceNum();
 						project.slots().forEach(slot ->
 						{
 							int sl = slot.index();
@@ -157,12 +157,13 @@ public class AssignmentConstraints
 				}
 				else student.projectPreference().forEach((project, rank) ->
 				{
-					var p = project.id();
+					var p = project.sequenceNum();
 					project.slots().forEach(slot ->
 					{
 						int sl = slot.index();
 						x[s][p][sl] = X.createInModel(student, project, slot, model);
 					});
+					return true; // continue iteration
 				});
 			});
 	
@@ -178,7 +179,7 @@ public class AssignmentConstraints
 		public Optional<X> of(Agent agent, Project.ProjectSlot slot)
 		{
 			return Optional.ofNullable(
-				x[agent.id][slot.belongingToProject().id()][slot.index()]
+				x[agent.sequenceNumber][slot.belongingToProject().sequenceNum()][slot.index()]
 			);
 		}
 	}
@@ -209,7 +210,7 @@ public class AssignmentConstraints
 			// Create Y variables (project-slot is open)
 			datasetContext.allProjects().forEach(project ->
 			{
-				int p = project.id();
+				int p = project.sequenceNum();
 				project.slots().forEach(slot -> {
 					var sl = slot.index();
 					y[p][sl] = Y.createInModel(slot, model);
@@ -229,7 +230,7 @@ public class AssignmentConstraints
 			// Todo: check if within bounds
 	
 			return Optional.ofNullable(
-				y[slot.belongingToProject().id()][slot.index()]
+				y[slot.belongingToProject().sequenceNum()][slot.index()]
 			);
 		}
 	}

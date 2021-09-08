@@ -15,7 +15,7 @@ import java.util.*;
 public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProjectPreferences
 {
 	private final Collection<Project> tiedAtEnd;
-	private final Integer rankOfMissing;
+	private final RankInPref rankOfMissing;
 	private final List<Project> asCompleteList;
 
 	public ProjectPreferenceAugmentedWithMissingTiedLast(ProjectPreference projectPreference, Projects allProjects)
@@ -25,7 +25,7 @@ public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProj
 			projectPreference.asList()
 		);
 
-		this.rankOfMissing = projectPreference.asList().size() + 1;
+		this.rankOfMissing = new PresentRankInPref(projectPreference.asList().size() + 1);
 
 		var absent = allProjects.without(Projects.from(projectPreference.asList())).asCollection();
 		tiedAtEnd = absent;
@@ -55,18 +55,19 @@ public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProj
 	}
 
 	@Override
-	public Integer[] asArray()
+	public Project[] asArray()
 	{
-		return asCompleteList.stream().map(Project::id).toArray(Integer[]::new);
+		return asCompleteList.toArray(Project[]::new);
 	}
 
 	@Override
-	public Map<Integer, Integer> asMap()
+	public Map<Project, RankInPref> asMap()
 	{
 		var map = new HashMap<>(super.asMap());
-		tiedAtEnd.forEach(missingProject -> {
-			map.put(missingProject.id(), rankOfMissing);
-		});
+		
+		tiedAtEnd.forEach(missingProject ->
+			map.put(missingProject, rankOfMissing)
+		);
 
 		return map;
 	}

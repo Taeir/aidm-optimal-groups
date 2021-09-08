@@ -14,51 +14,17 @@ import org.sql2o.Sql2o;
 import plouchtch.util.ComputerName;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-public class CourseEdition implements DatasetContext
+public abstract class CourseEdition implements DatasetContext
 {
-	private final static Map<Integer, CourseEdition> cachedCourseEditions = new HashMap<>();
-
-	protected final DataSource dataSource;
-
 	protected final int courseEditionId;
-	protected final Agents agents;
-	protected final Projects projects;
-
-	protected final GroupSizeConstraint groupSizeConstraint;
-
-
-	protected CourseEdition(DataSource dataSource, int courseEditionId)
+	
+	protected CourseEdition(int courseEditionId)
 	{
-		this.dataSource = dataSource;
 		this.courseEditionId = courseEditionId;
-
-		this.groupSizeConstraint = new GroupSizeConstraintBepSys(dataSource, this);
-
-		this.agents = fetchAgents(dataSource, this);
-		this.projects = fetchProjects(dataSource, this);
-	}
-
-	public static CourseEdition fromLocalBepSysDbSnapshot(int courseEditionId)
-	{
-		return CourseEdition.fromBepSysDatabase(dataSourceToLocalDb(), courseEditionId);
-	}
-
-	public static CourseEdition fromBepSysDatabase(DataSource dataSource, int courseEditionId)
-	{
-		CourseEdition courseEdition = cachedCourseEditions.get(courseEditionId);
-		if (courseEdition == null)
-		{
-			courseEdition = new CourseEdition(dataSource, courseEditionId);
-			cachedCourseEditions.put(courseEditionId, courseEdition);
-		}
-
-		return courseEdition;
 	}
 
 	public Integer bepSysId()
@@ -69,19 +35,25 @@ public class CourseEdition implements DatasetContext
 	@Override
 	public String identifier()
 	{
-		return String.format("CourseEdition[%s]_[s%s_p%s]_%s", courseEditionId, agents.count(), projects.count(), groupSizeConstraint);
+		return String.format("CourseEdition[%s]_[s%s_p%s]_%s", courseEditionId, allAgents().count(), allProjects().count(), groupSizeConstraint());
 	}
-
-	@Override
-	public Projects allProjects()
+	
+	public Optional<Agent> findAgentByUserId(Integer bepSysUserId)
 	{
-		return projects;
+		return this.allAgents().asCollection().stream()
+				.map(agent -> (Agent.AgentInBepSysSchemaDb) agent)
+				.filter(agent -> agent.bepSysUserId.equals(bepSysUserId))
+				.map(agent -> (Agent) agent)
+				.findAny();
 	}
-
-	@Override
-	public Agents allAgents()
+	
+	public Optional<Project> findProjectByProjectId(Integer bepSysProjectId)
 	{
-		return agents;
+		return this.allProjects().asCollection().stream()
+				.map(project -> (Project.BepSysProject) project)
+				.filter(project -> bepSysProjectId.equals(project.bepsysId))
+				.map(project -> (Project) project)
+				.findAny();
 	}
 
 	@Override
@@ -97,69 +69,5 @@ public class CourseEdition implements DatasetContext
 	public int hashCode()
 	{
 		return Objects.hash(identifier());
-	}
-
-	@Override
-	public GroupSizeConstraint groupSizeConstraint()
-	{
-		return groupSizeConstraint;
-	}
-
-
-	private static Agents fetchAgents(DataSource dataSource, CourseEdition courseEdition)
-	{
-		var sql2o = new Sql2o(dataSource);
-		try (var connection = sql2o.open())
-		{
-			var query = connection.createQuery("SELECT distinct user_id as user_id " +
-				"FROM course_participations " +
-				"WHERE course_edition_id = :courseEditionId"
-			)
-				.addParameter("courseEditionId", courseEdition.bepSysId());
-
-			List<Integer> userIds = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("user_id"));
-			List<Agent> agents = userIds.stream()
-				.map(id -> new Agent.AgentInBepSysSchemaDb(dataSource, id, courseEdition))
-				.collect(Collectors.toList());
-
-			return Agents.from(agents);
-		}
-	}
-
-	private static Projects fetchProjects(DataSource dataSource, CourseEdition courseEdition)
-	{
-		var sqlProjects = """
-				SELECT      p.id as id, cc.max_number_of_groups as numSlots
-				FROM        projects as p
-				INNER JOIN  course_configurations as cc
-							ON p.course_edition_id = cc.course_edition_id
-				WHERE       p.course_edition_id = :courseEditionId
-				""";
-		try (var connection = new Sql2o(dataSource).open())
-		{
-			Query query = connection.createQuery(sqlProjects);
-			query.addParameter("courseEditionId", courseEdition.courseEditionId);
-
-			List<Project> projectsAsList = query.executeAndFetch(
-				(ResultSetHandler<Project>) rs ->
-					new Project.ProjectWithStaticSlotAmount(rs.getInt("id"), rs.getInt("numSlots"))
-			);
-
-			return new ProjectsInDb(projectsAsList, courseEdition);
-		}
-	}
-
-	private static DataSource dataSourceToLocalDb()
-	{
-		switch (ComputerName.ofThisMachine().toString())
-		{
-			case "COOLICER-DESK":
-			case "PHILIPE-DESK":
-				return new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
-			case "PHILIPE-LAPTOP":
-				return new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
-			default:
-				throw new RuntimeException("Unknown machine, don't know connection string to DB");
-		}
 	}
 }

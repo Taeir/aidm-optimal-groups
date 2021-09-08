@@ -5,6 +5,8 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.HashSet;
+
 public class PeerPreferenceSatisfaction
 {
 	private Group.FormedGroup group;
@@ -26,13 +28,13 @@ public class PeerPreferenceSatisfaction
 	}
 
 	private int peersInGroup() {
-		Integer[] groupMembers = group.members().asCollection().stream().map(agent -> agent.id).toArray(Integer[]::new);
-		Integer[] pref = ArrayUtils.toObject(student.groupPreference.asArray());
+		var groupMembers = group.members().asCollection();
+		var peers = student.groupPreference.asListOfAgents();
+		
+		var intersection = new HashSet<>(groupMembers);
+		intersection.retainAll(peers);
 
-		NumMatchingArrayElements numMatchingArrayElements = new NumMatchingArrayElements(groupMembers, pref);
-		int count = numMatchingArrayElements.asInt();
-
-		return count;
+		return intersection.size();
 	}
 
 	private int peersGiven() {

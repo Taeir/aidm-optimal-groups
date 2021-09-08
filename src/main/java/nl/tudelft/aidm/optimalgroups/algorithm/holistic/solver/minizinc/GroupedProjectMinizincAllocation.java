@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc;
 
 import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -95,7 +96,7 @@ public class GroupedProjectMinizincAllocation
 
 		public SequentualProjects.SequentualProject projectAssignedTo(Agent student)
 		{
-			return studentTopicCorrespondance.get(student.id);
+			return studentTopicCorrespondance.get(student.sequenceNumber);
 		}
 
 		public AgentToProjectMatching asMatching()
@@ -108,7 +109,7 @@ public class GroupedProjectMinizincAllocation
 
 			for (int i = 1; i < studentTopicCorrespondance.size(); i++)
 			{
-				var agent = datasetContext.allAgents().findByAgentId(i).orElseThrow();
+				var agent = datasetContext.allAgents().findBySequenceNumber(i).orElseThrow();
 				var project = studentTopicCorrespondance.get(i);
 
 				var originalAgent = datasetContext.mapToOriginal(agent);
@@ -127,7 +128,7 @@ public class GroupedProjectMinizincAllocation
 	{
 //		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
 //		var ce = ThesisDatasets.CE10Like(500);
-		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
+		var ce = DatasetContextTiesBrokenIndividually.from(CourseEditionFromDb.fromLocalBepSysDbSnapshot(10));
 
 		var seqDataset = SequentualDatasetContext.from(ce);
 		var data = new StudentGroupProjectMatchingInstanceData(seqDataset, 1);

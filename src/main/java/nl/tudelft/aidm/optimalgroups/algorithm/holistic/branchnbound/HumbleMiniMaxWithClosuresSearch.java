@@ -9,6 +9,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.Wor
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.spdc.ActiveProjects;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.math.CombinationsOfObjects;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -42,8 +43,8 @@ public class HumbleMiniMaxWithClosuresSearch extends DynamicSearch<AgentToProjec
 {
 	public static void main(String[] args)
 	{
-//		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
-		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+//		var ce = DatasetContextTiesBrokenIndividually.from(CourseEditionFromDb.fromLocalBepSysDbSnapshot(10));
+		var ce = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 		var thing = new HumbleMiniMaxWithClosuresSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 

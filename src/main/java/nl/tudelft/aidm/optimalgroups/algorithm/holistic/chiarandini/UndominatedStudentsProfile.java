@@ -8,6 +8,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Chiara
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -60,7 +61,7 @@ public class UndominatedStudentsProfile
 	
 	public static void main(String[] args) throws Exception
 	{
-		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		CourseEdition ce = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 		
 		var owaMinimaxChiarandini = new Chiarandini_MinimaxOWA(ce);
 		var resultOwa = owaMinimaxChiarandini.doIt();

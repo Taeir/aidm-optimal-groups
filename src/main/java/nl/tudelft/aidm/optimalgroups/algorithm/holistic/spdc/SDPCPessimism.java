@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.Min
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenCommonly;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -16,7 +16,6 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import plouchtch.assertion.Assert;
 
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.Set;
 
 public class SDPCPessimism
@@ -34,7 +33,7 @@ public class SDPCPessimism
 
 	public static void main(String[] args)
 	{
-		var ce = DatasetContextTiesBrokenCommonly.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
+		var ce = DatasetContextTiesBrokenCommonly.from(CourseEditionFromDb.fromLocalBepSysDbSnapshot(10));
 //		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
 
 		System.out.println(ce.identifier());

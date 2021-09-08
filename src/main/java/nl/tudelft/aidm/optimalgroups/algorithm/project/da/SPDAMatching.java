@@ -1,6 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.project.da;
 
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -31,7 +31,7 @@ public class SPDAMatching implements AgentToProjectMatching
 	public static void main(String[] args)
 	{
 		var dataSource = new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
-		var matching = new SPDAMatching(CourseEdition.fromBepSysDatabase(dataSource, 4));
+		var matching = new SPDAMatching(CourseEditionFromDb.fromBepSysDatabase(dataSource, 4));
 
 		var matches = matching.asList();
 
@@ -44,7 +44,7 @@ public class SPDAMatching implements AgentToProjectMatching
 //			System.out.println("Group " + match.from().groupId() + " got project " + match.to().id() + " (ranked as number " + rankNumber + ")");
 
 //			assignedProjectRank.studentRanks().forEach(metric -> {
-			System.out.printf("Student %s\trank: %s\n", assignedProjectRank.student().id, assignedProjectRank.asInt());
+			System.out.printf("%s\trank: %s\n", assignedProjectRank.student(), assignedProjectRank.asInt());
 
 //				System.out.printf("\t\t group satisfaction: %s\n", new GroupPreferenceSatisfaction(match, assignedProjectRank.student()).asFraction());
 //			});
@@ -143,7 +143,7 @@ public class SPDAMatching implements AgentToProjectMatching
 		void receiveProposal(Proposal proposal)
 		{
 			// UGLY and inefficient: FIXME!
-			var projToProposeTo = asList.stream().filter(proposableProject -> proposableProject.id() == proposal.projectProposingFor().id())
+			var projToProposeTo = asList.stream().filter(proposableProject -> proposableProject.sequenceNum() == proposal.projectProposingFor().sequenceNum())
 				.findAny().get();
 
 			projToProposeTo.handleProposal(proposal);

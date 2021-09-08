@@ -17,7 +17,7 @@ public interface Projects
 
 	default Optional<Project> findWithId(int projectId)
 	{
-		return asCollection().stream().filter(project -> project.id() == projectId).findAny();
+		return asCollection().stream().filter(project -> project.sequenceNum() == projectId).findAny();
 	}
 
 	default Projects without(Projects other)

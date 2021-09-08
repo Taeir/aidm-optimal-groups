@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
@@ -15,22 +16,20 @@ import java.util.stream.Collectors;
 public interface GroupPreference
 {
 	// Array of id's sufficies for now
-	int[] asArray();
+	Agent[] asArray();
 
 	List<Agent> asListOfAgents();
 
 	Integer count();
-	
-	Agent owner();
 	
     /**
 	 * Is the group proposed by the agent mutual? That is, do the agents
 	 * that form part of the proposal have identical proposal? A.k.a. "a clique" of friends
 	 * @return True if "friends" have 'identical' peer preferences
 	 */
-	default boolean isMutual()
+	static boolean isMutual(Agent agent)
 	{
-		if(this.count() == 0) {
+		if(agent.groupPreference.count() == 0) {
 			// No preference, therefore also no clique
 			return false;
 		}
@@ -47,11 +46,11 @@ public interface GroupPreference
 		};
 
 		// The proposal of the given agent
-		var proposedGroupOfAgent = agentPreferencesToProposedGroup.apply(owner());
+		var proposedGroupOfAgent = agentPreferencesToProposedGroup.apply(agent);
 
 		// A group proposal is completely  mutual if all agents in the proposal
 		// would propose exactly the same proposal
-		var agentProposalIsCompletelyMutual = this.asListOfAgents().stream()
+		var agentProposalIsCompletelyMutual = agent.groupPreference.asListOfAgents().stream()
 			// Now check if the proposals of the peers, that are part of this agents proposal
 			.map(agentPreferencesToProposedGroup)
 			// are exactly the same as the proposal of "this" agent
@@ -59,25 +58,24 @@ public interface GroupPreference
 
 		return agentProposalIsCompletelyMutual;
 	}
+	
+	static GroupPreference none()
+	{
+		return None.instance;
+	}
 
 	/* */
 	class None implements GroupPreference
 	{
-		private static int[] asArray = new int[0];
+		private static final None instance = new None();
+		private static final Agent[] asArray = new Agent[0];
 		
-		private Lazy<Agent> owner;
-		public None(Agent owner)
+		private None()
 		{
-			this.owner = new Lazy<>(() -> owner);
 		}
 		
-		public None(Supplier<Agent> ownerSupplier)
-		{
-			this.owner = new Lazy<>(ownerSupplier);
-		}
-
 		@Override
-		public int[] asArray()
+		public Agent[] asArray()
 		{
 			return asArray;
 		}
@@ -92,12 +90,6 @@ public interface GroupPreference
 		public Integer count()
 		{
 			return 0;
-		}
-		
-		@Override
-		public Agent owner()
-		{
-			return owner.get();
 		}
 	}
 }

@@ -11,6 +11,8 @@ import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.apache.commons.math3.util.Pair;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -38,14 +40,13 @@ public class VariantvakkenSinglePmf implements DatasetContext
 		var pmf = List.<Pair<Project, Double>>of(Pair.create(proj220, pop220), Pair.create(proj110, pop110), Pair.create(proj88, pop88));
 
 		var prefGen = new ProjectPreferencesFromPmfGenerator(projects, pmf);
-
-		this.agents = Agents.from(IntStream.rangeClosed(1, 400).mapToObj(id ->
-				new Agent.AgentInDatacontext(
-					id,
-					prefGen.generateNew(() -> allAgents().findByAgentId(id).get()),
-					new GroupPreference.None(() -> allAgents().findByAgentId(id).get()),
-					this)
-			).collect(Collectors.toList())
+		
+		this.agents = Agents.from(IntStream.rangeClosed(1, 400)
+				.mapToObj(seqNum -> {
+					Supplier<Agent> findAgentBySeqNum = () -> allAgents().findBySequenceNumber(seqNum).orElseThrow();
+					return new Agent.AgentInDatacontext(seqNum, prefGen.generateNew(findAgentBySeqNum), GroupPreference.none(), this);
+				})
+				.collect(Collectors.toList())
 		);
 
 		groupSizeConstraint = new GroupSizeConstraint.Manual(0, 1);

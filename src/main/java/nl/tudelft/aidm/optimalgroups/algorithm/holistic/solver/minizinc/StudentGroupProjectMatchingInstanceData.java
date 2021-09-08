@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualProjects;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -88,10 +89,14 @@ public class StudentGroupProjectMatchingInstanceData implements JsonDatafile
 
 	private static String preferencesProfile(Agents agents)
 	{
-		var profileAsString = agents.asCollection().stream().sorted(Comparator.comparing(agent -> agent.id))
-			.map(agent -> agent.projectPreference().asArray())
-			.map(Arrays::toString)
-			.collect(Collectors.joining(",\n", "[", "]"));
+		var profileAsString = agents.asCollection().stream()
+				// ensure prefs have same indexes as agent's sequence numbers (they end up in a json array, minizinc does 1-indexes)
+				.sorted(Comparator.comparing(agent -> agent.sequenceNumber))
+				// todo: explicit handling of tie-breaking and acceptible/unacceptible alternatives - after deprecating asArray/asList methods
+				.map(agent -> agent.projectPreference().asArray())
+				.map(pref -> Arrays.stream(pref).map(Project::sequenceNum).toArray(Integer[]::new))
+				.map(Arrays::toString)
+				.collect(Collectors.joining(",\n", "[", "]"));
 
 		return profileAsString;
 	}

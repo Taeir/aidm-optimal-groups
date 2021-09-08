@@ -11,6 +11,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.Num
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.WorstAmongBestProjectPairings;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.MatchCandidate;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -43,7 +44,7 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 //	{
 //		int k = 8;
 //
-//		CourseEdition ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+//		CourseEdition ce = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 //		int minGroupSize = ce.groupSizeConstraint().minSize();
 //
 //		var result = ce.allAgents().asCollection().stream()
@@ -69,8 +70,8 @@ public class WorstAmongBestHumblePairingsSearch extends DynamicSearch<AgentToPro
 
 	public static void main(String[] args)
 	{
-//		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
-		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+//		var ce = DatasetContextTiesBrokenIndividually.from(CourseEditionFromDb.fromLocalBepSysDbSnapshot(10));
+		var ce = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 		var thing = new WorstAmongBestHumblePairingsSearch(ce.allAgents(), ce.allProjects(), ce.groupSizeConstraint());
 //		thing.determineK();
 

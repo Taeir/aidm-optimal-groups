@@ -6,55 +6,63 @@ import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
+import plouchtch.lang.Lazy;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class GroupPreferenceInDb implements GroupPreference
 {
 	private DataSource dataSource;
-	private Integer userId;
+	private Integer bepSysUserId;
 	private CourseEdition courseEdition;
 
 	private List<Agent> asList = null;
-	private int[] preference = null;
-
-	public GroupPreferenceInDb(DataSource dataSource, Integer userId, CourseEdition courseEdition)
+	private Agent[] asArray = null;
+	
+	public GroupPreferenceInDb(DataSource dataSource, Integer bepSysUserId, CourseEdition courseEdition)
 	{
 		this.dataSource = dataSource;
-		this.userId = userId;
+		this.bepSysUserId = bepSysUserId;
 		this.courseEdition = courseEdition;
 	}
 
 	@Override
-	public int[] asArray()
+	public Agent[] asArray()
 	{
-		if (preference == null)
+		if (asArray == null)
 		{
-			preference = fetchFromDb().stream()
-				.mapToInt(Integer::intValue)
-				.toArray();
+			asArray = asListOfAgents().toArray(Agent[]::new);
 		}
 
-		return preference;
+		return asArray;
 	}
 
 	@Override
 	public List<Agent> asListOfAgents()
 	{
+		// The friend identifiers are bepsys/PF user_id's so we need to look up the agents in our courseEdition datasetcontext
+		// furthermore, some friends may not be part of the dataset (never signed up for example)
+		Function<Integer, Agent> findAgentByBepSysId = friendAgentId ->
+				courseEdition.allAgents().asCollection().stream()
+						// not pretty (i.e. quite hacky)
+						.map(agent -> (Agent.AgentInBepSysSchemaDb) agent)
+						.filter(agent -> agent.bepSysUserId.equals(friendAgentId))
+						.findAny().orElseGet(() -> {
+								System.out.printf("Warning, friend not found: %s of %s peer pref in CE %s\n", friendAgentId, bepSysUserId, courseEdition.bepSysId());
+								return null;
+						});
+		
 		if (asList == null) {
-			asList = Arrays.stream(asArray())
-				.boxed()
-				.map(friendAgentId -> courseEdition.allAgents().findByAgentId(friendAgentId).orElseGet(() -> {
-					System.out.printf("Warning, friend not found: %s of %s peer pref in CE %s\n", friendAgentId, userId, courseEdition.bepSysId());
-					return null;
-				}))
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+			asList = fetchFromDb().stream()
+					.map(findAgentByBepSysId)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
 		}
 
 		return Collections.unmodifiableList(asList);
@@ -64,12 +72,6 @@ public class GroupPreferenceInDb implements GroupPreference
 	public Integer count()
 	{
 		return asArray().length;
-	}
-	
-	@Override
-	public Agent owner()
-	{
-		return courseEdition.allAgents().findByAgentId(bepSysUserId).get();
 	}
 	
 	@Override
@@ -89,7 +91,7 @@ public class GroupPreferenceInDb implements GroupPreference
 		try (var conn = sql2o.open())
 		{
 			Query query = conn.createQuery(sql)
-				.addParameter("userId", userId)
+				.addParameter("userId", bepSysUserId)
 				.addParameter("courseEditionId", courseEdition.bepSysId());
 
 			List<Integer> preferredStudents = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("student_id"));

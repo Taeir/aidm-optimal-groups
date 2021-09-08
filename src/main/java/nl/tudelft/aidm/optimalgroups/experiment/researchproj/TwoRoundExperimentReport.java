@@ -152,12 +152,9 @@ public class TwoRoundExperimentReport
 	private Matching<Agent, Project> filterMatching(Matching<Agent, Project> matching, Agents included)
 	{
 		var filtered = matching.asList()
-            .stream()
-			.filter(match -> {
-				var agent = match.from();
-				return included.findByAgentId(agent.id).isPresent();
-			})
-			.collect(Collectors.toList());
+                .stream()
+				.filter(match -> included.contains(match.from()))
+				.collect(Collectors.toList());
 		
 		return new AgentToProjectMatching.Simple(included.datasetContext, filtered);
 	}

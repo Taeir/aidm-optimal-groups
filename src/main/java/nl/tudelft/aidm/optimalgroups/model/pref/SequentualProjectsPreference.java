@@ -8,13 +8,13 @@ import java.util.*;
 public class SequentualProjectsPreference implements ProjectPreference
 {
 	private final Object owner;
-	private final Integer[] preferenceProfile;
-	private List<Project> preferenceProfileAsProjectList = null;
+	private final Project[] asArray;
+	private List<Project> asList;
 
 	public static SequentualProjectsPreference fromOriginal(Object owner, ProjectPreference projectPreference, SequentualProjects sequentualProjects)
 	{
 		var originalProfile = projectPreference.asArray();
-		var remappedProfile = new Integer[originalProfile.length];
+		var remappedProfile = new Project[originalProfile.length];
 		var asList = new ArrayList<Project>(originalProfile.length);
 
 		// Ensure indices 0 to length exist, so we can use list.set(index, project)
@@ -27,18 +27,18 @@ public class SequentualProjectsPreference implements ProjectPreference
 			Project origProject = originalProfileAsList.get(i);
 			var remapped = sequentualProjects.correspondingSequentualProjectOf(origProject);
 
-			remappedProfile[i] = remapped.id();
+			remappedProfile[i] = remapped;
 			asList.set(i, remapped);
 		}
 
 		return new SequentualProjectsPreference(owner, remappedProfile, asList);
 	}
 
-	private SequentualProjectsPreference(Object owner, Integer[] preferenceProfile, List<Project> profileAsList)
+	private SequentualProjectsPreference(Object owner, Project[] asArray, List<Project> profileAsList)
 	{
 		this.owner = owner;
-		this.preferenceProfile = preferenceProfile;
-		this.preferenceProfileAsProjectList = Collections.unmodifiableList(profileAsList);
+		this.asArray = asArray;
+		this.asList = Collections.unmodifiableList(profileAsList);
 	}
 
 	@Override
@@ -48,15 +48,15 @@ public class SequentualProjectsPreference implements ProjectPreference
 	}
 
 	@Override
-	public Integer[] asArray()
+	public Project[] asArray()
 	{
-		return preferenceProfile;
+		return asArray;
 	}
 
 	@Override
 	public List<Project> asList()
 	{
-		return preferenceProfileAsProjectList;
+		return asList;
 	}
 
 	@Override
@@ -66,12 +66,12 @@ public class SequentualProjectsPreference implements ProjectPreference
 		if (!(o instanceof ProjectPreference)) return false;
 		if (!(o instanceof SequentualProjectsPreference)) throw new RuntimeException("Hmm SequentualProjects is being compared with some other type. Check if use-case is alright.");
 		ProjectPreference that = (ProjectPreference) o;
-		return Arrays.equals(preferenceProfile, that.asArray());
+		return Arrays.equals(asArray, that.asArray());
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Arrays.hashCode(preferenceProfile);
+		return Arrays.hashCode(asArray);
 	}
 }

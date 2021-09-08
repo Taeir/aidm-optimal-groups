@@ -7,30 +7,18 @@ import java.util.Objects;
 public interface Project
 {
 	String name();
-	int id();
+	int sequenceNum();
+	
 	List<ProjectSlot> slots();
-
-	class ProjectsWithDefaultSlotAmount extends ProjectWithStaticSlotAmount
-	{
-		private final static int DEFAULT_NUM_SLOTS_VALUE = 5;
-
-		public ProjectsWithDefaultSlotAmount(int id)
-		{
-			super(id, DEFAULT_NUM_SLOTS_VALUE);
-		}
-	}
-
-	/**
-	 * Project with a default / hardcoded amount of slots
-	 */
+	
 	class ProjectWithStaticSlotAmount implements Project
 	{
-		private int id;
+		private final int sequenceNum;
 		private List<ProjectSlot> slots;
 
-		public ProjectWithStaticSlotAmount(int id, int numSlots)
+		public ProjectWithStaticSlotAmount(int sequenceNum, int numSlots)
 		{
-			this.id = id;
+			this.sequenceNum = sequenceNum;
 
 			slots = new ArrayList<>(numSlots);
 			for (int i = 0; i < numSlots; i++)
@@ -44,12 +32,13 @@ public interface Project
 		@Override
 		public String name()
 		{
-			return "proj_" + String.valueOf(id);
+			return "proj_" + sequenceNum;
 		}
 
 		@Override
-		public int id() {
-			return id;
+		public int sequenceNum()
+		{
+			return sequenceNum;
 		}
 
 		@Override
@@ -61,28 +50,72 @@ public interface Project
 		@Override
 		public String toString()
 		{
-			return name();
+			return "proj_" + sequenceNum;
 		}
 
 		@Override
 		public boolean equals(Object o)
 		{
 			if (this == o)
-			{
 				return true;
+			
+			if ((o instanceof ProjectWithStaticSlotAmount)) {
+				Project that = (Project) o;
+				return sequenceNum == that.sequenceNum();
 			}
-			if (!(o instanceof Project))
-			{
-				return false;
-			}
-			Project that = (Project) o;
-			return id == that.id();
+			
+			return false;
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Objects.hash(id);
+			return Objects.hash(sequenceNum);
+		}
+	}
+
+	/**
+	 * Project with a default / hardcoded amount of slots
+	 */
+	class BepSysProject extends ProjectWithStaticSlotAmount
+	{
+		public final int bepsysId;
+		public BepSysProject(int sequenceNum, int bepSysId, int numSlots)
+		{
+			super(sequenceNum, numSlots);
+			this.bepsysId = bepSysId;
+		}
+
+		@Override
+		public String name()
+		{
+			return String.format("%s", bepsysId);
+		}
+
+		@Override
+		public String toString()
+		{
+			return String.format("proj_%s (bepsys: %s)", sequenceNum(), bepsysId);
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o)
+				return true;
+			
+			if ((o instanceof BepSysProject)) {
+				var that = (BepSysProject) o;
+				return bepsysId == that.bepsysId;
+			}
+			
+			return false;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(bepsysId);
 		}
 	}
 
@@ -90,6 +123,7 @@ public interface Project
 	{
 		String id();
 		int index();
+		
 		Project belongingToProject();
 
 		class Simple implements ProjectSlot {

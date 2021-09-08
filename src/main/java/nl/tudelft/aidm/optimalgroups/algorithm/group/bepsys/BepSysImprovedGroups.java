@@ -10,6 +10,7 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 
 
@@ -400,34 +401,20 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
                 score
             */
 
-            Integer[] g1Prefs = g1.projectPreference().asArray();
+            Project[] g1Prefs = g1.projectPreference().asArray();
 
             int score = 0;
-            for (int prefRankG1 = 0; prefRankG1 < g1Prefs.length; prefRankG1++) {
-                int prefRankG2OfG1sPref = findPreferenceRankInGroup2(g1Prefs[prefRankG1]);
+            for (int i = 0; i < g1Prefs.length; i++) {
+                var project = g1Prefs[i];
+                var rankInG1 = g1.projectPreference().rankOf(project);
+                var rankInG2 = g2.projectPreference().rankOf(project);
 
-                if (prefRankG2OfG1sPref >= 0) {
-                    score += Math.pow(prefRankG1 - prefRankG2OfG1sPref, 2);
+                if (rankInG2.isPresent()) {
+                    score += Math.pow(rankInG1.asInt() - rankInG2.asInt(), 2);
                 }
             }
 
             return score;
-        }
-
-        private HashMap<Integer, Integer> g2PrefMap;
-        private int findPreferenceRankInGroup2(int pref)
-        {
-            if (g2PrefMap == null) {
-                // mapping not created yet, do so now
-                var g2Prefs = g2.projectPreference().asArray();
-                g2PrefMap = new HashMap<>(g2Prefs.length);
-                for (int i = 0; i < g2Prefs.length; i++)
-                {
-                    g2PrefMap.put(g2Prefs[i], i);
-                }
-            }
-
-            return g2PrefMap.getOrDefault(pref, -1);
         }
     }
 }

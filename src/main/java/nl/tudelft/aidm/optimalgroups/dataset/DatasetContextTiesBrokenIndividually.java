@@ -30,8 +30,8 @@ public class DatasetContextTiesBrokenIndividually implements DatasetContext
 		var agentsWithTiesBroken = agents.asCollection().stream()
 			.map(agent -> {
 				var origPrefs = agent.projectPreference();
-				var newPrefs = new ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd(origPrefs, projects, agent.id * projects.hashCode());
-				return (Agent) new Agent.AgentInDatacontext(agent.id, newPrefs, agent.groupPreference, currentContext);
+				var newPrefs = new ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd(origPrefs, projects, agent.sequenceNumber * projects.hashCode());
+				return (Agent) new Agent.AgentInDatacontext(agent.sequenceNumber, newPrefs, agent.groupPreference, currentContext);
 			})
 			.collect(Collectors.collectingAndThen(Collectors.toUnmodifiableList(), Agents::from));
 

@@ -41,9 +41,10 @@ public record UtilitarianWeightsObjective(AssignmentConstraints assignmentVars, 
 						var weight = weightScheme.weight(rank.asInt());
 						objFnExpr.addTerm(weight, x.asVar());
 					}
-
+					
 				});
 
+				return true; // continue iter
 			});
 		});
 

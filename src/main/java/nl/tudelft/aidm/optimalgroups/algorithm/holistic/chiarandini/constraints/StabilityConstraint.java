@@ -31,7 +31,7 @@ public class StabilityConstraint implements Constraint
 		
 		datasetContext.allProjects().forEach(project -> {
 			project.slots().forEach(slot -> {
-				b[project.id()][slot.index()] = B.createInModelWithConstraint(model, assignmentConstraints, slot);
+				b[project.sequenceNum()][slot.index()] = B.createInModelWithConstraint(model, assignmentConstraints, slot);
 			});
 		});
 		
@@ -39,13 +39,13 @@ public class StabilityConstraint implements Constraint
 		
 		datasetContext.allProjects().forEach(project ->
 		{
-			var p = project.id();
+			var p = project.sequenceNum();
 			project.slots().forEach(slot ->
 			{
 				var sl = slot.index();
 				datasetContext.allAgents().forEach(student ->
 				{
-					var s = student.id;
+					var s = student.sequenceNumber;
 					
 					var rank = student.projectPreference().rankOf(project);
 					if (rank.unacceptable() || rank.isCompletelyIndifferent())
@@ -110,7 +110,7 @@ public class StabilityConstraint implements Constraint
 				// Skip - not impacted by stability
 				if (student.projectPreference().isCompletelyIndifferent())
 					return;
-				var k = student.id;
+				var k = student.sequenceNumber;
 
 				// i
 				datasetContext.allProjects().forEach(project_i ->
@@ -138,11 +138,11 @@ public class StabilityConstraint implements Constraint
 							var x_ki = xVars.of(student, slot_i).orElseThrow();
 							var d_ki = createVariable(model, student, slot_i, ub);
 
-							d[k][project_i.id()][slot_i.index()] = d_ki;
+							d[k][project_i.sequenceNum()][slot_i.index()] = d_ki;
 
 							project_j.slots().forEach(slot_j ->
 							{
-								var z_kj = z[k][project_j.id()][slot_j.index()];
+								var z_kj = z[k][project_j.sequenceNum()][slot_j.index()];
 
 								// the rhs: (v_ki - v_kj)(x_ki + z_kj - 1)
 								var rhsExpr33 = new GRBLinExpr();

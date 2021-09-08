@@ -160,20 +160,20 @@ public class VariantvakkenData2020 implements DatasetContext
 
 	private static class VariantvakPreference implements ProjectPreference
 	{
-		private final Project[] asListOfProjects;
+		private final Project[] asArray;
 		private final Object owner;
 
 		public VariantvakPreference(Object owner)
 		{
 			this.owner = owner;
-			asListOfProjects = new Project[3];
+			asArray = new Project[3];
 		}
 
 		public void include(Project project, int rank)
 		{
 			Assert.that(1 <= rank && rank <= 3).orThrowMessage("Rank < 1 or 3 < Rank, was: " + rank);
 
-			asListOfProjects[rank - 1] = project;
+			asArray[rank - 1] = project;
 		}
 
 		@Override
@@ -183,17 +183,15 @@ public class VariantvakkenData2020 implements DatasetContext
 		}
 
 		@Override
-		public Integer[] asArray()
+		public Project[] asArray()
 		{
-			return Arrays.stream(asListOfProjects)
-				.map(Project::id)
-				.toArray(Integer[]::new);
+			return asArray;
 		}
 
 		@Override
 		public List<Project> asList()
 		{
-			return List.of(asListOfProjects);
+			return List.of(asArray);
 		}
 
 		@Override
@@ -202,13 +200,13 @@ public class VariantvakkenData2020 implements DatasetContext
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
 			VariantvakPreference that = (VariantvakPreference) o;
-			return Arrays.equals(asListOfProjects, that.asListOfProjects);
+			return Arrays.equals(asArray, that.asArray);
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Arrays.hashCode(asListOfProjects);
+			return Arrays.hashCode(asArray);
 		}
 	}
 }

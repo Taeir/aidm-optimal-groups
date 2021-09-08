@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.metric.dataset.projprefbinning;
 
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -10,13 +11,13 @@ public abstract class BinnableProjPref
 {
 	public String asLinearOrderInString(int topProjectsLimit)
 	{
-		Integer[] prefsInArray = preferenceAsArray();
+		var prefsInArray = preferenceAsArray();
 		return Arrays.stream(Arrays.copyOf(prefsInArray, Math.min(prefsInArray.length, topProjectsLimit)))
-			.map(String::valueOf)
+			.map(Project::name)
 			.collect(Collectors.joining(" > "));
 	}
 
-	protected abstract Integer[] preferenceAsArray();
+	protected abstract Project[] preferenceAsArray();
 
 	public abstract boolean equals(Object o);
 
@@ -37,7 +38,7 @@ public abstract class BinnableProjPref
 		}
 
 		@Override
-		protected Integer[] preferenceAsArray()
+		protected Project[] preferenceAsArray()
 		{
 			return projectPreference.asArray();
 		}
@@ -64,7 +65,7 @@ public abstract class BinnableProjPref
 	public static class ExactTopXOnly extends BinnableProjPref
 	{
 		private final ProjectPreference projectPreference;
-		private final Integer[] asArrayUpToMaxRank;
+		private final Project[] asArrayUpToMaxRank;
 		private final int maxRank;
 
 		public ExactTopXOnly(ProjectPreference projectPreference, int maxRank)
@@ -76,7 +77,7 @@ public abstract class BinnableProjPref
 		}
 
 		@Override
-		protected Integer[] preferenceAsArray()
+		protected Project[] preferenceAsArray()
 		{
 			return asArrayUpToMaxRank;
 		}

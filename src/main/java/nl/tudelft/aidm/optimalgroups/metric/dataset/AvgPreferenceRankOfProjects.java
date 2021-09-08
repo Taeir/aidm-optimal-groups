@@ -74,10 +74,14 @@ public class AvgPreferenceRankOfProjects
 		prefProfiles.forEach(profile -> {
 			profile.forEach((Project project, RankInPref rank) -> {
 				// Oeffff
-				if (rank.unacceptable()) projectToRanksMap.get(project).add(Integer.MAX_VALUE);
+				if (rank.unacceptable())
+					projectToRanksMap.get(project).add(Integer.MAX_VALUE);
 
 				// Skip indifferent agents, they don't count because we can't ascertain how well they value their match
-				if (!rank.isCompletelyIndifferent()) projectToRanksMap.get(project).add(rank.asInt());
+				if (!rank.isCompletelyIndifferent())
+					projectToRanksMap.get(project).add(rank.asInt());
+				
+				return true; // continue iter
 			});
 		});
 

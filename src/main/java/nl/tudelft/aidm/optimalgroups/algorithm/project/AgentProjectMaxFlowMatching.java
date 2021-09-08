@@ -194,6 +194,8 @@ public class AgentProjectMaxFlowMatching implements AgentToProjectMatching
 					var arc = minCostFlow.addArcWithCapacityAndUnitCost(studentVert.id, projectVert.id, 1, cost);
 					studentProjectArcs.add(new FlowArc(student, project, arc));
 				}
+				
+				return true; // continue iter
 			});
 		});
 

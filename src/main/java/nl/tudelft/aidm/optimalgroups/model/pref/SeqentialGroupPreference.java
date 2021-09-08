@@ -1,8 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualAgents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.sequentual.SequentualDatasetContext;
+import plouchtch.lang.Lazy;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,6 +15,8 @@ public class SeqentialGroupPreference implements GroupPreference
 
 	private final GroupPreference original;
 	private List<SequentualAgents.SequentualAgent> asList;
+	
+	private Lazy<Agent> owner;
 
 	public static SeqentialGroupPreference fromOriginal(SequentualDatasetContext seqDatasetContext, GroupPreference original)
 	{
@@ -27,9 +31,9 @@ public class SeqentialGroupPreference implements GroupPreference
 	}
 
 	@Override
-	public int[] asArray()
+	public Agent[] asArray()
 	{
-		return this.asListOfAgents().stream().mapToInt(seqAgent -> seqAgent.id).toArray();
+		return this.asListOfAgents().toArray(Agent[]::new);
 	}
 
 	@Override

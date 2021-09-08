@@ -10,6 +10,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.model.Match
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.MinQuorumRequirement;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.pairing.NumAgentsTillQuorum;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.datasets.ThesisDatasets;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -34,8 +35,8 @@ public class BestHumblePairingsSearch extends DynamicSearch<AgentToProjectMatchi
 {
 	public static void main(String[] args)
 	{
-//		var ce = DatasetContextTiesBrokenIndividually.from(CourseEdition.fromLocalBepSysDbSnapshot(10));
-		var ce = CourseEdition.fromLocalBepSysDbSnapshot(10);
+//		var ce = DatasetContextTiesBrokenIndividually.from(CourseEditionFromDb.fromLocalBepSysDbSnapshot(10));
+		var ce = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 //		var ce = ThesisDatasets.CE10Like(500);
 
 		System.out.println(ce.identifier());

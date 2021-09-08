@@ -109,7 +109,7 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 				List<Vertex<ProjectVertexContent>> slotVerticesForProject = new ArrayList<>();
 
 				// fixme: ProjectName is ProjectId but as a string. This wasn't such a good idea in retrospect, should have stuck with objects
-				projectIdToVerticesMap.put(project.id(), slotVerticesForProject);
+				projectIdToVerticesMap.put(project.sequenceNum(), slotVerticesForProject);
 
 				project.slots().stream()
 					.map(projectSlot -> new Vertex<>(new ProjectVertexContent(projectSlot)))
@@ -135,10 +135,12 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 				var projectPreference = group.content().projectPreference();
 				projectPreference.forEach((Project project, RankInPref rank) -> {
 
-					projects.slotVerticesForProject(project.id()).forEach(projectSlotVertex -> {
+					projects.slotVerticesForProject(project.sequenceNum()).forEach(projectSlotVertex -> {
 						var costOfAssignment = preferencesToCostFn.costOfGettingAssigned(projectPreference, project);
 						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, costOfAssignment));
 					});
+					
+					return true; // continue iter
 				});
 			});
 		}

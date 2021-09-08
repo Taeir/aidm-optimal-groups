@@ -73,13 +73,13 @@ public class SequentualProjects extends ListBasedProjects
 		return projectsInMonotonicSequence;
 	}
 
-	public static class SequentualProject extends Project.ProjectWithStaticSlotAmount
+	public static class SequentualProject extends Project.BepSysProject
 	{
 		private final Project originalProject;
 
 		public SequentualProject(int id, Project originalProject)
 		{
-			super(id, originalProject.slots().size());
+			super(id, id, originalProject.slots().size());
 			this.originalProject = originalProject;
 		}
 
@@ -91,7 +91,7 @@ public class SequentualProjects extends ListBasedProjects
 		@Override
 		public String toString()
 		{
-			return String.format("seqproj_%s", id());
+			return String.format("seqproj_%s", sequenceNum());
 		}
 	}
 
@@ -105,7 +105,7 @@ public class SequentualProjects extends ListBasedProjects
 		final int START_INDEX = 1;
 
 		var originalSorted = new ArrayList<>(projectsToResequence.asCollection());
-		originalSorted.sort(Comparator.comparing(Project::id));
+		originalSorted.sort(Comparator.comparing(Project::sequenceNum));
 
 		var remappedProjects = new ArrayList<Project>(originalSorted.size());
 
@@ -126,7 +126,7 @@ public class SequentualProjects extends ListBasedProjects
 		var mapping = new HashMap<Project, SequentualProject>();
 
 		var originalSorted = new ArrayList<>(original);
-		originalSorted.sort(Comparator.comparing(Project::id));
+		originalSorted.sort(Comparator.comparing(Project::sequenceNum));
 
 		for (int i = 0; i < originalSorted.size(); i++)
 		{

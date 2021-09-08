@@ -80,7 +80,7 @@ public abstract class ListBasedProjects implements Projects
 			// Lazy eval: only fill the map if method is used
 			projectsById = new HashMap<>();
 			projectList().forEach(project ->
-					projectsById.put(project.id(), project)
+					projectsById.put(project.sequenceNum(), project)
 			);
 		}
 

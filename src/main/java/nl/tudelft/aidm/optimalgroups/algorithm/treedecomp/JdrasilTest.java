@@ -5,7 +5,7 @@ import jdrasil.graph.GraphFactory;
 import jdrasil.graph.TreeDecomposer;
 import jdrasil.graph.TreeDecomposition;
 import jdrasil.utilities.logging.JdrasilLogger;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.graph.BipartitieAgentsProjectGraph;
 
@@ -17,7 +17,7 @@ public class JdrasilTest
 
 	public static void main(String[] args) throws Exception
 	{
-		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		DatasetContext datasetContext = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 
 		BipartitieAgentsProjectGraph datasetAsGraph = BipartitieAgentsProjectGraph.from(datasetContext);
 

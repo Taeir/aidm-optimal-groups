@@ -28,38 +28,4 @@ public class UnanimousProjectPreferencesGenerator implements PreferenceGenerator
 	{
 		return theOne;
 	}
-
-	private class PreferenceCopy implements ProjectPreference
-	{
-		private Supplier<Agent> ownerSupplier;
-
-		public PreferenceCopy(Supplier<Agent> ownerSupplier)
-		{
-			this.ownerSupplier = ownerSupplier;
-		}
-
-		@Override
-		public Integer[] asArray()
-		{
-			return theOne.asArray();
-		}
-
-		@Override
-		public List<Project> asList()
-		{
-			return theOne.asList();
-		}
-
-		@Override
-		public Object owner()
-		{
-			return ownerSupplier.get();
-		}
-
-		@Override
-		public RankInPref rankOf(Project project)
-		{
-			return theOne.rankOf(project);
-		}
-	}
 }

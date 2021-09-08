@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.experiment.agp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributedProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPreferencesGenerator;
@@ -146,7 +147,7 @@ public class Experiment_BepSys_Pessimism_SDPC_CE04_021020
 
 	private static Experiment experimentCE4(List<GroupProjectAlgorithm> algorithms)
 	{
-		DatasetContext dataContext = CourseEdition.fromLocalBepSysDbSnapshot(4);
+		DatasetContext dataContext = CourseEditionFromDb.fromLocalBepSysDbSnapshot(4);
 
 		var numSlots = 5;
 		var numProjects = dataContext.allProjects().count();

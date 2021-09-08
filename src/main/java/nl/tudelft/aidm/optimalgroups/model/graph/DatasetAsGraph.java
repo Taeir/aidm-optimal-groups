@@ -1,6 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.model.graph;
 
-import com.vladsch.flexmark.ext.tables.internal.TableJiraRenderer;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
@@ -93,7 +92,7 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 
 				if (vert.id() >= vertices.length) {
 
-					var zzz = existing.keySet().stream().sorted(Comparator.comparing(x -> x instanceof Agent ? ((Agent) x).id * 1000 : ((Project) x).id())).collect(Collectors.toList());
+					var zzz = existing.keySet().stream().sorted(Comparator.comparing(x -> x instanceof Agent ? ((Agent) x).sequenceNumber * 1000 : ((Project) x).sequenceNum())).collect(Collectors.toList());
 
 					return null;
 				}
@@ -132,7 +131,8 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 				agent.projectPreference().forEach((Project project, RankInPref rank) -> {
 					Vertex<Project> projectVertex = vertices.vertexOf(project);
 
-					if (rank.unacceptable()) return; // skip - will never happen, the proj is in pref!
+					if (rank.unacceptable())
+						return true; // skip - will never happen, the proj is in pref!
 
 					// Assign w = 1 to all projects of indifferent agents, w = 0 might cause an algo to try these too much (but should be otherwise fine)
 					// and anything heavier will just inflate the obj function. So assume every project is their 1st choice.
@@ -144,6 +144,8 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 
 					edgesFromAgent.computeIfAbsent(agent, __ -> new HashSet<>()).add(edge);
 					edgesToProject.computeIfAbsent(project, __ -> new HashSet<>()).add(edge);
+					
+					return true; // continue iter
 				});
 			});
 		}

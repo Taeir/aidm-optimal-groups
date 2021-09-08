@@ -37,7 +37,7 @@ public class SequentualAgents extends Agents
 	private static LinkedHashSet<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects, SequentualDatasetContext datasetContext)
 	{
 		var originalSorted = new ArrayList<>(original);
-		originalSorted.sort(Comparator.comparing(agent -> agent.id));
+		originalSorted.sort(Comparator.comparing(agent -> agent.sequenceNumber));
 
 		var resequenced = new LinkedHashSet<Agent>(original.size());
 

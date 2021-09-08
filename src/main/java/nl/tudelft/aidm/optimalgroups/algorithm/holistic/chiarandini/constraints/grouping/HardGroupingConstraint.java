@@ -42,6 +42,8 @@ public record HardGroupingConstraint(Groups<?> groups) implements Constraint
 						});
 						
 					});
+					
+					return true; // continue iter
 				}));
 			}
 		});

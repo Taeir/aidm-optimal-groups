@@ -45,7 +45,7 @@ public abstract class AbstractListBasedProjectPreferences implements ProjectPref
 				return new RankOfCompletelyIndifferentAgent(owner(), project);
 			}
 
-			var rankInArray = new RankInArray().determineRank(p.id(), asArray());
+			var rankInArray = new RankInArray().determineRank(p.sequenceNum(), asArray());
 
 			// Alternative is missing, hence it is unacceptable to agent
 			if (rankInArray.isEmpty())

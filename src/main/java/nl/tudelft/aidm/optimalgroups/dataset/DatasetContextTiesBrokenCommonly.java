@@ -36,7 +36,7 @@ public class DatasetContextTiesBrokenCommonly implements DatasetContext
 			.map(agent -> {
 				var origPrefs = agent.projectPreference();
 				var newPrefs = new ProjectPreferenceAugmentedWithMissingAlternativesCmmnRnd(origPrefs, projects);
-				return (Agent) new Agent.AgentInDatacontext(agent.id, newPrefs, agent.groupPreference, currentContext);
+				return (Agent) new Agent.AgentInDatacontext(agent.sequenceNumber, newPrefs, agent.groupPreference, currentContext);
 			})
 			.collect(Collectors.collectingAndThen(Collectors.toUnmodifiableList(), Agents::from));
 

@@ -8,10 +8,6 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import static java.util.stream.Collectors.*;
 
 public class DatasetContextWithoutPeerPrefs implements DatasetContext
@@ -29,7 +25,7 @@ public class DatasetContextWithoutPeerPrefs implements DatasetContext
 	{
 		return agents.asCollection().stream()
 			.map(agent -> {
-				var modAgent = new Agent.AgentInDatacontext(agent.id, agent.projectPreference(), GroupPreference.none(), currentContext);
+				var modAgent = new Agent.AgentInDatacontext(agent.sequenceNumber, agent.projectPreference(), GroupPreference.none(), currentContext);
 				return (Agent) modAgent;
 			})
 			.collect(collectingAndThen(toList(), Agents::from));

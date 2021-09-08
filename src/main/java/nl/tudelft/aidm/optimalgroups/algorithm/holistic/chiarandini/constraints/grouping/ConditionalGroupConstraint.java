@@ -39,7 +39,7 @@ public class ConditionalGroupConstraint implements Constraint
 			var leader = agents.get(0);
 			
 			// let this be 'g'
-			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leader.id, model);
+			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leader.sequenceNumber, model);
 			violateGroupingDecVars.add(violateGroupingDecVar);
 			
 			// Let 'g' imply that the agents _must_ be assigned one of their top-k choices
@@ -52,7 +52,7 @@ public class ConditionalGroupConstraint implements Constraint
 			{
 				// For now, this 'if' the only real difference with soft-group constraint
 				if (rank.unacceptable() || rank.asInt() > conditionalUpToIncludingRank)
-					return; // continue
+					return true; // continue
 				
 				project.slots().forEach(slot ->
 				{
@@ -107,6 +107,8 @@ public class ConditionalGroupConstraint implements Constraint
 						throw new RuntimeException(ex);
 					}
 				});
+				
+				return true; // continue iter
 			}));
 			
 			try {

@@ -6,12 +6,12 @@ import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.FixMatchingConstraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.HardGroupingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.HardGroupingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.experiment.dataset.ResearchProject2021Q4Dataset;
 import nl.tudelft.aidm.optimalgroups.export.ProjectStudentMatchingCSV;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -55,7 +55,7 @@ public class ResearchProject2021Q1
 		var values = maxsizeCliques.asCollection().stream().map(group -> {
 			return group.members().asCollection().stream()
 				       .map(agent -> seqDatasetContext.mapToOriginal(agent))
-				       .map(agent -> agent.id.toString())
+				       .map(agent -> agent.sequenceNumber.toString())
 				       .collect(Collectors.joining(", ", "[", "]"));
 		}).collect(Collectors.joining("\n"));
 		
@@ -70,8 +70,8 @@ public class ResearchProject2021Q1
 			/*         */
 			AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, seqDatasetContext);
 			
-			var objFn = new OWAObjective(seqDatasetContext, assignmentConstraints);
-			objFn.apply(model);
+			var objFn = new OWAObjective();
+			objFn.apply(model, assignmentConstraints);
 			
 			// process match-fixes
 			var matchFixesSeq = ogDatasetContext.matchesToFix().forSequentual(seqDatasetContext);
@@ -160,7 +160,7 @@ public class ResearchProject2021Q1
 	{
 		return matching.asList().stream()
 			       // Only agents that are 'individual'
-			       .filter(match -> individualAgents.findByAgentId(match.from().id).isPresent())
+			       .filter(match -> individualAgents.contains(match.from()))
 			       // A profile is a sorted list of ranks
 			       .map(match -> {
 				       var rank = match.from().projectPreference().rankOf(match.to());
@@ -173,13 +173,13 @@ public class ResearchProject2021Q1
 
 	private static DatasetContext datasetCE10()
 	{
-		DatasetContext dataContext = CourseEdition.fromLocalBepSysDbSnapshot(10);
+		DatasetContext dataContext = CourseEditionFromDb.fromLocalBepSysDbSnapshot(10);
 		return dataContext;
 	}
 	
 	private static DatasetContext datasetResearchProj21()
 	{
-		var dataContext = CourseEdition.fromLocalBepSysDbSnapshot(39);
+		var dataContext = CourseEditionFromDb.fromLocalBepSysDbSnapshot(39);
 		
 		return dataContext;
 	}
