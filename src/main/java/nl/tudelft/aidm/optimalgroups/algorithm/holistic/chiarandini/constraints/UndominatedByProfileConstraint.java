@@ -44,7 +44,7 @@ public class UndominatedByProfileConstraint implements Constraint
 			int h = i.getPlain();
 			
 			undominatedAgents.forEach(agent -> {
-				agent.projectPreference().forEach((project, rank) -> {
+				agent.projectPreference().forEach((project, rank, __) -> {
 					project.slots().forEach(slot ->
 					{
 						// Agent is not indiff and finds project acceptable
@@ -55,7 +55,6 @@ public class UndominatedByProfileConstraint implements Constraint
 						}
 					});
 					
-					return true; // continue iter
 				});
 			});
 			

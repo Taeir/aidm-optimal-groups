@@ -49,7 +49,7 @@ public class RandomizedSerialDictatorship implements GroupToProjectMatching<Grou
 		for (Group.FormedGroup group : shuffledGroups) {
 			
 			// Iterate the preference in order, assign as soon as possible
-			group.projectPreference().forEach((project, rank) ->
+			group.projectPreference().forEach((project, rank, __) ->
 			{
 				int currentlyUsedSlots = usedSlots.getOrDefault(project, 0);
 
@@ -63,9 +63,10 @@ public class RandomizedSerialDictatorship implements GroupToProjectMatching<Grou
 					
 					usedSlots.put(project, currentlyUsedSlots + 1);
 					
-					return false; // stop loop
+					__._break(); // stop iteration
+					return;
 				}
-				return true; // continue loop
+				
 			});
 		}
 

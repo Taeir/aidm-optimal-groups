@@ -49,9 +49,13 @@ public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProj
 	@Override
 	public void forEach(ProjecPrefIterFn iter)
 	{
-		asCompleteList.forEach(project -> {
-			iter.apply(project, rankOf(project));
-		});
+		var iterationControl = new IterationControl();
+		for (Project project : asCompleteList)
+		{
+			iter.apply(project, rankOf(project), iterationControl);
+			
+			if (iterationControl.isBreak()) return;
+		}
 	}
 
 	@Override

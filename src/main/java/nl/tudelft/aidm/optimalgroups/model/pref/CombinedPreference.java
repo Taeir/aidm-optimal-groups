@@ -101,7 +101,7 @@ public class CombinedPreference implements ProjectPreference {
                 continue;
             }
             
-            peer.projectPreference().forEach((project, rankInPref) -> {
+            peer.projectPreference().forEach((project, rankInPref, __) -> {
                 
                 // Business rule decision (ours): do not adjust preferences for
                 // when friend considers project to be unacceptible. Being placed with all your peers is not
@@ -110,15 +110,12 @@ public class CombinedPreference implements ProjectPreference {
                 // -- An alternative decision is to penalize the score of the project instead,
                 // such that the project preferences become a sort of intersection between everyone's preferences
                 // but if this is desirable, then it's easier to simply do this scoring procedure on the proper intersection.
-                if (!rankInPref.isPresent())
-                    return true; // skip
-                
-                var rankAsInt = rankInPref.asInt();
-                
-                var score = (1d / rankAsInt) * groupPreferenceWeightPerPeer;
-                scores.merge(project, score, Double::sum);
-                
-                return true; // continue loop
+                if (rankInPref.isPresent()) {
+                    var rankAsInt = rankInPref.asInt();
+                    
+                    var score = (1d / rankAsInt) * groupPreferenceWeightPerPeer;
+                    scores.merge(project, score, Double::sum);
+                }
             });
             
             // OLD IMPL - based on complete, total orderings over projects, but the assumption on complete and total is no longer valid
@@ -138,7 +135,7 @@ public class CombinedPreference implements ProjectPreference {
 
         // Add the student's own project preference to the scores
             
-        this.projectPreference.forEach((project, rank) -> {
+        this.projectPreference.forEach((project, rank, __) -> {
             
             double score;
             
@@ -148,8 +145,6 @@ public class CombinedPreference implements ProjectPreference {
                 score = 1d / rank.asInt() * PROJECT_PREFERENCE_WEIGHT;
             
             scores.merge(project, score, Double::sum);
-            
-            return true; // continue iteration
         });
         
         // Convert into score -> project mapping

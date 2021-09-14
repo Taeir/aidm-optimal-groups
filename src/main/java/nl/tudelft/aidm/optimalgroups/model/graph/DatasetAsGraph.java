@@ -128,11 +128,11 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 			{
 				Vertex<Agent> agentVertex = vertices.vertexOf(agent);
 
-				agent.projectPreference().forEach((Project project, RankInPref rank) -> {
+				agent.projectPreference().forEach((project, rank, __) -> {
 					Vertex<Project> projectVertex = vertices.vertexOf(project);
 
 					if (rank.unacceptable())
-						return true; // skip - will never happen, the proj is in pref!
+						return; // skip - will never happen, the proj is in pref!
 
 					// Assign w = 1 to all projects of indifferent agents, w = 0 might cause an algo to try these too much (but should be otherwise fine)
 					// and anything heavier will just inflate the obj function. So assume every project is their 1st choice.
@@ -142,10 +142,8 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 
 					edges.add(edge);
 
-					edgesFromAgent.computeIfAbsent(agent, __ -> new HashSet<>()).add(edge);
-					edgesToProject.computeIfAbsent(project, __ -> new HashSet<>()).add(edge);
-					
-					return true; // continue iter
+					edgesFromAgent.computeIfAbsent(agent, x -> new HashSet<>()).add(edge);
+					edgesToProject.computeIfAbsent(project, x -> new HashSet<>()).add(edge);
 				});
 			});
 		}

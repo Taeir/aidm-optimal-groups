@@ -28,9 +28,9 @@ public record DistributiveWeightsObjective(AssignmentConstraints assignmentVars,
 	
 	private void applyDirty(GRBModel model) throws GRBException
 	{
-		var seqDatasetContext = assignmentVars.datasetContext;
-		var allProjects = seqDatasetContext.allProjects();
-		var allStudents = seqDatasetContext.allAgents();
+		var datasetContext = assignmentVars.datasetContext;
+		var allProjects = datasetContext.allProjects();
+		var allStudents = datasetContext.allAgents();
 		
 		var objFnExpr = new GRBLinExpr();
 		
@@ -40,7 +40,7 @@ public record DistributiveWeightsObjective(AssignmentConstraints assignmentVars,
 			var numStudentsWithRankH = new GRBLinExpr();
 			
 			allStudents.forEach(agent -> {
-				agent.projectPreference().forEach((project, rank) -> {
+				agent.projectPreference().forEach((project, rank, __) -> {
 					project.slots().forEach(slot -> {
 						
 						// Agent is not indiff and finds project acceptable
@@ -49,8 +49,6 @@ public record DistributiveWeightsObjective(AssignmentConstraints assignmentVars,
 							numStudentsWithRankH.addTerm(1d, x.asVar());
 						}
 					});
-					
-					return true; // continue iter
 				});
 			});
 			

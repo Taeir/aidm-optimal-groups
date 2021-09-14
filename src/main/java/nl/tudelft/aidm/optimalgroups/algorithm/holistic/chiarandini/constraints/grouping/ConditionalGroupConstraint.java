@@ -48,11 +48,11 @@ public class ConditionalGroupConstraint implements Constraint
 			// have the same allocation for their top-k choices.
 			var leaderAssignmentsToTopK = new GRBLinExpr();
 				
-			projPrefs.forEach(((project, rank) ->
+			projPrefs.forEach(((project, rank, __) ->
 			{
 				// For now, this 'if' the only real difference with soft-group constraint
 				if (rank.unacceptable() || rank.asInt() > conditionalUpToIncludingRank)
-					return true; // continue
+					return; // continue
 				
 				project.slots().forEach(slot ->
 				{
@@ -108,7 +108,6 @@ public class ConditionalGroupConstraint implements Constraint
 					}
 				});
 				
-				return true; // continue iter
 			}));
 			
 			try {

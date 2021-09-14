@@ -29,12 +29,13 @@ public interface ProjectPreference
 	 */
 	default void forEach(ProjecPrefIterFn iter)
 	{
-		List<Project> projectList = asList();
-		for (Project proj : projectList) {
+		IterationControl control = new IterationControl();
+		
+		for (Project proj : this.asList()) {
 			var rank = rankOf(proj);
-			var continu = iter.apply(proj, rank);
+			iter.apply(proj, rank, control);
 			
-			if (!continu) return;
+			if (control._breakFlag) break;
 		}
 	}
 
@@ -147,7 +148,20 @@ public interface ProjectPreference
 		 * @param rank Rank in preference, 1 being highest - empty if indifferent
 		 * @return true if iteration should continue
 		 */
-		boolean apply(Project project, RankInPref rank);
+		void apply(Project project, RankInPref rank, IterationControl iterControl);
+	}
+	
+    public class IterationControl
+	{
+		Boolean _breakFlag = false;
+		
+		public void _break() {
+			_breakFlag = true;
+		}
+		
+		public boolean isBreak() {
+			return _breakFlag;
+		}
 	}
 
 }

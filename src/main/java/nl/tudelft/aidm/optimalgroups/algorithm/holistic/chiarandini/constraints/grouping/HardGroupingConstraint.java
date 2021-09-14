@@ -30,7 +30,7 @@ public record HardGroupingConstraint(Groups<?> groups) implements Constraint
 				var agent1 = agents.get(i);
 				var agent2 = agents.get(i + 1);
 				
-				projPrefs.forEach(((project, rank) -> {
+				projPrefs.forEach(((project, rank, __) -> {
 					project.slots().forEach(slot -> {
 						
 						assignmentConstraints.xVars.of(agent1, slot).ifPresent(Xa1ToSlot -> {
@@ -43,7 +43,6 @@ public record HardGroupingConstraint(Groups<?> groups) implements Constraint
 						
 					});
 					
-					return true; // continue iter
 				}));
 			}
 		});

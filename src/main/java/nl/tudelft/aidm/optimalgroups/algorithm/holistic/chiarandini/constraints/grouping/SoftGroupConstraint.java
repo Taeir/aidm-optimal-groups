@@ -39,7 +39,7 @@ public class SoftGroupConstraint implements Constraint
 			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leaderId, model);
 			violateGroupingDecVars.add(violateGroupingDecVar);
 				
-			projPrefs.forEach(((project, rank) -> {
+			projPrefs.forEach(((project, rank, __) -> {
 				project.slots().forEach(slot -> {
 					
 					// the x's (assignment decision var) of all agents in group for assignment to project slot 'slot'
@@ -92,7 +92,6 @@ public class SoftGroupConstraint implements Constraint
 					}
 				});
 				
-				return true; // continue iter
 			}));
 		});
 		

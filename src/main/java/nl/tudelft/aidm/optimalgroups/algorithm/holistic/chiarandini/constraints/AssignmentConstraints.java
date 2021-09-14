@@ -155,7 +155,7 @@ public class AssignmentConstraints
 						});
 					});
 				}
-				else student.projectPreference().forEach((project, rank) ->
+				else student.projectPreference().forEach((project, rank, __) ->
 				{
 					var p = project.sequenceNum();
 					project.slots().forEach(slot ->
@@ -163,7 +163,6 @@ public class AssignmentConstraints
 						int sl = slot.index();
 						x[s][p][sl] = X.createInModel(student, project, slot, model);
 					});
-					return true; // continue iteration
 				});
 			});
 	

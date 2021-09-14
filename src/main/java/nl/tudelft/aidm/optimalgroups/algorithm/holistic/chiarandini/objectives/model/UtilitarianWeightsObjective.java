@@ -28,7 +28,7 @@ public record UtilitarianWeightsObjective(AssignmentConstraints assignmentVars, 
 		var objFnExpr = new GRBLinExpr();
 
 		datasetContext.allAgents().forEach(agent -> {
-			agent.projectPreference().forEach((project, rank) -> {
+			agent.projectPreference().forEach((project, rank, __) -> {
 				project.slots().forEach(slot -> {
 
 					// Agent is not indiff and finds project acceptable
@@ -41,8 +41,6 @@ public record UtilitarianWeightsObjective(AssignmentConstraints assignmentVars, 
 					}
 					
 				});
-
-				return true; // continue iter
 			});
 		});
 

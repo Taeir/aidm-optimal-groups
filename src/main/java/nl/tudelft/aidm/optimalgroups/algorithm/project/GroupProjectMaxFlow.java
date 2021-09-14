@@ -31,11 +31,11 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 		this(datasetContext, groups, projects, (projectPreference, theProject) -> {
 			var rank = projectPreference.rankOf(theProject);
 
-			// If project not present: agent is indifferent or does not want the project,
-			// in both cases it's ok to assign maximum cost
 			if (rank.isPresent())
 				return rank.asInt();
 			else
+				// If project not present: agent is indifferent or does not want the project,
+				// in both cases it's ok to assign maximum cost
 				return datasetContext.allProjects().count();
 		});
 	}
@@ -133,14 +133,13 @@ public class GroupProjectMaxFlow implements GroupToProjectMatching<Group.FormedG
 			groups.forEach(group -> {
 
 				var projectPreference = group.content().projectPreference();
-				projectPreference.forEach((Project project, RankInPref rank) -> {
+				projectPreference.forEach((project, rank, __) -> {
 
 					projects.slotVerticesForProject(project.sequenceNum()).forEach(projectSlotVertex -> {
 						var costOfAssignment = preferencesToCostFn.costOfGettingAssigned(projectPreference, project);
 						this.add(DirectedWeightedEdge.between(group, projectSlotVertex, costOfAssignment));
 					});
 					
-					return true; // continue iter
 				});
 			});
 		}
