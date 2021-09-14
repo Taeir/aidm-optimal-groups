@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.project;
 
+import plouchtch.lang.Lazy;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -80,6 +82,7 @@ public interface Project
 	class BepSysProject extends ProjectWithStaticSlotAmount
 	{
 		public final int bepsysId;
+		
 		public BepSysProject(int sequenceNum, int bepSysId, int numSlots)
 		{
 			super(sequenceNum, numSlots);
@@ -95,7 +98,7 @@ public interface Project
 		@Override
 		public String toString()
 		{
-			return String.format("proj_%s (bepsys: %s)", sequenceNum(), bepsysId);
+			return String.format("proj_%s[bepsys_%s]", sequenceNum(), bepsysId);
 		}
 
 		@Override
@@ -128,7 +131,7 @@ public interface Project
 
 		class Simple implements ProjectSlot {
 
-			private final String id;
+			private final Lazy<String> id;
 			private final int index;
 			private final Project projectBelongsTo;
 
@@ -137,12 +140,14 @@ public interface Project
 				this.index = index;
 				this.projectBelongsTo = projectBelongsTo;
 
-				this.id = projectBelongsTo + "_slot_" + index;
+				// Temporal coupling between this class and ProjectFromDB that extends ProjectWithStaticSlotAmount
+				// where the bepsys_id is only set after its super and this constructor is done, so workaround by deferring
+				this.id = new Lazy<>(() -> projectBelongsTo + "_slot_" + index);
 			}
 
 			public String id()
 			{
-				return id;
+				return id.get();
 			}
 
 			public int index()
