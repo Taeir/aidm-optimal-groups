@@ -107,6 +107,6 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 		int numMembers = group.members().count();
 
 		Assert.that(groupSizeConstraint.minSize() <= numMembers && numMembers <= groupSizeConstraint.maxSize())
-			.orThrowMessage("Cannot form group: the group does not meet group size constaints");
+			.orThrowMessage("Cannot form group: the group does not meet group size constraints");
 	}
 }
