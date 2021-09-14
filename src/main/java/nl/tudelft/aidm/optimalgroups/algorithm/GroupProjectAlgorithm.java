@@ -6,6 +6,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.HumbleMiniMaxWithClosuresSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.PregroupingType;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.WorstAmongBestHumblePairingsSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.GroupedProjectMinizincAllocation;
@@ -483,6 +485,33 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext);
 			var matching = algo.doIt();
 
+			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+		}
+	}
+	
+	class Chiarandini_Fairgroups implements GroupProjectAlgorithm
+	{
+		private final ObjectiveFunction objectiveFunction;
+		private final PregroupingType pregroupingType;
+		
+		public Chiarandini_Fairgroups(ObjectiveFunction objectiveFunction, PregroupingType pregroupingType)
+		{
+			this.objectiveFunction = objectiveFunction;
+			this.pregroupingType = pregroupingType;
+		}
+
+		@Override
+		public String name()
+		{
+			return "Chiarandini w Fair pregrouping " + objectiveFunction.name() + " - " + pregroupingType.simpleName();
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		{
+			var algo = new MILP_Mechanism_FairPregrouping(datasetContext, objectiveFunction, pregroupingType);
+			var matching = algo.doIt();
+			
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}
 	}
