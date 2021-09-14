@@ -35,6 +35,7 @@ public record ChiarandiniBaseModel(DatasetContext datasetContext, ObjectiveFunct
 		// Apply all constraints
 		for (Constraint constraint : constraints)
 		{
+			model.update();
 			constraint.apply(model, assignmentConstraints);
 		}
 
