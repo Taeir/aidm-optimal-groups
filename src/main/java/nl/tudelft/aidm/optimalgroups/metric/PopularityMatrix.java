@@ -143,7 +143,7 @@ public class PopularityMatrix<MATCHING extends Matching, ALGO extends Algorithm,
 		return new HashSet<>(algoPopularityComparisons);
 	}
 
-	static abstract class MatchingPopularityComparison<ALGORES extends Algorithm.Result>
+	public static abstract class MatchingPopularityComparison<ALGORES extends Algorithm.Result>
 	{
 		private final ALGORES resultA;
 		private final ALGORES resultB;

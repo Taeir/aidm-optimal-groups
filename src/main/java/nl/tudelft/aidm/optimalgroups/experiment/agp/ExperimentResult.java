@@ -10,7 +10,7 @@ public class ExperimentResult
 	private final Experiment experiment;
 
 	public final List<ExperimentAlgorithmSubresult> results;
-	public final PopularityMatrix popularityMatrix;
+	public final PopularityMatrix<?,?,?> popularityMatrix;
 
 	public ExperimentResult(Experiment experiment, List<ExperimentAlgorithmSubresult> results)
 	{

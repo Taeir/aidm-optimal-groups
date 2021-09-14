@@ -173,7 +173,7 @@ public class Agents implements Iterable<Agent>
 		return Objects.hash(asSet, datasetContext);
 	}
 	
-	public static AgentsCollector collector = new AgentsCollector();
+	public static final AgentsCollector collector = new AgentsCollector();
 	
 	private static class AgentsCollector implements Collector<Agent, List<Agent>, Agents>
 	{
