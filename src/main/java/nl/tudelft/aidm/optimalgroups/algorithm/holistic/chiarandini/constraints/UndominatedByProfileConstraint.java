@@ -6,7 +6,6 @@ import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import plouchtch.assertion.Assert;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
@@ -22,7 +21,7 @@ public class UndominatedByProfileConstraint implements Constraint
 	private final Agents undominatedAgents;
 	public UndominatedByProfileConstraint(Profile profile, Agents undominatedAgents)
 	{
-		Assert.that(profile.size() == undominatedAgents.count())
+		Assert.that(profile.numAgents() == undominatedAgents.count())
 			.orThrowMessage("Given profile is not fit to use with given set of agents (different sizes)");
 		
 		this.profile = profile;
@@ -39,7 +38,7 @@ public class UndominatedByProfileConstraint implements Constraint
 		
 		var cumsumStudentsUpToRankH = new GRBLinExpr();
 		
-		for (var i = new AtomicInteger(); i.get() <= profile.maxRank(); i.incrementAndGet())
+		for (var i = new AtomicInteger(1); i.get() <= profile.maxRank(); i.incrementAndGet())
 		{
 			int h = i.getPlain();
 			
