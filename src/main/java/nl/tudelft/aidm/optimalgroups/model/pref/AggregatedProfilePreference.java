@@ -132,13 +132,13 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 			// mapping: Project --> score
 			Map<Project, Integer> prefs = new LinkedHashMap<>();
 			
-			int maxRank = this.agents.datasetContext.worstRank().getAsInt();
+			int maxRank = this.agents.datasetContext.allProjects().count();
 			int unacceptableScore = maxRank + 1; // if project is unacceptible
 
 			for (Agent agent : this.agents.asCollection()) {
 				agent.projectPreference().forEach((project, rank, __) -> {
 					var score = rank.unacceptable() ? unacceptableScore : rank.asInt();
-					prefs.merge(project, rank.asInt(), Integer::sum);
+					prefs.merge(project, score, Integer::sum);
 				});
 			}
 			
@@ -252,8 +252,8 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 				
 				for (var outcome : comparisonResult.values()) {
 					switch (outcome) {
-						case Win -> projectScore.merge(project, 1, Integer::sum);
-						case Lose -> projectScore.merge(project, -1, Integer::sum);
+						case Win -> projectScore.merge(project, -1, Integer::sum);
+						case Lose -> projectScore.merge(project, 1, Integer::sum);
 					}
 				}
 			}
