@@ -13,6 +13,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -290,7 +291,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
     }
 
 
-    private class PossibleGroup {
+    private static class PossibleGroup {
         public List<Agent> members;
         public int score;
 
@@ -358,20 +359,17 @@ public class BepSysReworked implements GroupFormingAlgorithm
                 score
             */
 
-            Project[] g1Prefs = g1.projectPreference().asArray();
-
-            int score = 0;
-            for (int i = 0; i < g1Prefs.length; i++) {
-                var project = g1Prefs[i];
-                var rankInG1 = g1.projectPreference().rankOf(project);
+            var score = new AtomicInteger(0);
+            g1.projectPreference().forEach((project, rankInG1, iterControl) -> {
                 var rankInG2 = g2.projectPreference().rankOf(project);
-
+                
                 if (rankInG2.isPresent()) {
-                    score += Math.pow(rankInG1.asInt() - rankInG2.asInt(), 2);
+                    var delta = (int) Math.pow(rankInG1.asInt() - rankInG2.asInt(), 2);
+                    score.addAndGet(delta);
                 }
-            }
+            });
 
-            return score;
+            return score.get();
         }
     }
 
