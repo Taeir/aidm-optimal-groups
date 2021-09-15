@@ -46,4 +46,10 @@ public class PresentRankInPref implements RankInPref
 	{
 		return Objects.hash(rank);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "{rank=" + rank + '}';
+	}
 }
