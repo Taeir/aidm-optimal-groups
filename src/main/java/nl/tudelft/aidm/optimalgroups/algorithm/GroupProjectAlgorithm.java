@@ -375,7 +375,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var matching = new GroupedProjectMinizincAllocation(datasetContext, 5).matching();
+			var matching = new GroupedProjectMinizincAllocation(datasetContext).matching();
 
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
 		}

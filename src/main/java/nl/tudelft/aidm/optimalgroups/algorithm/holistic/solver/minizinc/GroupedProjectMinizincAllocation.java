@@ -27,15 +27,19 @@ public class GroupedProjectMinizincAllocation
 
 	private final static URL model = MiniZinc.class.getClassLoader().getResource("Grouped_Project_Student_Allocation.mzn");
 
-	public GroupedProjectMinizincAllocation(DatasetContext datasetContext, int groupsPerTopic)
+	public GroupedProjectMinizincAllocation(DatasetContext datasetContext)
 	{
+		var homogeneousSlotCounts = datasetContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).distinct().count() == 1;
+		Assert.that(homogeneousSlotCounts).orThrowMessage("Heterogenous number of slots across projects is not (yet) supported for MiniZinc model");
+		
+		groupsPerTopic = datasetContext.numMaxSlots();
+		
 		Assert.that(datasetContext.groupSizeConstraint().minSize() == 4).orThrowMessage("(Yet) unsupported param value: GSC-min must be 4");
 		Assert.that(datasetContext.groupSizeConstraint().maxSize() == 5).orThrowMessage("(Yet) unsupported param value: GSC-min must be 5");
 
 		Assert.that(groupsPerTopic > 0).orThrowMessage("Unsatisfiable: Topics must have capacity for at least 1 group");
 
 		this.datasetContext = datasetContext;
-		this.groupsPerTopic = groupsPerTopic;
 	}
 
 	public AgentToProjectMatching matching()
@@ -132,7 +136,7 @@ public class GroupedProjectMinizincAllocation
 		var seqDataset = SequentualDatasetContext.from(ce);
 		var data = new StudentGroupProjectMatchingInstanceData(seqDataset, 1);
 
-		var henk = new GroupedProjectMinizincAllocation(ce, ce.numMaxSlots()).matching();
+		var henk = new GroupedProjectMinizincAllocation(ce).matching();
 		MatchingMetrics.StudentProject metrics = new MatchingMetrics.StudentProject(henk);
 
 		new StudentRankProfile(henk).displayChart("MiniZinc - MinSum");
