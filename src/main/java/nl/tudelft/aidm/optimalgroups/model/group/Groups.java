@@ -1,6 +1,5 @@
 package nl.tudelft.aidm.optimalgroups.model.group;
 
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.GroupsFromCliques;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 
