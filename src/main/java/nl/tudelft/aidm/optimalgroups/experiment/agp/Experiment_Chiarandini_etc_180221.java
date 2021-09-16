@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.experiment.agp;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.PregroupingType;
 import nl.tudelft.aidm.optimalgroups.dataset.DatasetContextTiesBrokenIndividually;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
@@ -32,12 +33,12 @@ public class Experiment_Chiarandini_etc_180221
 			new GroupProjectAlgorithm.SDPCWithSlots(),
 			new GroupProjectAlgorithm.Pessimism(),
 			new GroupProjectAlgorithm.MinizincMIP(),
-			new GroupProjectAlgorithm.Chiarandini_Utilitarian_MinSum_IdentityScheme(),
-			new GroupProjectAlgorithm.Chiarandini_Stable_Utilitarian_MinSum_IdentityScheme(),
-			new GroupProjectAlgorithm.Chiarandini_Utilitarian_MinSum_ExpScheme(),
-			new GroupProjectAlgorithm.Chiarandini_Stable_Utilitarian_MinSum_ExpScheme(),
-			new GroupProjectAlgorithm.Chiarandini_MiniMax_OWA(),
-			new GroupProjectAlgorithm.Chiaranini_Stable_MiniMax_OWA()
+			new GroupProjectAlgorithm.Chiarandini_Utilitarian_MinSum_IdentityScheme(PregroupingType.anyCliqueHardGrouped()),
+			new GroupProjectAlgorithm.Chiarandini_Stable_Utilitarian_MinSum_IdentityScheme(PregroupingType.anyCliqueHardGrouped()),
+			new GroupProjectAlgorithm.Chiarandini_Utilitarian_MinSum_ExpScheme(PregroupingType.anyCliqueHardGrouped()),
+			new GroupProjectAlgorithm.Chiarandini_Stable_Utilitarian_MinSum_ExpScheme(PregroupingType.anyCliqueHardGrouped()),
+			new GroupProjectAlgorithm.Chiarandini_MiniMax_OWA(PregroupingType.anyCliqueHardGrouped()),
+			new GroupProjectAlgorithm.Chiaranini_Stable_MiniMax_OWA(PregroupingType.anyCliqueHardGrouped())
 //			new GroupProjectAlgorithm.SDPCWithSlots_potential_numgroupmates_ordered()
 		);
 

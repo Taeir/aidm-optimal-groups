@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.PregroupingType;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfExpRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.model.UtilitarianWeightsObjective;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
@@ -8,17 +10,20 @@ import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 public class Chiarandini_MinSumExpRank
 {
 	private final DatasetContext datasetContext;
+	private final Pregrouping pregrouping;
+	
 	private UtilitarianWeightsObjective.WeightScheme weightScheme;
 
-	public Chiarandini_MinSumExpRank(DatasetContext datasetContext)
+	public Chiarandini_MinSumExpRank(DatasetContext datasetContext, PregroupingType pregroupingType)
 	{
 		this.datasetContext = datasetContext;
+		this.pregrouping = pregroupingType.instantiateFor(datasetContext);
 	}
 
 	public AgentToProjectMatching doIt()
 	{
 		var objFn = new MinimizeSumOfExpRanks();
 		
-		return new ChiarandiniBaseModel(datasetContext, objFn).doIt();
+		return new ChiarandiniBaseModel(datasetContext, objFn, pregrouping.constraint()).doIt();
 	}
 }

@@ -8,7 +8,6 @@ import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 
 public class MILP_Mechanism_BasicPregrouping
 {
-	
 	private final DatasetContext datasetContext;
 	private final ObjectiveFunction objectiveFunction;
 	
@@ -18,6 +17,7 @@ public class MILP_Mechanism_BasicPregrouping
 	{
 		this.datasetContext = datasetContext;
 		this.objectiveFunction = objectiveFunction;
+		
 		this.pregrouping = pregroupingType.instantiateFor(datasetContext);
 	}
 	
@@ -25,5 +25,4 @@ public class MILP_Mechanism_BasicPregrouping
 	{
 		return new ChiarandiniBaseModel(datasetContext, objectiveFunction, pregrouping.constraint()).doIt();
 	}
-	
 }

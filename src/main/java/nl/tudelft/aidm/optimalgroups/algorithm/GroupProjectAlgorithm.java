@@ -383,16 +383,23 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 	class Chiarandini_Utilitarian_MinSum_IdentityScheme implements GroupProjectAlgorithm
 	{
+		private final PregroupingType pregroupingType;
+		
+		public Chiarandini_Utilitarian_MinSum_IdentityScheme(PregroupingType pregroupingType)
+		{
+			this.pregroupingType = pregroupingType;
+		}
+		
 		@Override
 		public String name()
 		{
-			return "Chiaranini Utilitarian MinSum - Identity Weights";
+			return "Chiaranini Utilitarian MinSum - Identity Weights - " + pregroupingType.simpleName();
 		}
 
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = new Chiarandini_MinSumRank(datasetContext);
+			var algo = new Chiarandini_MinSumRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
@@ -401,16 +408,23 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 	class Chiarandini_Utilitarian_MinSum_ExpScheme implements GroupProjectAlgorithm
 	{
+		private final PregroupingType pregroupingType;
+		
+		public Chiarandini_Utilitarian_MinSum_ExpScheme(PregroupingType pregroupingType)
+		{
+			this.pregroupingType = pregroupingType;
+		}
+		
 		@Override
 		public String name()
 		{
-			return "Chiaranini Utilitarian MinSum - Exp Weights";
+			return "Chiaranini Utilitarian MinSum - Exp Weights - " + pregroupingType.simpleName();
 		}
 
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = new Chiarandini_MinSumExpRank(datasetContext);
+			var algo = new Chiarandini_MinSumExpRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
@@ -419,16 +433,23 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 	class Chiarandini_Stable_Utilitarian_MinSum_IdentityScheme implements GroupProjectAlgorithm
 	{
+		private final PregroupingType pregroupingType;
+		
+		public Chiarandini_Stable_Utilitarian_MinSum_IdentityScheme(PregroupingType pregroupingType)
+		{
+			this.pregroupingType = pregroupingType;
+		}
+		
 		@Override
 		public String name()
 		{
-			return "Chiaranini Stable Utilitarian MinSum - Identity Weights";
+			return "Chiaranini Stable Utilitarian MinSum - Identity Weights - " + pregroupingType.simpleName();
 		}
 
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = new Chiarandini_Stable_MinSumRank(datasetContext);
+			var algo = new Chiarandini_Stable_MinSumRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
@@ -437,16 +458,23 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 	class Chiarandini_Stable_Utilitarian_MinSum_ExpScheme implements GroupProjectAlgorithm
 	{
+		private final PregroupingType pregroupingType;
+		
+		public Chiarandini_Stable_Utilitarian_MinSum_ExpScheme(PregroupingType pregroupingType)
+		{
+			this.pregroupingType = pregroupingType;
+		}
+		
 		@Override
 		public String name()
 		{
-			return "Chiaranini Stable Utilitarian MinSum - Exp Weights";
+			return "Chiaranini Stable Utilitarian MinSum - Exp Weights - " + pregroupingType.simpleName();
 		}
 
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = new Chiarandini_Stable_MinSumExpRank(datasetContext);
+			var algo = new Chiarandini_Stable_MinSumExpRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
@@ -455,16 +483,23 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 	class Chiarandini_MiniMax_OWA implements GroupProjectAlgorithm
 	{
+		private final PregroupingType pregroupingType;
+		
+		public Chiarandini_MiniMax_OWA(PregroupingType pregroupingType)
+		{
+			this.pregroupingType = pregroupingType;
+		}
+		
 		@Override
 		public String name()
 		{
-			return "Chiaranini MiniMax-OWA";
+			return "Chiaranini MiniMax-OWA - " + pregroupingType.simpleName();
 		}
 
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = new Chiarandini_MinimaxOWA(datasetContext);
+			var algo = new Chiarandini_MinimaxOWA(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
@@ -473,16 +508,23 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 	class Chiaranini_Stable_MiniMax_OWA implements GroupProjectAlgorithm
 	{
+		private final PregroupingType pregroupingType;
+		
+		public Chiaranini_Stable_MiniMax_OWA(PregroupingType pregroupingType)
+		{
+			this.pregroupingType = pregroupingType;
+		}
+		
 		@Override
 		public String name()
 		{
-			return "Chiaranini Stable MiniMax-OWA";
+			return "Chiaranini Stable MiniMax-OWA - " + pregroupingType.simpleName();
 		}
 
 		@Override
 		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
 		{
-			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext);
+			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
 			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
