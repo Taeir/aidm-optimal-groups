@@ -2,7 +2,7 @@ package nl.tudelft.aidm.optimalgroups.model.matching;
 
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * The result of a matchings algorithm

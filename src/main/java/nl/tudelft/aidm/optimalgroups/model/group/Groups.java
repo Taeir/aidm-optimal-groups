@@ -7,6 +7,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,6 +46,23 @@ public interface Groups<G extends Group>
 			        .collect(collectingAndThen(toList(), Groups.ListBackedImpl<G>::new));
 	}
 	
+	/**
+	 * Filter groups to those only of the given sizes
+	 * @param sizes The acceptible sizes of groups
+	 * @return Groups of given sizes
+	 */
+	default Groups<G> ofSizes(Integer... sizes)
+	{
+		var sizesDedup = new HashSet<>(List.of(sizes));
+		
+		var list = new ArrayList<G>();
+		for (int size : sizesDedup)
+		{
+			list.addAll(this.ofSize(size).asCollection());
+		}
+		
+		return new Groups.ListBackedImpl<G>(list);
+	}
 	// =================================================
 	
 	/**

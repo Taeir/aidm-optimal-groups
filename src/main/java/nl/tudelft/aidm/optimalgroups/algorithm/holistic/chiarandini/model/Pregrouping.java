@@ -6,6 +6,8 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.function.Function;
 
 public interface Pregrouping
@@ -35,6 +37,30 @@ public interface Pregrouping
 		public Constraint constraint()
 		{
 			return constraint;
+		}
+	}
+	
+	class sizedClique implements Pregrouping
+	{
+		private final Groups<Group.TentativeGroup> groups;
+		private final Constraint constraint;
+		
+		public sizedClique(DatasetContext datasetContext, Function<Groups<?>, Constraint> groupingConstraintProvider, Integer... sizes)
+		{
+			this.groups = new CliqueGroups(datasetContext.allAgents()).ofSizes(sizes);
+			this.constraint = groupingConstraintProvider.apply(groups);
+		}
+		
+		@Override
+		public Groups<Group.TentativeGroup> groups()
+		{
+			return this.groups;
+		}
+		
+		@Override
+		public Constraint constraint()
+		{
+			return this.constraint;
 		}
 	}
 }

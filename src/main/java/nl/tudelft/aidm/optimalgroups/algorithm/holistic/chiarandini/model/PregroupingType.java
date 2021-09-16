@@ -5,7 +5,10 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.SoftGroupConstraint;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 
+import java.util.Arrays;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public interface PregroupingType
 {
@@ -13,6 +16,8 @@ public interface PregroupingType
 	Pregrouping instantiateFor(DatasetContext datasetContext);
 	
 	/* Factory Methods */
+	
+	// ANY CLIQUE
 	static PregroupingType anyCliqueHardGrouped()
 	{
 		return new NamedLambda(
@@ -34,6 +39,34 @@ public interface PregroupingType
 		return new NamedLambda(
 				"anyClique_condGrp" + upToIncludingRank,
 				(datasetContext) -> new Pregrouping.anyClique(datasetContext, groups -> new ConditionalGroupConstraint(groups, upToIncludingRank))
+		);
+	}
+	
+	/// SIZED
+	static PregroupingType sizedCliqueHardGrouped(Integer... sizes)
+	{
+		var sizesSetNotation = Arrays.stream(sizes).map(Object::toString).collect(Collectors.joining(",", "{", "}"));
+		return new NamedLambda(
+				"sizedCliques_hardGrp" + sizesSetNotation,
+				(datasetContext) -> new Pregrouping.sizedClique(datasetContext, HardGroupingConstraint::new, sizes)
+		);
+	}
+	
+	static PregroupingType sizedCliqueSoftGrouped(Integer... sizes)
+	{
+		var sizesSetNotation = Arrays.stream(sizes).map(Object::toString).collect(Collectors.joining(",", "{", "}"));
+		return new NamedLambda(
+				"sizedCliques_softGrp" + sizesSetNotation,
+				(datasetContext) -> new Pregrouping.sizedClique(datasetContext, SoftGroupConstraint::new, sizes)
+		);
+	}
+	
+	static PregroupingType sizedCliqueConditionallyGrouped(int upToIncludingRank, Integer... sizes)
+	{
+		var sizesSetNotation = Arrays.stream(sizes).map(Object::toString).collect(Collectors.joining(",", "{", "}"));
+		return new NamedLambda(
+				"sizedCliques_condGrp" + sizesSetNotation,
+				(datasetContext) -> new Pregrouping.sizedClique(datasetContext,  groups -> new ConditionalGroupConstraint(groups, upToIncludingRank), sizes)
 		);
 	}
 	
