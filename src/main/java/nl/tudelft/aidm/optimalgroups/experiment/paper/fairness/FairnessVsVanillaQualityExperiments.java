@@ -46,7 +46,7 @@ public class FairnessVsVanillaQualityExperiments
 			}
 			
 			new FairnessVsVanillaQualityExperimentReport(datasetContext, pregrouping, results)
-					.writeAsPdfToFile(new File("reports/thesis/fairness_" + Instant.now().getEpochSecond() + ".html"));
+					.writeAsHtmlToFile(new File("reports/thesis/fairness_" + Instant.now().getEpochSecond() + ".html"));
 			// result into document
 			
 		}

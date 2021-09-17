@@ -32,7 +32,11 @@ import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import plouchtch.assertion.Assert;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,18 +59,35 @@ public class FairnessVsVanillaQualityExperimentReport
 		this.results = results;
 	}
 	
-	public void writeAsPdfToFile(File file)
+	public void writeAsHtmlToFile(File file)
 	{
 		var html = this.asHtmlSource();
+		var htmlStyled = htmlWithCss(html);
 
-		MutableDataSet options = new MutableDataSet();
-
-		try {
-			PdfConverterExtension.exportToPdf(file.getAbsolutePath(), html, "", options);
+		try (var writer = new BufferedWriter(new FileWriter(file.getAbsoluteFile(), false))) {
+			writer.write(htmlStyled);
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	static String htmlWithCss(String html)
+	{
+		try
+		{
+			var css = new String(Thread.currentThread().getContextClassLoader().getResourceAsStream("markdown.css").readAllBytes(), StandardCharsets.UTF_8);
+
+			return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">\n" +
+				"<style type=\"text/css\">" + css + "</style>" +
+				"</head><body>" + html + "\n" +
+				"</body></html>";
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+
 	}
 	
 	public String asHtmlSource()
@@ -95,13 +116,13 @@ public class FairnessVsVanillaQualityExperimentReport
 	{
 		doc = new StringBuffer();
 		
-		heading("Experiment - " + datasetContext.identifier(), 2);
+		heading("Experiment - " + datasetContext.identifier(), 1);
 			
 			datasetInfo();
 			summary(results);
 			
 			for (var result : results) {
-				algoResultsInMarkdown(results);
+				algoResultInMarkdown(result);
 			}
 
 		return doc.toString();
@@ -129,7 +150,7 @@ public class FairnessVsVanillaQualityExperimentReport
 		var numSlots = datasetContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).findAny().getAsInt();
 		
 
-		heading("Dataset info", 3);
+		heading("Dataset info", 2);
 
 		unorderedList(
 			"\\#agents: " + numberAllStudents,
@@ -138,7 +159,7 @@ public class FairnessVsVanillaQualityExperimentReport
 			"group sizes, min: " + groupSize.minSize() + ", max: " + groupSize.maxSize()
 		);
 		
-		heading(numberAllStudents + " students, of which:", 4);
+		heading(numberAllStudents + " students, of which:", 3);
 		unorderedList(
 			String.format("%s / %s individual students (empty group-pref, or does not meet condition)", numberIndividualStudents, numberAllStudents),
 			String.format("%s / %s students who want to pre-group", numberStudentsWithGroupPref, numberAllStudents),
@@ -156,18 +177,10 @@ public class FairnessVsVanillaQualityExperimentReport
 		var popMatrix = new PopularityMatrix.TopicGroup(results);
 		var items = popMatrix.asSet().stream().map(Object::toString).collect(toList()).toArray(String[]::new);
 		
-		heading("Summary of results", 3);
-			heading("Algorithm popularity", 4);
+		heading("Summary of results", 2);
+			heading("Algorithm popularity", 3);
 				doc.append(Markdown.italic("Algorithm name followed by the number of agents, in braces, that prefer it over the other") + "\n");
 				unorderedList(items);
-	}
-
-	private void algoResultsInMarkdown(List<GroupProjectAlgorithm.Result> results)
-	{
-		for (var result : results)
-		{
-			algoResultInMarkdown(result);
-		}
 	}
 
 	private void algoResultInMarkdown(GroupProjectAlgorithm.Result algoResult)
@@ -186,9 +199,9 @@ public class FairnessVsVanillaQualityExperimentReport
 		var studentPerspectiveMetrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(algoResult.producedMatching()));
 		var groupPerspectiveMetrics = new MatchingMetrics.GroupProject(algoResult.producedMatching());
 		
-		heading("Algorithm: " + algoResult.algo().name(), 3);
+		heading("Algorithm: " + algoResult.algo().name(), 2);
 
-			heading("Individuals' perspective", 4);
+			heading("Individuals' perspective", 3);
 	
 				var numStudentsMatched = NumberAgentsMatched.fromGroupMatching(algoResult.producedMatching()).asInt();
 				int numStudentsInDataset = datasetContext.allAgents().count();
@@ -202,7 +215,7 @@ public class FairnessVsVanillaQualityExperimentReport
 				image(bestWorstIndividualRankInGroupDistribution);
 		
 		
-				heading("General perspective", 5);
+				heading("General perspective", 4);
 				
 					unorderedList(
 						"Gini: " + studentPerspectiveMetrics.giniCoefficient().asDouble(),
@@ -210,7 +223,7 @@ public class FairnessVsVanillaQualityExperimentReport
 						"Worst rank: " + studentPerspectiveMetrics.worstRank().asInt()
 					);
 		
-				heading("'Single' students perspective", 5);
+				heading("'Single' students perspective", 4);
 				//			doc.append(Markdown.image(embed(algoResult.projectProfileCurveGroup.asChart())) + "\n");
 				
 					var giniSingles = new GiniCoefficientStudentRank(matchingSingles);
@@ -221,7 +234,7 @@ public class FairnessVsVanillaQualityExperimentReport
 						"AUPCR: " + aupcrSingles.asDouble()
 					);
 				
-				heading("'Pre-grouped' students perspective", 5);
+				heading("'Pre-grouped' students perspective", 4);
 				//			doc.append(Markdown.image(embed(algoResult.projectProfileCurveGroup.asChart())) + "\n");
 		
 					var giniPregrouped = new GiniCoefficientStudentRank(matchingPregrouped);
@@ -233,13 +246,13 @@ public class FairnessVsVanillaQualityExperimentReport
 					);
 
 
-			heading("Groups' perspective", 4);
-//			doc.append(Markdown.image(embed(algoResult.projectProfileCurveGroup.asChart())) + "\n");
-		
-				unorderedList(
-					"Gini: " + groupPerspectiveMetrics.giniCoefficient().asDouble(),
-					"AUPCR: " + groupPerspectiveMetrics.aupcr().asDouble()
-				);
+//			heading("Groups' perspective", 4);
+////			doc.append(Markdown.image(embed(algoResult.projectProfileCurveGroup.asChart())) + "\n");
+//
+//				unorderedList(
+//					"Gini: " + groupPerspectiveMetrics.giniCoefficient().asDouble(),
+//					"AUPCR: " + groupPerspectiveMetrics.aupcr().asDouble()
+//				);
 				
 	}
 	
@@ -250,7 +263,7 @@ public class FairnessVsVanillaQualityExperimentReport
 	
 	private void unorderedList(String... items)
 	{
-		doc.append(Markdown.unorderedList((Object[]) items)).append("\n");
+		doc.append(Markdown.unorderedList((Object[]) items)).append("\n\n");
 	}
 	
 	private void text(String text)
