@@ -41,6 +41,12 @@ public class CombinedPreference implements ProjectPreference {
     {
         return projectPreference.owner();
     }
+    
+    @Override
+    public boolean isCompletelyIndifferent()
+	{
+		return groupPreference.count() == 0 && projectPreference.isCompletelyIndifferent();
+	}
 
     @Override
     public Project[] asArray() {
