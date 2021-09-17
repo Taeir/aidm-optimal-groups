@@ -31,8 +31,12 @@ public interface ProjectPreference
 	{
 		IterationControl control = new IterationControl();
 		
-		for (Project proj : this.asList()) {
-			var rank = rankOf(proj);
+		// TODO: note that the unacceptable projects are not included :x
+		for (var entry : this.asMap().entrySet()) {
+			
+			var proj = entry.getKey();
+			var rank = entry.getValue();
+			
 			iter.apply(proj, rank, control);
 			
 			if (control._breakFlag) break;
