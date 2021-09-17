@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref.RawProjectPreferencesIn
 import nl.tudelft.aidm.optimalgroups.model.HasProjectPrefs;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
+import nl.tudelft.aidm.optimalgroups.model.pref.base.ListBasedProjectPreferences;
 
 import javax.sql.DataSource;
 import java.util.HashSet;
@@ -89,6 +90,8 @@ public abstract class Agent implements HasProjectPrefs
 	 */
 	public static class AgentInBepSysSchemaDb extends Agent
 	{
+		private final DataSource dataSource;
+		
 		/**
 		 * This agent comes from a BepSys/PF database and has a user_id. For such datasets,
 		 * we need to communicate the matching back to the other application and for that
@@ -104,8 +107,14 @@ public abstract class Agent implements HasProjectPrefs
 				new GroupPreferenceInDb(dataSource, bepSysUserId, courseEdition),
 				courseEdition
 			);
-
+			
+			this.dataSource = dataSource;
 			this.bepSysUserId = bepSysUserId;
+		}
+		
+		public AgentInBepSysSchemaDb(AgentInBepSysSchemaDb agentToCopy, CourseEdition newCourseEdition)
+		{
+			this(agentToCopy.dataSource, agentToCopy.sequenceNumber, agentToCopy.bepSysUserId, newCourseEdition);
 		}
 		
 		@Override

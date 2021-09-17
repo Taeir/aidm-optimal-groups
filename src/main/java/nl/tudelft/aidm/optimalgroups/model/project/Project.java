@@ -77,7 +77,7 @@ public interface Project
 	}
 
 	/**
-	 * Project with a default / hardcoded amount of slots
+	 * Project with a bepsys identifier
 	 */
 	class BepSysProject extends ProjectWithStaticSlotAmount
 	{

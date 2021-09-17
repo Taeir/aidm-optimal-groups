@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.experiment.dataset;
 
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
+import nl.tudelft.aidm.optimalgroups.dataset.bepsys.LocallyModifiedCourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -9,13 +10,11 @@ import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFixes;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import plouchtch.assertion.Assert;
 
-public class ResearchProject2021Q4Dataset extends CourseEdition
+public class ResearchProject2021Q4Dataset extends LocallyModifiedCourseEdition
 {
 	private static final int courseEditionId = 39;
+	
 	private final String stringIdentifier;
-	private final Projects projects;
-	private final Agents agentsFiltered;
-	private final GroupSizeConstraint groupSizeConstraint;
 	
 	/**
 	 * Creates a processed instance of the RP 2021 Q4 dataset
@@ -30,20 +29,17 @@ public class ResearchProject2021Q4Dataset extends CourseEdition
 		
 		var updatedIdentifier = dataset.identifier().replaceAll("\\[s\\d+", "[s" + agentsFiltered.count());
 		
-		return new ResearchProject2021Q4Dataset(updatedIdentifier + "_processed", projects, agentsFiltered, dataset.groupSizeConstraint());
+		return new ResearchProject2021Q4Dataset(dataset, projects, agentsFiltered, dataset.groupSizeConstraint(), updatedIdentifier + "_processed");
 	}
 	
 	/**
 	 * Private constructor, simply passes the params to the ManualDatasetContext constructor which then simply sets the fields
 	 */
-	private ResearchProject2021Q4Dataset(String stringIdentifier, Projects projects, Agents agentsFiltered, GroupSizeConstraint groupSizeConstraint)
+	private ResearchProject2021Q4Dataset(CourseEdition courseEdition, Projects projects, Agents agentsFiltered, GroupSizeConstraint groupSizeConstraint, String stringIdentifier)
 	{
-		super(courseEditionId);
+		super(courseEdition, agentsFiltered, projects);
 		
 		this.stringIdentifier = stringIdentifier;
-		this.projects = projects;
-		this.agentsFiltered = agentsFiltered;
-		this.groupSizeConstraint = groupSizeConstraint;
 	}
 	
 	@Override
@@ -56,24 +52,6 @@ public class ResearchProject2021Q4Dataset extends CourseEdition
 	public String toString()
 	{
 		return stringIdentifier;
-	}
-	
-	@Override
-	public Projects allProjects()
-	{
-		return projects;
-	}
-	
-	@Override
-	public Agents allAgents()
-	{
-		return agentsFiltered;
-	}
-	
-	@Override
-	public GroupSizeConstraint groupSizeConstraint()
-	{
-		return groupSizeConstraint;
 	}
 	
 	/**

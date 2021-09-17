@@ -1,22 +1,11 @@
 package nl.tudelft.aidm.optimalgroups.dataset.bepsys;
 
-import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import nl.tudelft.aidm.optimalgroups.model.project.Projects;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.project.ProjectsInDb;
-import org.sql2o.GenericDatasource;
-import org.sql2o.Query;
-import org.sql2o.ResultSetHandler;
-import org.sql2o.Sql2o;
-import plouchtch.util.ComputerName;
 
-import javax.sql.DataSource;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.Optional;
 
 public abstract class CourseEdition implements DatasetContext
 {
