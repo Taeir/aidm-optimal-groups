@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.model.matching;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -9,6 +10,7 @@ import plouchtch.assertion.Assert;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
@@ -41,6 +43,15 @@ public interface AgentToProjectMatching extends Matching<Agent, Project>
 	{
 		return (int) this.asList().stream().map(Match::from).distinct().count();
 	}
+	
+	default AgentToProjectMatching filteredBy(Agents toKeep)
+	{
+		if (toKeep.count() == 0) {
+			return new Simple(datasetContext());
+		}
+		
+		return new FilteredAgentToProjectMatching(this, toKeep);
+	}
 
 	/**
 	 * Default, simple implementation of AgentToProjectMatching
@@ -64,6 +75,34 @@ public interface AgentToProjectMatching extends Matching<Agent, Project>
 			// Projects are context-less ...
 //			Assert.that(match.to().context.equals(datasetContext())).orThrowMessage("Cannot include match in matching, datasetcontext mismatch");
 			super.add(match);
+		}
+	}
+	
+	class FilteredAgentToProjectMatching implements AgentToProjectMatching
+	{
+		private final Simple matching;
+		
+		FilteredAgentToProjectMatching(AgentToProjectMatching original, Agents agentsToKeep)
+		{
+			Assert.that(original.datasetContext() == agentsToKeep.datasetContext).orThrowMessage("Dataset contexts mismatch");
+			
+			var filtered = original.asList().stream()
+		           .filter(match -> agentsToKeep.contains(match.from()))
+		           .collect(Collectors.toList());
+			
+			this.matching = new AgentToProjectMatching.Simple(original.datasetContext(), filtered);
+		}
+		
+		@Override
+		public List<Match<Agent, Project>> asList()
+		{
+			return this.matching.asList();
+		}
+		
+		@Override
+		public DatasetContext datasetContext()
+		{
+			return this.matching.datasetContext();
 		}
 	}
 }
