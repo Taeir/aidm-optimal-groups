@@ -33,4 +33,16 @@ public class UnacceptableAlternativeRank implements RankInPref
 				project, owner)
 		);
 	}
+	
+	@Override
+	public boolean equals(Object other)
+	{
+		return other instanceof UnacceptableAlternativeRank;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return 0;
+	}
 }

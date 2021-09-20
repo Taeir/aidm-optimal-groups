@@ -44,7 +44,7 @@ public class PresentRankInPref implements RankInPref
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(rank);
+		return rank;
 	}
 	
 	@Override

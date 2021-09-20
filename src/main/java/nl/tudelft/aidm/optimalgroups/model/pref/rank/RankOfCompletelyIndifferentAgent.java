@@ -33,4 +33,16 @@ public class RankOfCompletelyIndifferentAgent implements RankInPref
 	{
 		throw new RuntimeException(String.format("The agent (%s) is indifferent, and has no rank for the given project (%s)", owner, project));
 	}
+	
+	@Override
+	public boolean equals(Object other)
+	{
+		return other instanceof RankOfCompletelyIndifferentAgent;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return 1;
+	}
 }
