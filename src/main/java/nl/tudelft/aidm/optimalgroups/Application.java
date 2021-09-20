@@ -32,7 +32,7 @@ public class Application
 	public static final int courseEditionId = 10;
 	public static final int iterations = 1;
 	public static final String groupMatchingAlgorithm = "CombinedPreferencesGreedy";
-	public static String preferenceAggregatingMethod = "Copeland";
+	public static String preferenceAggregatingMethod = "Borda";
 	public static final String projectAssignmentAlgorithm = "MaxFlow";
 
 	public static void main(String[] args)
