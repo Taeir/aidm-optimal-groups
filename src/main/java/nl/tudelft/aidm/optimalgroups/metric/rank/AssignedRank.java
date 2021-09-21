@@ -113,12 +113,6 @@ public interface AssignedRank
 		@Override
 		public OptionalInt asInt()
 		{
-			determine();
-			return rankAsInt;
-		}
-
-		private void determine()
-		{
 			if (rankAsInt == null) {
 				// Hmmm, AssignedRank existed before rankOf started returning RankInPref's
 				var rank = student.projectPreference().rankOf(project);
@@ -127,6 +121,8 @@ public interface AssignedRank
 				else if (rank.isCompletelyIndifferent()) rankAsInt = OptionalInt.empty();
 				else rankAsInt = OptionalInt.of(rank.asInt());
 			}
+			
+			return rankAsInt;
 		}
 
 		@Override

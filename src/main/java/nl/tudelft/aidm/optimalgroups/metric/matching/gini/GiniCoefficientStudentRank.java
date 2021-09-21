@@ -13,18 +13,18 @@ import java.util.stream.Collectors;
 
 public class GiniCoefficientStudentRank implements GiniCoefficient
 {
-	private Match<Group.FormedGroup, Project> match;
 	private final double giniCoefficient;
 
 	public GiniCoefficientStudentRank(Matching<Agent, Project> matching)
 	{
 		int worstRank = new WorstAssignedRank.ProjectToStudents(matching).asInt();
 
-		var welfare = AssignedRank.ProjectToStudent.inStudentMatching(matching)
-			.map(AssignedRank.ProjectToStudent::asInt)
-			.flatMap(optionalInt -> optionalInt.stream().boxed())
-			.map(rank -> worstRank - rank +1)
-			.collect(Collectors.toList());
+		var welfare = matching.asList().stream()
+				.map(match -> match.from().projectPreference().rankOf(match.to()))
+				.filter(rank -> rank.isPresent() || rank.unacceptable())
+				// flip rank to income (good rank -> higher income) and handle unacceptibles by assigned them income = 0
+				.map(rank -> rank.unacceptable() ? 0 : worstRank - rank.asInt() + 1)
+				.collect(Collectors.toList());
 
 		var sumAbsDiff = welfare.stream().flatMap(i ->
 				welfare.stream().map(j ->
