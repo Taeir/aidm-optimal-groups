@@ -15,6 +15,7 @@ import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileOfIndividualAndGroupingStudents;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.group.LeastWorstIndividualRankInGroupDistribution;
@@ -207,12 +208,13 @@ public class FairnessVsVanillaQualityExperimentReport
 				int numStudentsInDataset = datasetContext.allAgents().count();
 				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
 		
-				var rankDistribution = studentPerspectiveMetrics.rankDistribution().asChart(algoResult.algo().name());
+				var rankDistribution = new RankProfileOfIndividualAndGroupingStudents(matchingSingles, matchingPregrouped)
+						.asChart(algoResult.algo().name());
 				image(rankDistribution);
 		
-				var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
-				var bestWorstIndividualRankInGroupDistribution = new LeastWorstIndividualRankInGroupDistribution(groups).asChart();
-				image(bestWorstIndividualRankInGroupDistribution);
+//				var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
+//				var bestWorstIndividualRankInGroupDistribution = new LeastWorstIndividualRankInGroupDistribution(groups).asChart();
+//				image(bestWorstIndividualRankInGroupDistribution);
 		
 		
 				heading("General perspective", 4);
