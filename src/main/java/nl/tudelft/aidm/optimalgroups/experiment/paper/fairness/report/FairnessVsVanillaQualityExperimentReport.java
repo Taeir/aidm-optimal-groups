@@ -23,8 +23,10 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.matching.NumberAgentsMatched;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
 import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientStudentRank;
+import nl.tudelft.aidm.optimalgroups.metric.matching.group.NumberProposedGroupsTogether;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
@@ -40,8 +42,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
@@ -162,10 +167,19 @@ public class FairnessVsVanillaQualityExperimentReport
 		
 		heading(numberAllStudents + " students, of which:", 3);
 		unorderedList(
-			String.format("%s / %s individual students (empty group-pref, or does not meet condition)", numberIndividualStudents, numberAllStudents),
-			String.format("%s / %s students who want to pre-group", numberStudentsWithGroupPref, numberAllStudents),
-			String.format("%s / %s indifferent students (empty project pref)", numberIndifferentStudents, numberAllStudents)
+			String.format("%s / %s individual students (have no grouping pref, or do not meet conditions)", numberIndividualStudents, numberAllStudents),
+			String.format("%s / %s of which are indifferent (no project preference)", numberIndifferentStudents, numberAllStudents),
+			String.format("%s / %s students who want to pre-group -- %s groups", numberStudentsWithGroupPref, numberAllStudents, pregrouping.groups().count())
 		);
+		
+		var pregroupingClusters = pregrouping.groups().asCollection().stream().map(g -> g.members().count()).collect(groupingBy(x->x, counting()));
+		var pregroupingClustersStrings = pregroupingClusters.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey())
+				.map(entry -> String.format("Groups with %s members: %s", entry.getKey(), entry.getValue()))
+				.toArray(String[]::new);
+		
+		heading("Requested, valid pre-groupings:", 3);
+		unorderedList(pregroupingClustersStrings);
 
 		image(AvgPreferenceRankOfProjects.ofAgentsInDatasetContext(datasetContext).asChart());
 
@@ -186,25 +200,26 @@ public class FairnessVsVanillaQualityExperimentReport
 
 	private void algoResultInMarkdown(GroupProjectAlgorithm.Result algoResult)
 	{
-		var datasetContext = algoResult.producedMatching().datasetContext();
+		var matching = algoResult.producedMatching();
+		var datasetContext = matching.datasetContext();
 		
 		var preformedGroups = pregrouping.groups();
 		var pregroupingStudents = preformedGroups.asAgents();
 		var singleStudents = datasetContext.allAgents().without(pregroupingStudents);
 		
-		var matchingIndividualsToProjects = AgentToProjectMatching.from(algoResult.producedMatching());
+		var matchingIndividualsToProjects = AgentToProjectMatching.from(matching);
 		
 		var matchingSingles = matchingIndividualsToProjects.filteredBy(singleStudents);
 		var matchingPregrouped = matchingIndividualsToProjects.filteredBy(pregroupingStudents);
 		
-		var studentPerspectiveMetrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(algoResult.producedMatching()));
-		var groupPerspectiveMetrics = new MatchingMetrics.GroupProject(algoResult.producedMatching());
+		var studentPerspectiveMetrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(matching));
+		var groupPerspectiveMetrics = new MatchingMetrics.GroupProject(matching);
 		
 		heading("Algorithm: " + algoResult.algo().name(), 2);
 
 			heading("Individuals' perspective", 3);
 	
-				var numStudentsMatched = NumberAgentsMatched.fromGroupMatching(algoResult.producedMatching()).asInt();
+				var numStudentsMatched = NumberAgentsMatched.fromGroupMatching(matching).asInt();
 				int numStudentsInDataset = datasetContext.allAgents().count();
 				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
 		
@@ -242,7 +257,9 @@ public class FairnessVsVanillaQualityExperimentReport
 					var giniPregrouped = new GiniCoefficientStudentRank(matchingPregrouped);
 					var aupcrPregrouped = new AUPCRStudent(matchingPregrouped);
 		
+					var numPreformedGroupsTogether = new NumberProposedGroupsTogether(matching, preformedGroups).asInt();
 					unorderedList(
+							String.format("Number of preformed groups together: %s / %s ", numPreformedGroupsTogether, preformedGroups.count()),
 						"Gini: " + giniPregrouped.asDouble(),
 						"AUPCR: " + aupcrPregrouped.asDouble()
 					);
