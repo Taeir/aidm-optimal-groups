@@ -68,7 +68,7 @@ public class CourseEditionFromDb extends CourseEdition
 	@Override
 	public String identifier()
 	{
-		return String.format("CourseEdition[%s]_[s%s_p%s]_%s", courseEditionId, allAgents().count(), allProjects().count(), groupSizeConstraint);
+		return String.format("CourseEdition[%s]_[s%s_p%s]_%s", courseEditionId, allAgents().count(), allProjects().count(), groupSizeConstraint());
 	}
 
 	@Override
