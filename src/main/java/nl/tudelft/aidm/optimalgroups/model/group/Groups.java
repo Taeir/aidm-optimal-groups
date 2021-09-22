@@ -2,14 +2,13 @@ package nl.tudelft.aidm.optimalgroups.model.group;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import plouchtch.assertion.Assert;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
@@ -62,6 +61,31 @@ public interface Groups<G extends Group>
 		
 		return new Groups.ListBackedImpl<G>(list);
 	}
+	
+	default boolean contains(Agent agent)
+	{
+		return this.asAgents().contains(agent);
+	}
+	
+	/**
+	 * Used to check if a group with the given members exists. Or more formally,
+	 * given a grouping g' if there is a g in this groups such that g' subset of g
+	 * @param subset
+	 * @return True if there is a group that is a superset of the given set
+	 */
+	default boolean containsSupersetOf(G subset)
+	{
+		var subsetMembers = subset.members().asCollection();
+		
+		Predicate<G> isSuperset = (G set) -> set.members().asCollection().containsAll(subsetMembers);
+		
+		Assert.that(this.asCollection().stream().filter(isSuperset).count() <= 1)
+			.orThrowMessage("Bugcheck: containsSupersetOf found multiple groups...");
+		
+		return this.asCollection().stream()
+			       .anyMatch(isSuperset);
+	}
+	
 	// =================================================
 	
 	/**

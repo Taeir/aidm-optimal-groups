@@ -52,6 +52,13 @@ public interface AgentToProjectMatching extends Matching<Agent, Project>
 		
 		return new FilteredAgentToProjectMatching(this, toKeep);
 	}
+	
+	default Agents agents()
+	{
+		return this.asList().stream().map(Match::from)
+				.distinct() // what-if
+				.collect(Agents.collector);
+	}
 
 	/**
 	 * Default, simple implementation of AgentToProjectMatching

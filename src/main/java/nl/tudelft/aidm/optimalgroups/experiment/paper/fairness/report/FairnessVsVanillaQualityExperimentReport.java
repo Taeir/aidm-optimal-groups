@@ -16,6 +16,7 @@ import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileOfIndividualAndGroupingStudents;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfile_SinglePregroupingSatisfiedUnsatisfied;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.group.LeastWorstIndividualRankInGroupDistribution;
@@ -203,14 +204,21 @@ public class FairnessVsVanillaQualityExperimentReport
 		var matching = algoResult.producedMatching();
 		var datasetContext = matching.datasetContext();
 		
+		
 		var preformedGroups = pregrouping.groups();
 		var pregroupingStudents = preformedGroups.asAgents();
 		var singleStudents = datasetContext.allAgents().without(pregroupingStudents);
+		
 		
 		var matchingIndividualsToProjects = AgentToProjectMatching.from(matching);
 		
 		var matchingSingles = matchingIndividualsToProjects.filteredBy(singleStudents);
 		var matchingPregrouped = matchingIndividualsToProjects.filteredBy(pregroupingStudents);
+		var matchingPregroupedSatisfied = AgentToProjectMatching.from( matching.filteredBySubsets(preformedGroups) );
+		var pregroupingStudentsSatisfied = matchingPregroupedSatisfied.agents();
+		var pregroupingStudentsUnsatisfied = pregroupingStudents.without(pregroupingStudentsSatisfied);
+		var matchingPregroupedUnsatified = matchingIndividualsToProjects.filteredBy(pregroupingStudentsUnsatisfied);
+		
 		
 		var studentPerspectiveMetrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(matching));
 		var groupPerspectiveMetrics = new MatchingMetrics.GroupProject(matching);
@@ -223,7 +231,7 @@ public class FairnessVsVanillaQualityExperimentReport
 				int numStudentsInDataset = datasetContext.allAgents().count();
 				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
 		
-				var rankDistribution = new RankProfileOfIndividualAndGroupingStudents(matchingSingles, matchingPregrouped)
+				var rankDistribution = new RankProfile_SinglePregroupingSatisfiedUnsatisfied(matchingSingles, matchingPregroupedSatisfied, matchingPregroupedUnsatified)
 						.asChart(algoResult.algo().name());
 				image(rankDistribution);
 		
@@ -251,7 +259,7 @@ public class FairnessVsVanillaQualityExperimentReport
 						"AUPCR: " + aupcrSingles.asDouble()
 					);
 				
-				heading("'Pre-grouped' students perspective", 4);
+				heading("'Pre-grouped' students perspective (regardless of grouping satisfaction)", 4);
 				//			doc.append(Markdown.image(embed(algoResult.projectProfileCurveGroup.asChart())) + "\n");
 		
 					var giniPregrouped = new GiniCoefficientStudentRank(matchingPregrouped);

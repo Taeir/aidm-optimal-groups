@@ -18,16 +18,19 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import java.awt.*;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 @SuppressWarnings("DuplicatedCode")
-public class RankProfileOfIndividualAndGroupingStudents
+public class RankProfile_SinglePregroupingSatisfiedUnsatisfied
 {
 	private final Matching<Agent, Project> single;
-	private final Matching<Agent, Project> pregrouping;
+	private final Matching<Agent, Project> satisfiedPregrouping;
+	private final Matching<Agent, Project> unsatisfiedPregrouping;
 	
-	public RankProfileOfIndividualAndGroupingStudents(Matching<Agent, Project> single, Matching<Agent, Project> pregrouping)
+	public RankProfile_SinglePregroupingSatisfiedUnsatisfied(Matching<Agent, Project> single, Matching<Agent, Project> satisfiedPregrouping, Matching<Agent, Project> unsatisfiedPregrouping)
 	{
 		this.single = single;
-		this.pregrouping = pregrouping;
+		this.satisfiedPregrouping = satisfiedPregrouping;
+		this.unsatisfiedPregrouping = unsatisfiedPregrouping;
 	}
 	
 	public JFreeChart asChart(String titleHint)
@@ -75,7 +78,8 @@ public class RankProfileOfIndividualAndGroupingStudents
 		var dataset = new DefaultCategoryDataset();
 		
 		matchingToDataset(single, "'Single' student", dataset);
-		matchingToDataset(pregrouping, "'Pregrouping' student", dataset);
+		matchingToDataset(satisfiedPregrouping, "Satisfied 'pregrouping' student", dataset);
+		matchingToDataset(unsatisfiedPregrouping, "Unsatisfied 'pregrouping' student", dataset);
 		
 		return dataset;
 	}
@@ -96,9 +100,9 @@ public class RankProfileOfIndividualAndGroupingStudents
 			            .map(assignedRank -> assignedRank.asInt().getAsInt())
 			            .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
 		
-		var maxRank = ranks.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+		var maxRank = ranks.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
 		// Range is categorical, so make sure all ranks are present for readability and easy comparability between charts
-		for (int i = 1; i < maxRank; i++)
+		for (int i = 1; i <= maxRank; i++)
 		{
 			ranks.putIfAbsent(i, 0L);
 		}

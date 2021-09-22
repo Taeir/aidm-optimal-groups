@@ -22,4 +22,37 @@ public interface GroupToProjectMatching<G extends Group> extends Matching<G, Pro
 //	{
 //		return new WorstRankAssignedProjectToGroup(this);
 //	}
+	
+	static GroupToProjectMatching<Group.FormedGroup> byTriviallyPartitioning(AgentToProjectMatching agentToProjectMatching)
+	{
+		return FormedGroupToProjectMatching.byTriviallyPartitioning(agentToProjectMatching);
+	}
+	
+	/**
+	 * Filters the matching by groups that are supersets of the given groups
+	 * @param groups The groups to filter by (subsets)
+	 * @return A matching holding holding only groups that are (super)sets of the given groups
+	 */
+	default GroupToProjectMatching<G> filteredBySubsets(Groups<?> groups)
+	{
+		var filteredMatches = this.asList().stream()
+			    // Filter out any groups that are not a superset of one of the given groups
+				.filter(match -> groups.asCollection().stream().anyMatch(givenGroup -> match.from().members().containsAll(givenGroup.members())))
+				.collect(Collectors.toList());
+		
+		return new GroupToProjectMatching<G>()
+		{
+			@Override
+			public List<Match<G, Project>> asList()
+			{
+				return filteredMatches;
+			}
+			
+			@Override
+			public DatasetContext datasetContext()
+			{
+				return GroupToProjectMatching.this.datasetContext();
+			}
+		};
+	}
 }
