@@ -20,6 +20,8 @@ public class FairnessVsVanillaQualityExperiments
 {
 	public static void main(String[] args)
 	{
+		var experimentsRunId = Instant.now().getEpochSecond();
+		
 		var pregroupingType = PregroupingType.anyCliqueSoftGrouped();
 		
 		var algorithms = List.of(
@@ -45,8 +47,10 @@ public class FairnessVsVanillaQualityExperiments
 				results.add(result);
 			}
 			
+			var fileName = String.format("fairness_%s_CE(%s)", experimentsRunId, datasetContext.bepSysId());
+			
 			new FairnessVsVanillaQualityExperimentReport(datasetContext, pregrouping, results)
-					.writeAsHtmlToFile(new File("reports/thesis/fairness_" + Instant.now().getEpochSecond() + ".html"));
+					.writeAsHtmlToFile(new File("reports/thesis/" + fileName + ".html"));
 			// result into document
 			
 		}
