@@ -21,7 +21,7 @@ import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 
 import java.util.Objects;
 
@@ -137,7 +137,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 				// Cost assignment function: the max rank between the individuals within that group
 				(projectPreference, theProject) -> {
-					var aggPref = ((AggregatedProfilePreference) projectPreference);
+					var aggPref = ((AggregatedProjectPreference) projectPreference);
 					return aggPref.agentsAggregatedFrom().asCollection().stream()
 						.map(Agent::projectPreference)
 						.mapToInt(pp -> {
@@ -177,7 +177,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 
 				// Cost assignment function: the max rank between the individuals within that group
 				(projectPreference, theProject) -> {
-					var aggPref = ((AggregatedProfilePreference) projectPreference);
+					var aggPref = ((AggregatedProjectPreference) projectPreference);
 					return aggPref.agentsAggregatedFrom().asCollection().stream()
 						.map(Agent::projectPreference)
 //						.filter(Predicate.not(ProjectPreference::isCompletelyIndifferent))

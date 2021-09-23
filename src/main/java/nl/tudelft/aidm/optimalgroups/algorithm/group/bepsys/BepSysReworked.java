@@ -8,9 +8,8 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
-import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -303,7 +302,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, AggregatedProfilePreference.usingGloballyConfiguredMethod(agents));
+            return new Group.TentativeGroup(agents, AggregatedProjectPreference.usingGloballyConfiguredMethod(agents));
         }
     }
 
@@ -332,7 +331,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
         public Group.TentativeGroup asTentativeGroup()
         {
             Agents agents = g1.members().with(g2.members());
-            ProjectPreference preferences = AggregatedProfilePreference.usingGloballyConfiguredMethod(agents);
+            ProjectPreference preferences = AggregatedProjectPreference.usingGloballyConfiguredMethod(agents);
 
             return new Group.TentativeGroup(agents, preferences);
         }
@@ -377,7 +376,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
     {
         private final Agent agent;
         private final Collection<Agent> exclude;
-        private AggregatedProfilePreference projectPrefs;
+        private AggregatedProjectPreference projectPrefs;
         private Agents members;
 
         public GroupProposal(Agent agent)
@@ -408,7 +407,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
         public ProjectPreference projectPreference()
         {
             if (projectPrefs == null) {
-                this.projectPrefs = AggregatedProfilePreference.usingGloballyConfiguredMethod(members());
+                this.projectPrefs = AggregatedProjectPreference.usingGloballyConfiguredMethod(members());
             }
 
             return this.projectPrefs;

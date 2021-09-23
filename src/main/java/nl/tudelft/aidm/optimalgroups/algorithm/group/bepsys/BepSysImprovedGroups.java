@@ -9,7 +9,7 @@ import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.TentativeGroups;
 import nl.tudelft.aidm.optimalgroups.model.pref.*;
-import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 
@@ -346,7 +346,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = Agents.from(members);
-            return new Group.TentativeGroup(agents, AggregatedProfilePreference.usingGloballyConfiguredMethod(agents));
+            return new Group.TentativeGroup(agents, AggregatedProjectPreference.usingGloballyConfiguredMethod(agents));
         }
     }
 
@@ -374,7 +374,7 @@ public class BepSysImprovedGroups implements GroupFormingAlgorithm
         public Group.TentativeGroup toGroup()
         {
             Agents agents = g1.members().with(g2.members());
-            ProjectPreference preferences = AggregatedProfilePreference.usingGloballyConfiguredMethod(agents);
+            ProjectPreference preferences = AggregatedProjectPreference.usingGloballyConfiguredMethod(agents);
 
             return new Group.TentativeGroup(agents, preferences);
         }

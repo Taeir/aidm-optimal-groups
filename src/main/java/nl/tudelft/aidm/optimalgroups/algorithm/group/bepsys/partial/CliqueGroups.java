@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
-import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 
 import java.util.Collections;
@@ -67,7 +67,7 @@ public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 				var peers = student.groupPreference.asListOfAgents();
 				var proposedGroup = Agents.from(student).with(peers);
 
-				var tentativeGroup = new Group.TentativeGroup(proposedGroup, AggregatedProfilePreference.usingGloballyConfiguredMethod(proposedGroup));
+				var tentativeGroup = new Group.TentativeGroup(proposedGroup, AggregatedProjectPreference.usingGloballyConfiguredMethod(proposedGroup));
 				tentativelyFormed.add(tentativeGroup);
 
 				available.removeAll(tentativeGroup.members().asCollection());

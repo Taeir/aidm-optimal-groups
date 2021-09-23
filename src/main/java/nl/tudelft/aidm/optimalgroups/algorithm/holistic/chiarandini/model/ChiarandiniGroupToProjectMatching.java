@@ -8,7 +8,7 @@ import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatch;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
-import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class ChiarandiniGroupToProjectMatching implements GroupToProjectMatching
 		
 		asMap.forEach((projectSlot, agents) -> {
 			var members = Agents.from(agents);
-			var aggProjectPreferences = AggregatedProfilePreference.usingGloballyConfiguredMethod(members);
+			var aggProjectPreferences = AggregatedProjectPreference.usingGloballyConfiguredMethod(members);
 			
 			var grp = new Group.FormedGroup(members, aggProjectPreferences, index.getAndIncrement());
 			asList.add(new GroupToProjectMatch<>(grp, projectSlot.belongingToProject()));

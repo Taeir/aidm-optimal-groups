@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
-import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 import plouchtch.assertion.Assert;
 
 import java.util.*;
@@ -64,7 +64,7 @@ public class TrivialGroupPartitioning extends Groups.ListBacked<Group.FormedGrou
 				}
 
 				var groupAsAgents = Agents.from(group);
-				var projPrefs = AggregatedProfilePreference.usingGloballyConfiguredMethod(groupAsAgents);
+				var projPrefs = AggregatedProjectPreference.usingGloballyConfiguredMethod(groupAsAgents);
 				var tentativeGroup = new Group.TentativeGroup(Agents.from(group), projPrefs);
 				groupsTemp.addAsFormed(tentativeGroup);
 			}
@@ -79,7 +79,7 @@ public class TrivialGroupPartitioning extends Groups.ListBacked<Group.FormedGrou
 				}
 
 				var groupAsAgents = Agents.from(group);
-				var projPrefs = AggregatedProfilePreference.usingGloballyConfiguredMethod(groupAsAgents);
+				var projPrefs = AggregatedProjectPreference.usingGloballyConfiguredMethod(groupAsAgents);
 				var tentativeGroup = new Group.TentativeGroup(Agents.from(group), projPrefs);
 				groupsTemp.addAsFormed(tentativeGroup);
 			}

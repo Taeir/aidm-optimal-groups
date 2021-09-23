@@ -9,7 +9,7 @@ import nl.tudelft.aidm.optimalgroups.model.group.FormedGroups;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
-import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProfilePreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class SingleGroupPerProjectMatching implements GroupToProjectMatching<Gro
 
 		agentToProjectMatching.groupedByProject().forEach((project, agentsAsList) -> {
 			Agents agents = Agents.from(agentsAsList);
-			Group.TentativeGroup group = new Group.TentativeGroup(agents, AggregatedProfilePreference.usingGloballyConfiguredMethod(agents));
+			Group.TentativeGroup group = new Group.TentativeGroup(agents, AggregatedProjectPreference.usingGloballyConfiguredMethod(agents));
 
 			Group.FormedGroup formedGroup = formedGroups.addAsFormed(group);
 			result.add(new GroupToProjectMatch<>(formedGroup, project));
