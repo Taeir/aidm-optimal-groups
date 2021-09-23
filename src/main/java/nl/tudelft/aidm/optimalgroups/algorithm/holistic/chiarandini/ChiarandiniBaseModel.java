@@ -6,23 +6,26 @@ import gurobi.GRBException;
 import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.Constraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniGroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import plouchtch.assertion.Assert;
-import plouchtch.functional.actions.Rethrow;
-import plouchtch.util.Try;
 
 public record ChiarandiniBaseModel(DatasetContext datasetContext, ObjectiveFunction objectiveFunction, Constraint... constraints)
 {
-	public AgentToProjectMatching doIt()
+	public GroupToProjectMatching<Group.FormedGroup> doIt()
 	{
-		return Try.getting(this::doItDirty)
-			.or(Rethrow.asRuntime());
+		try {
+			return doItDirty();
+		}
+		catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
-	private AgentToProjectMatching doItDirty() throws GRBException
+	private GroupToProjectMatching<Group.FormedGroup> doItDirty() throws GRBException
 	{
 		var env = new GRBEnv();
 		env.start();
@@ -46,7 +49,7 @@ public record ChiarandiniBaseModel(DatasetContext datasetContext, ObjectiveFunct
 		Assert.that(status == GRB.OPTIMAL).orThrowMessage("Model not solved");
 
 		// extract x's and map to matching
-		var matching = new ChiarandiniAgentToProjectMatching(assignmentConstraints.xVars, datasetContext);
+		var matching = new ChiarandiniGroupToProjectMatching(assignmentConstraints.xVars, datasetContext);
 
 		env.dispose();
 

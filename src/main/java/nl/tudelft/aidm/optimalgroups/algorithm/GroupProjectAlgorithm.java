@@ -402,7 +402,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_MinSumRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+			return matching;
 		}
 	}
 
@@ -427,7 +427,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_MinSumExpRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+			return matching;
 		}
 	}
 
@@ -452,7 +452,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_Stable_MinSumRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+			return matching;
 		}
 	}
 
@@ -477,7 +477,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_Stable_MinSumExpRank(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+			return matching;
 		}
 	}
 
@@ -502,7 +502,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_MinimaxOWA(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+			return matching;
 		}
 	}
 
@@ -527,7 +527,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext, pregroupingType);
 			var matching = algo.doIt();
 
-			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+			return matching;
 		}
 	}
 	
@@ -554,7 +554,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 			var algo = new MILP_Mechanism_FairPregrouping(datasetContext, objectiveFunction, pregroupingType);
 			var matching = algo.doIt();
 			
-			return FormedGroupToProjectMatching.byTriviallyPartitioning(matching);
+			return matching;
 		}
 	}
 }

@@ -4,7 +4,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Object
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.PregroupingType;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 
 public class MILP_Mechanism_BasicPregrouping
 {
@@ -21,7 +22,7 @@ public class MILP_Mechanism_BasicPregrouping
 		this.pregrouping = pregroupingType.instantiateFor(datasetContext);
 	}
 	
-	public AgentToProjectMatching doIt()
+	public GroupToProjectMatching<Group.FormedGroup> doIt()
 	{
 		return new ChiarandiniBaseModel(datasetContext, objectiveFunction, pregrouping.constraint()).doIt();
 	}

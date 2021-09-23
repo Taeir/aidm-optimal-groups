@@ -129,8 +129,8 @@ public interface Project
 		
 		Project belongingToProject();
 
-		class Simple implements ProjectSlot {
-
+		class Simple implements ProjectSlot
+		{
 			private final Lazy<String> id;
 			private final int index;
 			private final Project projectBelongsTo;
@@ -164,6 +164,25 @@ public interface Project
 			public String toString()
 			{
 				return id();
+			}
+			
+			@Override
+			public boolean equals(Object o)
+			{
+				if (this == o)
+					return true;
+				if ((o instanceof Simple)) {
+					Simple other = (Simple) o;
+					return Objects.equals(this.belongingToProject(), other.belongingToProject())
+							&& Objects.equals(this.index, other.index);
+				}
+				return false;
+			}
+			
+			@Override
+			public int hashCode()
+			{
+				return Objects.hash(belongingToProject(), index);
 			}
 		}
 	}

@@ -1,7 +1,12 @@
 package nl.tudelft.aidm.optimalgroups.model.matching;
 
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public interface GroupToProjectMatching<G extends Group> extends Matching<G, Project>
 {

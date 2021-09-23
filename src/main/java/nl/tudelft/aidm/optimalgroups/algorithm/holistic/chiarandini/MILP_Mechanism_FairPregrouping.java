@@ -9,10 +9,11 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
@@ -43,8 +44,9 @@ public class MILP_Mechanism_FairPregrouping
 		var singleStudents = allAgents.without(pregroupingStudents).without(indifferentStudents);
 
 		// Initial matching to determine baseline outcome quality for the "single" students
-		var baselineMatching = new ChiarandiniBaseModel(datasetContext, objectiveFunction)
-				.doIt();
+		var baselineMatching = AgentToProjectMatching.from(
+				new ChiarandiniBaseModel(datasetContext, objectiveFunction).doIt()
+		);
 		
 		var profile = Profile.of(baselineMatching, singleStudents);
 		var paretoConstraint = new UndominatedByProfileConstraint(profile, singleStudents);
@@ -59,7 +61,7 @@ public class MILP_Mechanism_FairPregrouping
 		return matchingResults;
 	}
 	
-	public record Matching(AgentToProjectMatching finalMatching, AgentToProjectMatching baselineMatching) implements AgentToProjectMatching
+	public record Matching(GroupToProjectMatching<Group.FormedGroup> finalMatching, AgentToProjectMatching baselineMatching) implements GroupToProjectMatching<Group.FormedGroup>
 	{
 		public Matching
 		{
@@ -67,7 +69,7 @@ public class MILP_Mechanism_FairPregrouping
 		}
 		
 		@Override
-		public List<Match<Agent, Project>> asList()
+		public List<Match<Group.FormedGroup, Project>> asList()
 		{
 			return finalMatching.asList();
 		}
@@ -85,9 +87,10 @@ public class MILP_Mechanism_FairPregrouping
 		
 		var owaMinimaxChiarandini = new Chiarandini_MinimaxOWA(ce, PregroupingType.anyCliqueHardGrouped());
 		var resultOwa = owaMinimaxChiarandini.doIt();
+		var agentToProjectMatching = AgentToProjectMatching.from(resultOwa);
 		
-		var metricsOwa = new MatchingMetrics.StudentProject(resultOwa);
-		new StudentRankProfile(resultOwa).displayChart("Chiarandini minimax-owa");
+		var metricsOwa = new MatchingMetrics.StudentProject(agentToProjectMatching);
+		new StudentRankProfile(agentToProjectMatching).displayChart("Chiarandini minimax-owa");
 		
 		return;
 	}

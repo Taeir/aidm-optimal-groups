@@ -9,7 +9,9 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.profile.StudentRankProfile;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 
 public class Chiarandini_Stable_MinimaxDistribOWA
 {
@@ -22,7 +24,7 @@ public class Chiarandini_Stable_MinimaxDistribOWA
 		this.pregrouping = pregroupingType.instantiateFor(datasetContext);
 	}
 
-	public AgentToProjectMatching doIt()
+	public GroupToProjectMatching<Group.FormedGroup> doIt()
 	{
 		var objFn = new OWAObjective();
 		var stability = new StabilityConstraint();
@@ -38,16 +40,19 @@ public class Chiarandini_Stable_MinimaxDistribOWA
 
 		var owaMinimaxChiarandini = new Chiarandini_MinimaxOWA(ce, PregroupingType.anyCliqueHardGrouped());
 		var resultOwa = owaMinimaxChiarandini.doIt();
+		var agentToProjectMatching = AgentToProjectMatching.from(resultOwa);
 
-		var metricsOwa = new MatchingMetrics.StudentProject(resultOwa);
-		new StudentRankProfile(resultOwa).displayChart("Chiarandini minimax-owa");
+		var metricsOwa = new MatchingMetrics.StudentProject(agentToProjectMatching);
+		new StudentRankProfile(agentToProjectMatching).displayChart("Chiarandini minimax-owa");
 
 
 		var stableOwaMinimaxChiarandini = new Chiarandini_Stable_MinimaxDistribOWA(ce, PregroupingType.anyCliqueHardGrouped());
 		var resultStableOwa = stableOwaMinimaxChiarandini.doIt();
+		
+		var agentProjectMatching = AgentToProjectMatching.from(resultStableOwa);
 
-		var metricsStableOwa = new MatchingMetrics.StudentProject(resultStableOwa);
-		new StudentRankProfile(resultStableOwa).displayChart("Chiarandini stable_minimax-owa");
+		var metricsStableOwa = new MatchingMetrics.StudentProject(agentProjectMatching);
+		new StudentRankProfile(agentProjectMatching).displayChart("Chiarandini stable_minimax-owa");
 
 		return;
 	}

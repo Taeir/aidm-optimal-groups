@@ -30,7 +30,7 @@ public class FairnessVsVanillaQualityExperiments
 		);
 		
 		var datasets = List.of(
-//				CourseEditionFromDb.fromLocalBepSysDbSnapshot(4),
+				CourseEditionFromDb.fromLocalBepSysDbSnapshot(4),
 				CourseEditionFromDb.fromLocalBepSysDbSnapshot(10),
 				ResearchProject2021Q4Dataset.getInstance()
 		);

@@ -5,7 +5,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregro
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.MinimizeSumOfRanks;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.model.UtilitarianWeightsObjective;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 
 public class Chiarandini_MinSumRank
 {
@@ -20,7 +21,7 @@ public class Chiarandini_MinSumRank
 		this.pregrouping = pregroupingType.instantiateFor(datasetContext);
 	}
 
-	public AgentToProjectMatching doIt()
+	public GroupToProjectMatching<Group.FormedGroup> doIt()
 	{
 		var objFn = new MinimizeSumOfRanks();
 		

@@ -15,14 +15,13 @@ import plouchtch.assertion.Assert;
 import plouchtch.lang.Lazy;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
 /**
  * ProjectPreference implementation for a whole group. This is an average of the group member preferences (as implemented in BepSYS)
  */
-public abstract class AggregatedProfilePreference extends AbstractListBasedProjectPreferences
+public abstract class AggregatedProjectPreference extends AbstractListBasedProjectPreferences
 {
 	protected final Agents agents;
 
@@ -32,7 +31,7 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 
 	protected DatasetContext datasetContext;
 
-	public AggregatedProfilePreference(Agents agents)
+	public AggregatedProjectPreference(Agents agents)
 	{
 		this.agents = agents;
 		this.datasetContext = agents.datasetContext;
@@ -73,15 +72,15 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		return asList;
 	}
 
-	public static AggregatedProfilePreference usingGloballyConfiguredMethod(Agents agents)
+	public static AggregatedProjectPreference usingGloballyConfiguredMethod(Agents agents)
 	{
 		if (Application.preferenceAggregatingMethod.equals("Copeland"))
 		{
-			return new AggregatedProfilePreference.Copeland(agents);
+			return new AggregatedProjectPreference.Copeland(agents);
 		}
 		else if (Application.preferenceAggregatingMethod.equals("Borda"))
 		{
-			return new AggregatedProfilePreference.Borda(agents);
+			return new AggregatedProjectPreference.Borda(agents);
 		}
 		else
 		{
@@ -94,8 +93,8 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 	{
 		if (this == o) return true;
 		if (!(o instanceof ProjectPreference)) return false;
-		if (!(o instanceof AggregatedProfilePreference)) throw new RuntimeException("Hmm AggregatedProfilePreference is being compared with some other type. Check if use-case is alright.");
-		AggregatedProfilePreference that = (AggregatedProfilePreference) o;
+		if (!(o instanceof AggregatedProjectPreference)) throw new RuntimeException("Hmm AggregatedProfilePreference is being compared with some other type. Check if use-case is alright.");
+		AggregatedProjectPreference that = (AggregatedProjectPreference) o;
 		return Arrays.equals(asArray, that.asArray);
 	}
 
@@ -105,7 +104,7 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		return Arrays.hashCode(asArray);
 	}
 
-	public static class Borda extends AggregatedProfilePreference
+	public static class Borda extends AggregatedProjectPreference
 	{
 		public Borda(Agents agents)
 		{
@@ -168,7 +167,7 @@ public abstract class AggregatedProfilePreference extends AbstractListBasedProje
 		}
 	}
 
-	public static class Copeland extends AggregatedProfilePreference
+	public static class Copeland extends AggregatedProjectPreference
 	{
 		public Copeland(Agents agents)
 		{
