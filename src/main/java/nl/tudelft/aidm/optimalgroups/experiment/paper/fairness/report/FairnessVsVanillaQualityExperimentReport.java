@@ -7,6 +7,7 @@ import com.vladsch.flexmark.pdf.converter.PdfConverterExtension;
 import com.vladsch.flexmark.util.ast.Document;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 import net.steppschuh.markdowngenerator.Markdown;
+import net.steppschuh.markdowngenerator.table.Table;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
@@ -183,6 +184,7 @@ public class FairnessVsVanillaQualityExperimentReport
 		unorderedList(pregroupingClustersStrings);
 
 		image(AvgPreferenceRankOfProjects.ofAgentsInDatasetContext(datasetContext).asChart());
+		
 
 //		var binnedProjectPreferences = BinnedProjectPreferences.exactTopRanksBins(dataContext, 3, 30);
 //		doc.append(binnedProjectPreferences.asMarkdownTable()).append("\n");
@@ -231,9 +233,9 @@ public class FairnessVsVanillaQualityExperimentReport
 				int numStudentsInDataset = datasetContext.allAgents().count();
 				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
 		
-				var rankDistribution = new RankProfile_SinglePregroupingSatisfiedUnsatisfied(matchingSingles, matchingPregroupedSatisfied, matchingPregroupedUnsatified)
-						.asChart(algoResult.algo().name());
-				image(rankDistribution);
+				var rankDistribution = new RankProfile_SinglePregroupingSatisfiedUnsatisfied(matchingSingles, matchingPregroupedSatisfied, matchingPregroupedUnsatified);
+				image( rankDistribution.asChart(algoResult.algo().name()) );
+				table( rankDistribution.asTable() );
 		
 //				var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
 //				var bestWorstIndividualRankInGroupDistribution = new LeastWorstIndividualRankInGroupDistribution(groups).asChart();
@@ -306,6 +308,11 @@ public class FairnessVsVanillaQualityExperimentReport
 	private void image(JFreeChart chart)
 	{
 		doc.append(Markdown.image(embed(chart))).append("\n\n");
+	}
+	
+	private void table(Table table)
+	{
+		doc.append(table).append("\n\n");
 	}
 
 	private String embed(JFreeChart chart)

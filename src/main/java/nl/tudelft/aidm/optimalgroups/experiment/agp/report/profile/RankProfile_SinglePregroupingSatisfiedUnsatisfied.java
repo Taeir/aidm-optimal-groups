@@ -1,5 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile;
 
+import net.steppschuh.markdowngenerator.table.Table;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
@@ -16,6 +17,8 @@ import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -59,6 +62,17 @@ public class RankProfile_SinglePregroupingSatisfiedUnsatisfied
 		return chart;
 	}
 	
+	public Table asTable()
+	{
+		var series = new ArrayList<>(3);
+		
+		series.add( RankProfileTable.SeriesData.from(single, "'Single' student") );
+		series.add( RankProfileTable.SeriesData.from(satisfiedPregrouping, "Satisfied 'pregrouping' student") );
+		series.add( RankProfileTable.SeriesData.from(unsatisfiedPregrouping, "Unsatisfied 'pregrouping' student") );
+		
+		return new RankProfileTable(series.toArray(RankProfileTable.SeriesData[]::new)).asMarkdownTable();
+	}
+	
 	public void displayChart(String titleHint)
 	{
 		var chart = this.asChart(titleHint);
@@ -87,8 +101,9 @@ public class RankProfile_SinglePregroupingSatisfiedUnsatisfied
 	private void matchingToDataset(Matching<Agent, Project> matching, String seriesName, DefaultCategoryDataset dataset)
 	{
 		var ranks = ranks(matching);
-		ranks.keySet().stream().sorted().forEach(key -> {
-			var value = ranks.get(key);
+		ranks.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
+			var key = entry.getKey();
+			var value = entry.getValue();
 			dataset.addValue(value, seriesName, key);
 		});
 	}
