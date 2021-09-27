@@ -47,7 +47,7 @@ public class FairnessVsVanillaQualityExperiments
 				results.add(result);
 			}
 			
-			var fileName = String.format("fairness_%s_CE(%s)", experimentsRunId, datasetContext.bepSysId());
+			var fileName = String.format("fairness_%s_CE(%s)-%s", experimentsRunId, datasetContext.bepSysId(), pregroupingType.simpleName());
 			
 			new FairnessVsVanillaQualityExperimentReport(datasetContext, pregrouping, results)
 					.writeAsHtmlToFile(new File("reports/thesis/" + fileName + ".html"));
