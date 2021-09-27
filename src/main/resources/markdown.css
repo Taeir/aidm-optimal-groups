@@ -160,7 +160,7 @@ table {
      border:1px solid #583030;
  }
 table thead th {
-    width: 50%;
+    /*width: 50%;*/
     background-color:rgba(0, 0, 0, 0.2);
     padding: 8px;
     border-bottom: 1px solid black;
