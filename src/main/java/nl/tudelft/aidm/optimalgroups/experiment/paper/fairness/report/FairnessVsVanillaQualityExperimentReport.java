@@ -19,6 +19,7 @@ import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtm
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileOfIndividualAndGroupingStudents;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfile_SinglePregroupingSatisfiedUnsatisfied;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
+import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix2;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.group.LeastWorstIndividualRankInGroupDistribution;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
@@ -78,24 +79,6 @@ public class FairnessVsVanillaQualityExperimentReport
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-	
-	static String htmlWithCss(String html)
-	{
-		try
-		{
-			var css = new String(Thread.currentThread().getContextClassLoader().getResourceAsStream("markdown.css").readAllBytes(), StandardCharsets.UTF_8);
-
-			return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">\n" +
-				"<style type=\"text/css\">" + css + "</style>" +
-				"</head><body>" + html + "\n" +
-				"</body></html>";
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-
 	}
 	
 	public String asHtmlSource()
@@ -192,8 +175,9 @@ public class FairnessVsVanillaQualityExperimentReport
 
 	private void summary(List<GroupProjectAlgorithm.Result> results)
 	{
-		var popMatrix = new PopularityMatrix.TopicGroup(results);
-		var items = popMatrix.asSet().stream().map(Object::toString).collect(toList()).toArray(String[]::new);
+		var popMatrix = new PopularityMatrix2.TopicGroup(results);
+//		var items = popMatrix.asSet().stream().map(Object::toString).collect(toList()).toArray(String[]::new);
+		var items = popMatrix.deduplicatedByWinner().stream().map(Object::toString).collect(toList()).toArray(String[]::new);
 		
 		heading("Summary of results", 2);
 			heading("Algorithm popularity", 3);
@@ -330,5 +314,23 @@ public class FairnessVsVanillaQualityExperimentReport
 	{
 		doc.append(Markdown.rule())
 			.append("\n");
+	}
+	
+	static String htmlWithCss(String html)
+	{
+		try
+		{
+			var css = new String(Thread.currentThread().getContextClassLoader().getResourceAsStream("markdown.css").readAllBytes(), StandardCharsets.UTF_8);
+
+			return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">\n" +
+				"<style type=\"text/css\">" + css + "</style>" +
+				"</head><body>" + html + "\n" +
+				"</body></html>";
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+
 	}
 }
