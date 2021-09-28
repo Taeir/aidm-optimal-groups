@@ -1,10 +1,14 @@
 package nl.tudelft.aidm.optimalgroups.metric;
 
 import nl.tudelft.aidm.optimalgroups.Algorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.AgentProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.HasProjectPrefs;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
+import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -19,78 +23,54 @@ import java.util.stream.Collectors;
  * A matching is popular if there are more agents preferring it to the alternative.
  * Non-transitive: a,b,c in Algorithm then if: (a P b /\  b P c) does not imply a P c
  */
-public class PopularityMatrix2<F extends HasProjectPrefs, MATCHING extends Matching<F,Project>, ALGO extends Algorithm, ALGORES extends Algorithm.Result<ALGO, MATCHING>>
+public class PopularityMatrix2<MATCHING extends Matching<Agent, Project>, ALGORES extends Algorithm.Result<? extends Algorithm, MATCHING>>
 {
-	public static class TopicGroup extends PopularityMatrix2<Group.FormedGroup, GroupToProjectMatching<Group.FormedGroup>, GroupProjectAlgorithm, GroupProjectAlgorithm.Result>
+	private final List<ALGORES> algoResults;
+	private final List<MatchingPopularityComparison<ALGORES>> algoPopularityComparisons;
+	
+	/**
+	 * A popularity matrix of students in the given results
+	 * @param results The results to compare
+	 * @param filter Optional param: will only consider the given students - NOTE: this is a vararg parameter, but at most one!
+	 */
+	public static <MATCHING extends Matching<Agent, Project>, ALGORES extends Algorithm.Result<? extends Algorithm, MATCHING>>
+			PopularityMatrix2<MATCHING, ALGORES> from(List<ALGORES> results, Agents... filter)
 	{
-		public TopicGroup(List<? extends GroupProjectAlgorithm.Result> resultingMatchings)
-		{
-			super(resultingMatchings, MatchingPopularityComparisonTopicGroup::new);
-		}
-
-		static class MatchingPopularityComparisonTopicGroup extends MatchingPopularityComparison<GroupProjectAlgorithm.Result>
-		{
-			public MatchingPopularityComparisonTopicGroup(GroupProjectAlgorithm.Result a, GroupProjectAlgorithm.Result b)
-			{
-				super(a, b);
-				
-				Assert.that(a.producedMatching().datasetContext().equals(b.producedMatching().datasetContext()))
-						.orThrowMessage("DatasetContext mismatch");
-
-				var allAgents = a.producedMatching().datasetContext().allAgents();
-
-				// Ranking of assigned project by Agents in matching A
-				var rankInMatchingA = AssignedRank.ProjectToStudent.inGroupMatching(a.producedMatching())
-					.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
-
-				// Ranking of assigned project by Agents in matching B
-				var rankInMatchingB = AssignedRank.ProjectToStudent.inGroupMatching(b.producedMatching())
-					.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
-
-
-				numAgentsPreferingA = (int) allAgents.asCollection().stream()
-					.filter(agent -> {
-						int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
-						int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
-						// All agents who prefer matching A to B (rank the assigned project in matching A higher than in B)
-						return rankInA < rankInB;
-					})
-					.count();
-
-				numAgentsPreferingB = (int) allAgents.asCollection().stream()
-					.filter(agent -> {
-						int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
-						int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
-						return rankInB < rankInA;
-					})
-					.count();
-			}
-		}
+		Assert.that(filter.length <= 1).orThrowMessage("Give at most one filter param!");
+		
+		var allAgents = (results.stream().map(result -> result.producedMatching().datasetContext()).findAny().orElseThrow()).allAgents();
+		
+		var agentsToConsider = filter.length == 1 ? filter[0] : allAgents;
+		
+		return new PopularityMatrix2<>(results, agentsToConsider);
 	}
-
-	/* POPULARITY MATRIX IMPL BELOW */
-	private List<? extends ALGORES> algoResults;
-	private List<MatchingPopularityComparison<ALGORES>> algoPopularityComparisons;
-
-	public PopularityMatrix2(List<? extends ALGORES> resultingMatchings, BiFunction<ALGORES, ALGORES, MatchingPopularityComparison<ALGORES>> compare)
+	
+	/**
+	 * A popularity matrix of students in the given results
+	 * @param results The results to compare
+	 * @param agentsToConsider The agents to include in the "voting"
+	 */
+	public PopularityMatrix2(List<ALGORES> results, Agents agentsToConsider)
 	{
-		this.algoResults = resultingMatchings;
+		this.algoResults = results;
 
-		var allMatchingsBasedOnSameDatasetContext = resultingMatchings.stream()
+		var allMatchingsBasedOnSameDatasetContext = results.stream()
 			.map(algoResult -> algoResult.producedMatching().datasetContext())
 			.distinct()
 			.count() == 1;
 
 		Assert.that(allMatchingsBasedOnSameDatasetContext).orThrow(RuntimeException.class,
 			"Popularity metrix can only be determined for matchings based of same dataset context.");
+		
+		var allAgents = (results.stream().map(result -> result.producedMatching().datasetContext()).findAny().orElseThrow()).allAgents();
 
 		this.algoPopularityComparisons = new ArrayList<>();
 
-		for (var result : resultingMatchings) {
-			for (var otherResult : resultingMatchings) {
+		for (var result : results) {
+			for (var otherResult : results) {
 
 				if (result != otherResult) {
-					var comparison = compare.apply(result, otherResult);
+					var comparison = new MatchingPopularityComparison(result, otherResult, agentsToConsider);
 					algoPopularityComparisons.add(comparison);
 				}
 
@@ -125,13 +105,18 @@ public class PopularityMatrix2<F extends HasProjectPrefs, MATCHING extends Match
 				.toList();
 		
 		var results = new HashMap<Algorithm, List<MatchingPopularityComparison<ALGORES>>>();
-		for (Algorithm algo : algos)
+		for (Algorithm thisAlgo : algos)
 		{
 			var winningOrTiedComps = asList().stream()
-					.filter(comp -> comp.resultA.algo().equals(algo) && comp.winner().orElse(algo).equals(algo))
+					// consider all comparisons where this algo is on the left-hand-side (resultA) - we can do this because we have comparisons for both sides in the list
+					//  then, of those, consider only where this algo wins or ties (in which case, there is no winner, we use a trick with Optional#orElse)
+					.filter(comp ->
+							(comp.resultA.algo()).equals(thisAlgo) &&
+							(comp.winner().orElse(thisAlgo)).equals(thisAlgo)
+					)
 					.toList();
 			
-			results.put(algo, winningOrTiedComps);
+			results.put(thisAlgo, winningOrTiedComps);
 		}
 		
 		return algos.stream().sorted((Comparator.comparing(a -> wins.getOrDefault(a, 0L))).reversed())
@@ -141,18 +126,44 @@ public class PopularityMatrix2<F extends HasProjectPrefs, MATCHING extends Match
 				.toList();
 	}
 
-	public static abstract class MatchingPopularityComparison<ALGORES extends Algorithm.Result>
+	public static class MatchingPopularityComparison<ALGORES extends Algorithm.Result<? extends Algorithm, ? extends Matching<Agent, Project>>>
 	{
 		private final ALGORES resultA;
 		private final ALGORES resultB;
-
-		int numAgentsPreferingA;
-		int numAgentsPreferingB;
-
-		public MatchingPopularityComparison(ALGORES resultA, ALGORES resultB)
+		
+		private final int numAgentsPreferingA;
+		private final int numAgentsPreferingB;
+		
+		public MatchingPopularityComparison(ALGORES resultA, ALGORES resultB, Agents agentsToConsider)
 		{
 			this.resultA = resultA;
 			this.resultB = resultB;
+			
+			// Ranking of assigned project by Agents in matching A
+			var rankInMatchingA = AssignedRank.ProjectToStudent.inStudentMatching(resultA.producedMatching())
+				.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
+
+			// Ranking of assigned project by Agents in matching B
+			var rankInMatchingB = AssignedRank.ProjectToStudent.inStudentMatching(resultB.producedMatching())
+				.collect(Collectors.toMap(AssignedRank.ProjectToStudent::student, AssignedRank.ProjectToStudent::asInt));
+
+
+			numAgentsPreferingA = (int) agentsToConsider.asCollection().stream()
+				.filter(agent -> {
+					int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+					int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+					// All agents who prefer matching A to B (rank the assigned project in matching A higher than in B)
+					return rankInA < rankInB;
+				})
+				.count();
+
+			numAgentsPreferingB = (int) agentsToConsider.asCollection().stream()
+				.filter(agent -> {
+					int rankInB = rankInMatchingB.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+					int rankInA = rankInMatchingA.getOrDefault(agent, OptionalInt.empty()).orElse(Integer.MAX_VALUE);
+					return rankInB < rankInA;
+				})
+				.count();
 		}
 		
 		/**
@@ -181,7 +192,7 @@ public class PopularityMatrix2<F extends HasProjectPrefs, MATCHING extends Match
 		{
 			if (this == o) return true;
 			if (!(o instanceof MatchingPopularityComparison)) return false;
-			MatchingPopularityComparison<?> that = (MatchingPopularityComparison<?>) o;
+			MatchingPopularityComparison that = (MatchingPopularityComparison) o;
 			
 			// Algo are same in both comparisons
 			if (this.resultA.algo() == that.resultA.algo() && this.resultB.algo() == that.resultB.algo())

@@ -65,6 +65,7 @@ public class UndominatedByProfileConstraint implements Constraint
 			Try.doing(() ->
 					model.addConstr(cumsumStudentsUpToRankH, GRB.GREATER_EQUAL, cumsumInProfileUpToRankH.getPlain(), "const_leximin_" + h)
 			).or(Rethrow.asRuntime());
+			
 		}
 	}
 	

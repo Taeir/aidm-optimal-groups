@@ -8,6 +8,7 @@ import com.vladsch.flexmark.util.ast.Document;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 import net.steppschuh.markdowngenerator.Markdown;
 import net.steppschuh.markdowngenerator.table.Table;
+import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
@@ -60,12 +61,18 @@ public class FairnessVsVanillaQualityExperimentReport
 	private final Pregrouping pregrouping;
 	private final List<GroupProjectAlgorithm.Result> results;
 	
+	private final Agents agentsPregrouping;
+	private final Agents agentsSingle;
+	
 	private StringBuffer doc;
 	public FairnessVsVanillaQualityExperimentReport(DatasetContext datasetContext, Pregrouping pregrouping, ArrayList<GroupProjectAlgorithm.Result> results)
 	{
 		this.datasetContext = datasetContext;
 		this.pregrouping = pregrouping;
 		this.results = results;
+		
+		this.agentsPregrouping = pregrouping.groups().asAgents();
+		this.agentsSingle = datasetContext.allAgents().without(agentsPregrouping);
 	}
 	
 	public void writeAsHtmlToFile(File file)
@@ -113,6 +120,7 @@ public class FairnessVsVanillaQualityExperimentReport
 			summary(results);
 			
 			for (var result : results) {
+				horizontalLine();
 				algoResultInMarkdown(result);
 			}
 
@@ -175,14 +183,30 @@ public class FairnessVsVanillaQualityExperimentReport
 
 	private void summary(List<GroupProjectAlgorithm.Result> results)
 	{
-		var popMatrix = new PopularityMatrix2.TopicGroup(results);
-//		var items = popMatrix.asSet().stream().map(Object::toString).collect(toList()).toArray(String[]::new);
-		var items = popMatrix.deduplicatedByWinner().stream().map(Object::toString).collect(toList()).toArray(String[]::new);
+		record GroupProjectAlgoResultForPopularityMatrix(Algorithm algo, AgentToProjectMatching producedMatching) implements Algorithm.Result<Algorithm, AgentToProjectMatching> {}
+		
+		var resultsAgentProject = results.stream()
+				.map(result -> new GroupProjectAlgoResultForPopularityMatrix(result.algo(), AgentToProjectMatching.from(result.producedMatching())))
+				.toList();
+		
+		Function<PopularityMatrix2, String[]> popMatrixToStrings = popMatrix -> {
+			var henkie = (List<String>) popMatrix.deduplicatedByWinner().stream().map(o -> o.toString()).toList();
+			return henkie.toArray(String[]::new);
+		};
+		
+		var popAll = popMatrixToStrings.apply(PopularityMatrix2.from(resultsAgentProject));
+		var popSingles = popMatrixToStrings.apply(PopularityMatrix2.from(resultsAgentProject, agentsSingle));
+		var popPregrouping = popMatrixToStrings.apply(PopularityMatrix2.from(resultsAgentProject, agentsPregrouping));
 		
 		heading("Summary of results", 2);
 			heading("Algorithm popularity", 3);
 				doc.append(Markdown.italic("Algorithm name followed by the number of agents, in braces, that prefer it over the other") + "\n");
-				unorderedList(items);
+				heading("All agents", 4);
+					unorderedList(popAll);
+				heading("'Single' agents", 4);
+					unorderedList(popSingles);
+				heading("'Pregrouping' agents", 4);
+					unorderedList(popPregrouping);
 	}
 
 	private void algoResultInMarkdown(GroupProjectAlgorithm.Result algoResult)
@@ -192,17 +216,15 @@ public class FairnessVsVanillaQualityExperimentReport
 		
 		
 		var preformedGroups = pregrouping.groups();
-		var pregroupingStudents = preformedGroups.asAgents();
-		var singleStudents = datasetContext.allAgents().without(pregroupingStudents);
-		
 		
 		var matchingIndividualsToProjects = AgentToProjectMatching.from(matching);
 		
-		var matchingSingles = matchingIndividualsToProjects.filteredBy(singleStudents);
-		var matchingPregrouped = matchingIndividualsToProjects.filteredBy(pregroupingStudents);
+		var matchingSingles = matchingIndividualsToProjects.filteredBy(agentsSingle);
+		var matchingPregrouped = matchingIndividualsToProjects.filteredBy(agentsPregrouping);
 		var matchingPregroupedSatisfied = AgentToProjectMatching.from( matching.filteredBySubsets(preformedGroups) );
+		
 		var pregroupingStudentsSatisfied = matchingPregroupedSatisfied.agents();
-		var pregroupingStudentsUnsatisfied = pregroupingStudents.without(pregroupingStudentsSatisfied);
+		var pregroupingStudentsUnsatisfied = agentsPregrouping.without(pregroupingStudentsSatisfied);
 		var matchingPregroupedUnsatified = matchingIndividualsToProjects.filteredBy(pregroupingStudentsUnsatisfied);
 		
 		
@@ -276,7 +298,7 @@ public class FairnessVsVanillaQualityExperimentReport
 	
 	private void unorderedList(String... items)
 	{
-		doc.append(Markdown.unorderedList((Object[]) items)).append("\n\n");
+		doc.append(Markdown.unorderedList((Object[]) items)).append("\n\n\n");
 	}
 	
 	private void text(String text)
