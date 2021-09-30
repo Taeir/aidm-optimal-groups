@@ -47,7 +47,7 @@ public interface PregroupingType
 	{
 		var sizesSetNotation = Arrays.stream(sizes).map(Object::toString).collect(Collectors.joining(",", "{", "}"));
 		return new NamedLambda(
-				"sizedCliques_hardGrp" + sizesSetNotation,
+				"sizedCliques"+sizesSetNotation+"_hardGrp",
 				(datasetContext) -> new Pregrouping.sizedClique(datasetContext, HardGroupingConstraint::new, sizes)
 		);
 	}
@@ -56,7 +56,7 @@ public interface PregroupingType
 	{
 		var sizesSetNotation = Arrays.stream(sizes).map(Object::toString).collect(Collectors.joining(",", "{", "}"));
 		return new NamedLambda(
-				"sizedCliques_softGrp" + sizesSetNotation,
+				"sizedCliques"+sizesSetNotation+"_softGrp",
 				(datasetContext) -> new Pregrouping.sizedClique(datasetContext, SoftGroupConstraint::new, sizes)
 		);
 	}
@@ -65,7 +65,7 @@ public interface PregroupingType
 	{
 		var sizesSetNotation = Arrays.stream(sizes).map(Object::toString).collect(Collectors.joining(",", "{", "}"));
 		return new NamedLambda(
-				"sizedCliques_condGrp" + sizesSetNotation,
+				"sizedCliques"+sizesSetNotation+"_condGrp",
 				(datasetContext) -> new Pregrouping.sizedClique(datasetContext,  groups -> new ConditionalGroupConstraint(groups, upToIncludingRank), sizes)
 		);
 	}
