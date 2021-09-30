@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm;
 
 import nl.tudelft.aidm.optimalgroups.Algorithm;
+import nl.tudelft.aidm.optimalgroups.Application;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysImprovedGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
@@ -75,7 +76,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		public String name()
 		{
 			// TODO include Pref agg method
-			return "BepSys (OG)";
+			return String.format("BepSys (OG-ish) - %s", Application.preferenceAggregatingMethod);
 		}
 
 		@Override
@@ -99,8 +100,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		@Override
 		public String name()
 		{
-			// TODO include Pref agg method
-			return "BepSys (reworked)";
+			return String.format("BepSys (reworked) - %s", Application.preferenceAggregatingMethod);
 		}
 
 		@Override
