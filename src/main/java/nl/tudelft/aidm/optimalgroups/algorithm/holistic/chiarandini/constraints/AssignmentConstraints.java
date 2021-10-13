@@ -9,6 +9,7 @@ import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 public class AssignmentConstraints
 {
@@ -44,9 +45,10 @@ public class AssignmentConstraints
 			{
 				project.slots().forEach(slot ->
 				{
-					xVars.of(agent, slot).ifPresent(x -> {
-						numSlotsAssignedToAgentExpr.addTerm(1, x.asVar());
-					});
+					// note: agent-project pair might be unacceptible -> x is not present
+					xVars.of(agent, slot).ifPresent(x ->
+						numSlotsAssignedToAgentExpr.addTerm(1, x.asVar())
+					);
 				});
 			});
 
@@ -55,9 +57,10 @@ public class AssignmentConstraints
 				.or(Rethrow.asRuntime());
 		});
 
-		// - project is either closed or adheres to it's occupation size requirements:
+		// - a project-slot is either unassigned or meets its group-size requirements:
 		projects.forEach(project ->
 		{
+			var groupSizeBound = gscProvider.apply(project);
 			var p = project.sequenceNum();
 
 			project.slots().forEach(slot ->
@@ -67,32 +70,26 @@ public class AssignmentConstraints
 
 				agents.forEach(agent ->
 				{
-					if (agent.projectPreference().rankOf(project).unacceptable()) {
-						// Agent might not find this project acceptible, therefore no corresponding
-						// x-variable will exist. So skip here after checking for the case, instead of
-						// simply checking if the x-variable exists via the optional.isPresent check
-						return;
-					}
-					
-					var x = xVars.of(agent, slot).orElseThrow();
-					numStudentsAssignedToSlot.addTerm(1, x.asVar());
+					// note: agent-project pair might be unacceptible -> x is not present
+					xVars.of(agent, slot).ifPresent(x ->
+							numStudentsAssignedToSlot.addTerm(1, x.asVar())
+					);
 				});
 
 				var y = yVars.of(slot).orElseThrow();
-
+				
+				var constraintNameUb = String.format("%s_doesnt_exceed_ub", slot);
 				var ub = new GRBLinExpr();
-				ub.addTerm(datasetContext.groupSizeConstraint().maxSize(), y.asVar());
-				var constraintNameUb = String.format("proj_%s_doesnt_exceed_ub", p);
-
-				var lb = new GRBLinExpr();
-				lb.addTerm(datasetContext.groupSizeConstraint().minSize(), y.asVar());
-				var constraintNameLb = String.format("proj_%s_meets_lb", p);
-
-				// numAssignedToSlot <= UB * [0,1]
+				ub.addTerm(groupSizeBound.maxSize(), y.asVar());
+				// numAssignedToSlot <= UB * y
 				Try.doing(() -> model.addConstr(numStudentsAssignedToSlot, GRB.LESS_EQUAL, ub, constraintNameUb))
 					.or(Rethrow.asRuntime());
-
-				// numAssignedToSlot >= LB * [0,1]
+				
+				
+				var constraintNameLb = String.format("%s_meets_lb", slot);
+				// numAssignedToSlot >= LB * y
+				var lb = new GRBLinExpr();
+				lb.addTerm(groupSizeBound.minSize(), y.asVar());
 				Try.doing(() -> model.addConstr(numStudentsAssignedToSlot, GRB.GREATER_EQUAL, lb, constraintNameLb))
 					.or(Rethrow.asRuntime());
 			});
@@ -157,6 +154,11 @@ public class AssignmentConstraints
 				}
 				else student.projectPreference().forEach((project, rank, __) ->
 				{
+					// If the project is not acceptible to agent, then it cannot be assigned to them.
+					// Therefore, no assignment decision variable must be created for this pair.
+					if (rank.unacceptable())
+						return;
+					
 					var p = project.sequenceNum();
 					project.slots().forEach(slot ->
 					{
