@@ -36,7 +36,7 @@ public record HardGroupingConstraint(Groups<?> groups) implements Constraint
 						assignmentConstraints.xVars.of(agent1, slot).ifPresent(Xa1ToSlot -> {
 							assignmentConstraints.xVars.of(agent2, slot).ifPresent(Xa2ToSlot -> {
 								Try.doing(() ->
-								          model.addConstr(Xa1ToSlot.asVar(), '=', Xa2ToSlot.asVar(), "cnstr_grp_" + agent1 + "_" + agent2 + "_to_" + slot)
+								          model.addConstr(Xa1ToSlot.asVar(), '=', Xa2ToSlot.asVar(), "cnstr_grp_" + agent1.sequenceNumber() + "_" + agent2.sequenceNumber() + "_to_" + slot)
 								).or(Rethrow.asRuntime());
 							});
 						});
