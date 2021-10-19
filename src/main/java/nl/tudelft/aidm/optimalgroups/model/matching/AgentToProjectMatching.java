@@ -78,7 +78,7 @@ public interface AgentToProjectMatching extends Matching<Agent, Project>
 		@Override
 		public void add(Match<Agent, Project> match)
 		{
-			Assert.that(match.from().context.equals(datasetContext())).orThrowMessage("Cannot include match in matching, datasetcontext mismatch");
+			Assert.that(match.from().datasetContext().equals(datasetContext())).orThrowMessage("Cannot include match in matching, datasetcontext mismatch");
 			// Projects are context-less ...
 //			Assert.that(match.to().context.equals(datasetContext())).orThrowMessage("Cannot include match in matching, datasetcontext mismatch");
 			super.add(match);

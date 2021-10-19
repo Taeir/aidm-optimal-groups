@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.solver.minizinc.model;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import plouchtch.assertion.Assert;
@@ -35,7 +36,7 @@ public class SequentualAgents extends Agents
 	private static LinkedHashSet<Agent> mapAgentIdsToSequence(Collection<Agent> original, SequentualProjects sequentualProjects, SequentualDatasetContext datasetContext)
 	{
 		var originalSorted = new ArrayList<>(original);
-		originalSorted.sort(Comparator.comparing(agent -> agent.sequenceNumber));
+		originalSorted.sort(Comparator.comparing(agent -> agent.sequenceNumber()));
 
 		var resequenced = new LinkedHashSet<Agent>(original.size());
 
@@ -53,7 +54,7 @@ public class SequentualAgents extends Agents
 		return resequenced;
 	}
 
-	public static class SequentualAgent extends Agent
+	public static class SequentualAgent extends SimpleAgent
 	{
 		private final Agent original;
 
@@ -67,7 +68,7 @@ public class SequentualAgents extends Agents
 		{
 			var owner = "SeqAgent_"+newId;
 			var sequentualProjectsPreference = SequentualProjectsPreference.fromOriginal(owner, agent.projectPreference(), sequentualProjects);
-			var seqGroupPreference = SeqentialGroupPreference.fromOriginal(context, agent.groupPreference);
+			var seqGroupPreference = SeqentialGroupPreference.fromOriginal(context, agent.groupPreference());
 
 			return new SequentualAgent(newId, agent, sequentualProjectsPreference, seqGroupPreference, context);
 		}

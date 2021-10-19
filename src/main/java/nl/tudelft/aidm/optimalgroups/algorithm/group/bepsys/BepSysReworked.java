@@ -136,7 +136,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
 
     private List<Agent> availableFriendsOf(Agent agent)
     {
-        return agent.groupPreference.asListOfAgents().stream()
+        return agent.groupPreference().asListOfAgents().stream()
             .filter(availableStudents::contains)
             .collect(Collectors.toList());
     }
@@ -394,7 +394,7 @@ public class BepSysReworked implements GroupFormingAlgorithm
         public Agents members()
         {
             if (members == null) {
-                var fromPrefs = new ArrayList<>(agent.groupPreference.asListOfAgents());
+                var fromPrefs = new ArrayList<>(agent.groupPreference().asListOfAgents());
                 fromPrefs.add(this.agent);
 
                 this.members = Agents.from(fromPrefs).without(exclude);

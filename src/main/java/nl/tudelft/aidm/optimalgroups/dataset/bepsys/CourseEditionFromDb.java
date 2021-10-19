@@ -4,7 +4,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.project.ProjectsInDb;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import org.sql2o.GenericDatasource;
@@ -88,7 +88,7 @@ public class CourseEditionFromDb extends CourseEdition
 	public Optional<Agent> findAgentByUserId(Integer bepSysUserId)
 	{
 		return this.allAgents().asCollection().stream()
-				.map(agent -> (Agent.AgentInBepSysSchemaDb) agent)
+				.map(agent -> (SimpleAgent.AgentInBepSysSchemaDb) agent)
 				.filter(agent -> agent.bepSysUserId.equals(bepSysUserId))
 				.map(agent -> (Agent) agent)
 				.findAny();
@@ -135,12 +135,12 @@ public class CourseEditionFromDb extends CourseEdition
 				"WHERE course_edition_id = :courseEditionId"
 			)
 				.addParameter("courseEditionId", courseEdition.bepSysId());
-
-			var agentSequenceNumber = new AtomicInteger(1);
 			
 			List<Integer> userIds = query.executeAndFetch((ResultSetHandler<Integer>) resultSet -> resultSet.getInt("user_id"));
+			
+			var agentSequenceNumber = new AtomicInteger(1);
 			List<Agent> agents = userIds.stream()
-				.map(id -> new Agent.AgentInBepSysSchemaDb(dataSource, agentSequenceNumber.getAndIncrement(), id, courseEdition))
+				.map(id -> new SimpleAgent.AgentInBepSysSchemaDb(dataSource, agentSequenceNumber.getAndIncrement(), id, courseEdition))
 				.collect(Collectors.toList());
 
 			return Agents.from(agents);

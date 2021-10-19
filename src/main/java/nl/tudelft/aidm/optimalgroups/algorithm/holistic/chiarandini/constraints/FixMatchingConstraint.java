@@ -36,7 +36,7 @@ public class FixMatchingConstraint implements Constraint
 			lhs.addTerm(1, x.asVar());
 		});
 		
-		model.addConstr(lhs, GRB.EQUAL, 1, String.format("agent%s_fixedto_proj%s", agent.sequenceNumber, project.sequenceNum()));
+		model.addConstr(lhs, GRB.EQUAL, 1, String.format("agent%s_fixedto_proj%s", agent.sequenceNumber(), project.sequenceNum()));
 	}
 	
 	@Override

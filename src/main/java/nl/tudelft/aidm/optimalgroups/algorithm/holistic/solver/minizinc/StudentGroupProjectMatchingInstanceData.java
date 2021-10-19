@@ -91,7 +91,7 @@ public class StudentGroupProjectMatchingInstanceData implements JsonDatafile
 	{
 		var profileAsString = agents.asCollection().stream()
 				// ensure prefs have same indexes as agent's sequence numbers (they end up in a json array, minizinc does 1-indexes)
-				.sorted(Comparator.comparing(agent -> agent.sequenceNumber))
+				.sorted(Comparator.comparing(agent -> agent.sequenceNumber()))
 				// todo: explicit handling of tie-breaking and acceptible/unacceptible alternatives - after deprecating asArray/asList methods
 				.map(agent -> agent.projectPreference().asArray())
 				.map(pref -> Arrays.stream(pref).map(Project::sequenceNum).toArray(Integer[]::new))

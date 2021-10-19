@@ -2,11 +2,11 @@ package nl.tudelft.aidm.optimalgroups.dataset.bepsys.pref;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import org.sql2o.Query;
 import org.sql2o.ResultSetHandler;
 import org.sql2o.Sql2o;
-import plouchtch.lang.Lazy;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
@@ -51,7 +51,7 @@ public class GroupPreferenceInDb implements GroupPreference
 		Function<Integer, Agent> findAgentByBepSysId = friendAgentId ->
 				courseEdition.allAgents().asCollection().stream()
 						// not pretty (i.e. quite hacky)
-						.map(agent -> (Agent.AgentInBepSysSchemaDb) agent)
+						.map(agent -> (SimpleAgent.AgentInBepSysSchemaDb) agent)
 						.filter(agent -> agent.bepSysUserId.equals(friendAgentId))
 						.findAny().orElseGet(() -> {
 								System.out.printf("Warning, friend not found: %s of %s peer pref in CE %s\n", friendAgentId, bepSysUserId, courseEdition.bepSysId());

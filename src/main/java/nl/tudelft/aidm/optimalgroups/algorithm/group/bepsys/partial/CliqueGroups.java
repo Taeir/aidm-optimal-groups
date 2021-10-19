@@ -64,7 +64,7 @@ public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 
 			// TODO: What if not completely mutual, but has a subclique? So some members have included an additional student??
 			if (GroupPreference.isMutual(student)) {
-				var peers = student.groupPreference.asListOfAgents();
+				var peers = student.groupPreference().asListOfAgents();
 				var proposedGroup = Agents.from(student).with(peers);
 
 				var tentativeGroup = new Group.TentativeGroup(proposedGroup, AggregatedProjectPreference.usingGloballyConfiguredMethod(proposedGroup));

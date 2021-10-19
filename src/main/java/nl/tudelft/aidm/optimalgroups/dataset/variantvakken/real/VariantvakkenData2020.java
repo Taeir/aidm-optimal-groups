@@ -3,6 +3,7 @@ package nl.tudelft.aidm.optimalgroups.dataset.variantvakken.real;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
@@ -93,7 +94,7 @@ public class VariantvakkenData2020 implements DatasetContext
 					var id = entry.getKey().intValue();
 					var pref = entry.getValue();
 
-					return (Agent) new Agent.AgentInDatacontext(id, pref, GroupPreference.none(), this);
+					return (Agent) new SimpleAgent.AgentInDatacontext(id, pref, GroupPreference.none(), this);
 				})
 				.collect(Collectors.toList());
 

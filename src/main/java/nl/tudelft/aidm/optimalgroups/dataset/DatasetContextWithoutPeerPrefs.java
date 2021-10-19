@@ -4,6 +4,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -25,7 +26,7 @@ public class DatasetContextWithoutPeerPrefs implements DatasetContext
 	{
 		return agents.asCollection().stream()
 			.map(agent -> {
-				var modAgent = new Agent.AgentInDatacontext(agent.sequenceNumber, agent.projectPreference(), GroupPreference.none(), currentContext);
+				var modAgent = new SimpleAgent.AgentInDatacontext(agent.sequenceNumber(), agent.projectPreference(), GroupPreference.none(), currentContext);
 				return (Agent) modAgent;
 			})
 			.collect(collectingAndThen(toList(), Agents::from));

@@ -39,7 +39,7 @@ public class AssignmentConstraints
 		agents.forEach(agent ->
 		{
 			var numSlotsAssignedToAgentExpr = new GRBLinExpr();
-			var s = agent.sequenceNumber;
+			var s = agent.sequenceNumber();
 
 			projects.forEach(project ->
 			{
@@ -128,7 +128,7 @@ public class AssignmentConstraints
 	
 		public static XVars createInModel(GRBModel model, DatasetContext datasetContext)
 		{
-			var maxAgentSeqNum = datasetContext.allAgents().asCollection().stream().mapToInt(value -> value.sequenceNumber).max().orElseThrow();
+			var maxAgentSeqNum = datasetContext.allAgents().asCollection().stream().mapToInt(value -> value.sequenceNumber()).max().orElseThrow();
 			var maxProjectSeqNum = datasetContext.allProjects().asCollection().stream().mapToInt(Project::sequenceNum).max().orElseThrow();
 			var maxSlots = datasetContext.numMaxSlots();
 	
@@ -137,7 +137,7 @@ public class AssignmentConstraints
 			// Create the X variables (student assigned to slot)
 			datasetContext.allAgents().forEach(student ->
 			{
-				var s = student.sequenceNumber;
+				var s = student.sequenceNumber();
 	
 				// hacky: seqentualization does properly handles the varios pref profile types, so workaround
 				if (student.projectPreference().isCompletelyIndifferent())
@@ -180,7 +180,7 @@ public class AssignmentConstraints
 		public Optional<X> of(Agent agent, Project.ProjectSlot slot)
 		{
 			return Optional.ofNullable(
-				x[agent.sequenceNumber][slot.belongingToProject().sequenceNum()][slot.index()]
+				x[agent.sequenceNumber()][slot.belongingToProject().sequenceNum()][slot.index()]
 			);
 		}
 	}

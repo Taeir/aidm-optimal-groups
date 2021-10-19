@@ -1,17 +1,10 @@
 package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import org.sql2o.Query;
-import org.sql2o.ResultSetHandler;
-import org.sql2o.Sql2o;
-import plouchtch.lang.Lazy;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 
-import javax.sql.DataSource;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public interface GroupPreference
 {
@@ -29,7 +22,7 @@ public interface GroupPreference
 	 */
 	static boolean isMutual(Agent agent)
 	{
-		if(agent.groupPreference.count() == 0) {
+		if(agent.groupPreference().count() == 0) {
 			// No preference, therefore also no clique
 			return false;
 		}
@@ -40,7 +33,7 @@ public interface GroupPreference
 			var groupProposal = new HashSet<Agent>();
 			//Add agent himself to set to make comparing preferences easy
 			groupProposal.add(x);
-			groupProposal.addAll(x.groupPreference.asListOfAgents());
+			groupProposal.addAll(x.groupPreference().asListOfAgents());
 
 			return groupProposal;
 		};
@@ -50,7 +43,7 @@ public interface GroupPreference
 
 		// A group proposal is completely  mutual if all agents in the proposal
 		// would propose exactly the same proposal
-		var agentProposalIsCompletelyMutual = agent.groupPreference.asListOfAgents().stream()
+		var agentProposalIsCompletelyMutual = agent.groupPreference().asListOfAgents().stream()
 			// Now check if the proposals of the peers, that are part of this agents proposal
 			.map(agentPreferencesToProposedGroup)
 			// are exactly the same as the proposal of "this" agent
@@ -68,7 +61,7 @@ public interface GroupPreference
 	class None implements GroupPreference
 	{
 		private static final None instance = new None();
-		private static final Agent[] asArray = new Agent[0];
+		private static final Agent[] asArray = new SimpleAgent[0];
 		
 		private None()
 		{

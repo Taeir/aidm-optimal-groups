@@ -55,7 +55,7 @@ public class Random_testground
 		
 		var values = maxsizeCliques.asCollection().stream().map(group -> {
 			return group.members().asCollection().stream()
-				       .map(agent -> agent.sequenceNumber.toString())
+				       .map(agent -> agent.sequenceNumber().toString())
 				       .collect(Collectors.joining(", ", "[", "]"));
 		}).collect(Collectors.joining("\n"));
 		

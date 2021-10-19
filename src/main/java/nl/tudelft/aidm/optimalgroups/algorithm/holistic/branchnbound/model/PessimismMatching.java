@@ -22,7 +22,7 @@ public class PessimismMatching extends ListBasedMatching<Agent, Project> impleme
 	public PessimismMatching(List<Match<Agent, Project>> matches)
 	{
 		super(
-			matches.stream().map(match -> match.from().context).findAny().orElseThrow(),
+			matches.stream().map(match -> match.from().datasetContext()).findAny().orElseThrow(),
 			List.copyOf(matches)
 		);
 	}

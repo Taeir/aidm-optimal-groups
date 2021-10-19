@@ -1,8 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.model.graph;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 
@@ -92,7 +92,7 @@ public class DatasetAsGraph implements BipartitieAgentsProjectGraph
 
 				if (vert.id() >= vertices.length) {
 
-					var zzz = existing.keySet().stream().sorted(Comparator.comparing(x -> x instanceof Agent ? ((Agent) x).sequenceNumber * 1000 : ((Project) x).sequenceNum())).collect(Collectors.toList());
+					var zzz = existing.keySet().stream().sorted(Comparator.comparing(x -> x instanceof SimpleAgent ? ((Agent) x).sequenceNumber() * 1000 : ((Project) x).sequenceNum())).collect(Collectors.toList());
 
 					return null;
 				}

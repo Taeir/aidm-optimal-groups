@@ -33,7 +33,7 @@ public class SoftGroupConstraint implements Constraint
 		groups.forEach(group -> {
 			var projPrefs = group.projectPreference();
 			var agents = new ArrayList<>(group.members().asCollection());
-			var leaderId = agents.get(0).sequenceNumber;
+			var leaderId = agents.get(0).sequenceNumber();
 			
 			// let this be 'g'
 			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leaderId, model);

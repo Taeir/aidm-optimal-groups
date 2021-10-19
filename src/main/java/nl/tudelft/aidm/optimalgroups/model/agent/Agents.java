@@ -31,7 +31,7 @@ public class Agents implements Iterable<Agent>
 		// and one experimental algorithm assumes this afaik)
 		this.asSet = new LinkedHashSet<>(asSet);
 		
-		var maxSeqNum = asSet.stream().mapToInt(agent -> agent.sequenceNumber).max().orElse(0);
+		var maxSeqNum = asSet.stream().mapToInt(agent -> agent.sequenceNumber()).max().orElse(0);
 
 //		// Better to change the ctor signature
 //		Assert.that(this.agents.size() == agents.size()).orThrowMessage("Agents contained duplicates");
@@ -39,7 +39,7 @@ public class Agents implements Iterable<Agent>
 		asArray = new Agent[maxSeqNum+1]; // sequenceNum starts at 1
 		for (Agent agent : asSet)
 		{
-			asArray[agent.sequenceNumber] = agent;
+			asArray[agent.sequenceNumber()] = agent;
 		}
 	}
 
@@ -148,7 +148,7 @@ public class Agents implements Iterable<Agent>
 
 	public static Agents from(Collection<Agent> agents)
 	{
-		var datasetContext = agents.stream().map(agent -> agent.context)
+		var datasetContext = agents.stream().map(agent -> agent.datasetContext())
 			.findAny().orElseGet(() -> {
 				System.out.print("Warning: creating Agents from empty collection, datasetContext is set to null!\n");
 				return null;

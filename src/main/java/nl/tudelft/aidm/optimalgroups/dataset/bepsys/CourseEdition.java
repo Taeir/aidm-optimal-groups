@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.dataset.bepsys;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
@@ -30,7 +31,7 @@ public abstract class CourseEdition implements DatasetContext
 	public Optional<Agent> findAgentByUserId(Integer bepSysUserId)
 	{
 		return this.allAgents().asCollection().stream()
-				.map(agent -> (Agent.AgentInBepSysSchemaDb) agent)
+				.map(agent -> (SimpleAgent.AgentInBepSysSchemaDb) agent)
 				.filter(agent -> agent.bepSysUserId.equals(bepSysUserId))
 				.map(agent -> (Agent) agent)
 				.findAny();

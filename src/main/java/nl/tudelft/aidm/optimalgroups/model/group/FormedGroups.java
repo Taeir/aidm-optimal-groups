@@ -101,7 +101,7 @@ public class FormedGroups implements Groups<Group.FormedGroup>
 
 	private void assertGroupIsValid(Group group)
 	{
-		var datasetContext = group.members().asCollection().stream().map(agent -> agent.context).findAny().orElseThrow();
+		var datasetContext = group.members().asCollection().stream().map(agent -> agent.datasetContext()).findAny().orElseThrow();
 		var groupSizeConstraint = datasetContext.groupSizeConstraint();
 
 		int numMembers = group.members().count();

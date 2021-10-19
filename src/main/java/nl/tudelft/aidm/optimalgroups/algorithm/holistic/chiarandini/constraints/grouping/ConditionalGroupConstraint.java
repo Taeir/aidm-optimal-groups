@@ -39,7 +39,7 @@ public class ConditionalGroupConstraint implements Constraint
 			var leader = agents.get(0);
 			
 			// let this be 'g'
-			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leader.sequenceNumber, model);
+			var violateGroupingDecVar = GrpLinkedDecisionVar.make(group, leader.sequenceNumber(), model);
 			violateGroupingDecVars.add(violateGroupingDecVar);
 			
 			// Let 'g' imply that the agents _must_ be assigned one of their top-k choices

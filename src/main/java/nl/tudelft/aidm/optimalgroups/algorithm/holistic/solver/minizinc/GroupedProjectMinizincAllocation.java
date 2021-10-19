@@ -99,7 +99,7 @@ public class GroupedProjectMinizincAllocation
 
 		public SequentualProjects.SequentualProject projectAssignedTo(Agent student)
 		{
-			return studentTopicCorrespondance.get(student.sequenceNumber);
+			return studentTopicCorrespondance.get(student.sequenceNumber());
 		}
 
 		public AgentToProjectMatching asMatching()

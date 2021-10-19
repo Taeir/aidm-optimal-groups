@@ -45,7 +45,7 @@ public class StabilityConstraint implements Constraint
 				var sl = slot.index();
 				datasetContext.allAgents().forEach(student ->
 				{
-					var s = student.sequenceNumber;
+					var s = student.sequenceNumber();
 					
 					var rank = student.projectPreference().rankOf(project);
 					if (rank.unacceptable() || rank.isCompletelyIndifferent())
@@ -110,7 +110,7 @@ public class StabilityConstraint implements Constraint
 				// Skip - not impacted by stability
 				if (student.projectPreference().isCompletelyIndifferent())
 					return;
-				var k = student.sequenceNumber;
+				var k = student.sequenceNumber();
 
 				// i
 				datasetContext.allProjects().forEach(project_i ->

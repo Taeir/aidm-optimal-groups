@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPrefe
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -35,7 +36,7 @@ public class GeneratedDataContext implements DatasetContext
 
 		agents = new Agents(this,
 			IntStream.rangeClosed(1, numAgents)
-				.mapToObj(seqNum -> new Agent.AgentInDatacontext(seqNum, projPrefGenerator.generateNew(findAgentBySeqNum.apply(seqNum)), GroupPreference.none(), this))
+				.mapToObj(seqNum -> new SimpleAgent.AgentInDatacontext(seqNum, projPrefGenerator.generateNew(findAgentBySeqNum.apply(seqNum)), GroupPreference.none(), this))
 				.collect(Collectors.toCollection(LinkedHashSet::new))
 		);
 

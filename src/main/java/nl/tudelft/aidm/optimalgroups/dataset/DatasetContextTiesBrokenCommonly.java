@@ -3,6 +3,7 @@ package nl.tudelft.aidm.optimalgroups.dataset;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.complete.ProjectPreferenceAugmentedWithMissingAlternativesCmmnRnd;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
@@ -36,7 +37,7 @@ public class DatasetContextTiesBrokenCommonly implements DatasetContext
 			.map(agent -> {
 				var origPrefs = agent.projectPreference();
 				var newPrefs = new ProjectPreferenceAugmentedWithMissingAlternativesCmmnRnd(origPrefs, projects);
-				return (Agent) new Agent.AgentInDatacontext(agent.sequenceNumber, newPrefs, agent.groupPreference, currentContext);
+				return (Agent) new SimpleAgent.AgentInDatacontext(agent.sequenceNumber(), newPrefs, agent.groupPreference(), currentContext);
 			})
 			.collect(Collectors.collectingAndThen(Collectors.toUnmodifiableList(), Agents::from));
 
