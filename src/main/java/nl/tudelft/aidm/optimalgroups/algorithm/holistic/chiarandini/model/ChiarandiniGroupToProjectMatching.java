@@ -28,8 +28,7 @@ public class ChiarandiniGroupToProjectMatching implements GroupToProjectMatching
 		
 		var asMap = new IdentityHashMap<Project.ProjectSlot, List<Agent>>();
 		
-		Function<Project.ProjectSlot, List<Agent>> emptyListIfNotPresent =
-				(x) -> new ArrayList<>(datasetContext.groupSizeConstraint().maxSize());
+		Function<Project.ProjectSlot, List<Agent>> emptyListIfAbsent = (x) -> new ArrayList<>();
 		
 		datasetContext.allAgents().forEach(agent ->
 		{
@@ -43,7 +42,7 @@ public class ChiarandiniGroupToProjectMatching implements GroupToProjectMatching
 
 						if (xValue > 0.9)
 						{
-							asMap.computeIfAbsent(slot, emptyListIfNotPresent)
+							asMap.computeIfAbsent(slot, emptyListIfAbsent)
 									.add(agent);
 						}
 					});
