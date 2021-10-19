@@ -32,13 +32,13 @@ public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 	protected List<Group.TentativeGroup> asList()
 	{
 		if (tentativeCliques == null) {
-			tentativeCliques = cliquesExtractedFrom(agents, agents.datasetContext.groupSizeConstraint());
+			tentativeCliques = cliquesExtractedFrom(agents);
 		}
 
 		return Collections.unmodifiableList(tentativeCliques);
 	}
 
-	private static List<Group.TentativeGroup> cliquesExtractedFrom(Agents agents, GroupSizeConstraint groupSizeConstraint)
+	private static List<Group.TentativeGroup> cliquesExtractedFrom(Agents agents)
 	{
 		var available = new HashSet<>(agents.asCollection());
 		var unavailable = new HashSet<Agent>(available.size());
@@ -53,12 +53,6 @@ public class CliqueGroups extends Groups.ListBacked<Group.TentativeGroup>
 		{
 			if (unavailable.contains(student)) {
 				// already processed this guy, next!
-				continue;
-			}
-
-			// Todo: move out to another layer? - this method should just identify cliques
-			if (student.groupPreferenceLength() > groupSizeConstraint.maxSize()) {
-				// Don't allow cliques larger than max group size
 				continue;
 			}
 

@@ -2,7 +2,10 @@ package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints
 
 import gurobi.*;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.*;
+import nl.tudelft.aidm.optimalgroups.dataset.chiarandini.SDUDatasetContext;
+import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.functional.actions.Rethrow;
@@ -27,6 +30,14 @@ public class AssignmentConstraints
 
 	public static AssignmentConstraints createInModel(GRBModel model, DatasetContext datasetContext) throws GRBException
 	{
+		// Hack to support SDU/Chirandini datasets
+		Function<Project, GroupSizeConstraint> gscProvider;
+		if (datasetContext instanceof SDUDatasetContext) {
+			gscProvider = ((SDUDatasetContext) datasetContext)::groupSizeBoundsOf;
+		} else {
+			gscProvider = __ -> datasetContext.groupSizeConstraint();
+		}
+		
 		var agents = datasetContext.allAgents();
 		var projects = datasetContext.allProjects();
 

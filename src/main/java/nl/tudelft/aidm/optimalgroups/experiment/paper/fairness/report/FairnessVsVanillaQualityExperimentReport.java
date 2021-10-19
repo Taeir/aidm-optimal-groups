@@ -13,6 +13,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
+import nl.tudelft.aidm.optimalgroups.dataset.chiarandini.SDUDatasetContext;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
@@ -131,7 +132,6 @@ public class FairnessVsVanillaQualityExperimentReport
 	{
 		var numberAllStudents = datasetContext.allAgents().count();
 		var numProjects = datasetContext.allProjects().count();
-		var groupSize = datasetContext.groupSizeConstraint();
 		
 		var indifferentAgents = datasetContext.allAgents().asCollection()
 			                        .stream().filter(agent -> agent.projectPreference().isCompletelyIndifferent())
@@ -143,19 +143,23 @@ public class FairnessVsVanillaQualityExperimentReport
 		var numberStudentsWithGroupPref = cliques.asAgents().count();
 		var numberIndifferentStudents = indifferentAgents.count();
 		
-		// slots...
-		boolean allProjectsHaveSameAmountOfSlots = datasetContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).distinct().count() == 1;
-		Assert.that(allProjectsHaveSameAmountOfSlots).orThrowMessage("Not implemented: handling projects with heterogeneous amount of slots");
-		var numSlots = datasetContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).findAny().getAsInt();
+//		 slots...
+//		boolean allProjectsHaveSameAmountOfSlots = datasetContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).distinct().count() == 1;
+//		Assert.that(allProjectsHaveSameAmountOfSlots).orThrowMessage("Not implemented: handling projects with heterogeneous amount of slots");
+		var numSlotsInfo = (datasetContext instanceof SDUDatasetContext)
+				? "#slots per project: variable (SDU dataset)"
+				: "\\#slots per project: " + datasetContext.allProjects().asCollection().stream().mapToInt(value -> value.slots().size()).findAny().getAsInt();
 		
-
+		var groupSizeInfo = (datasetContext instanceof SDUDatasetContext)
+				? "group sizes: SDU dataset - multiple"
+				: "group sizes, min: %s, max: %s".formatted(datasetContext.groupSizeConstraint().minSize(), datasetContext.groupSizeConstraint().maxSize());
+		
 		heading("Dataset info", 2);
-
 		unorderedList(
 			"\\#agents: " + numberAllStudents,
 			"\\#projects: " + numProjects,
-			"\\#slots per project: " + numSlots,
-			"group sizes, min: " + groupSize.minSize() + ", max: " + groupSize.maxSize()
+			numSlotsInfo,
+			groupSizeInfo
 		);
 		
 		heading(numberAllStudents + " students, of which:", 3);
