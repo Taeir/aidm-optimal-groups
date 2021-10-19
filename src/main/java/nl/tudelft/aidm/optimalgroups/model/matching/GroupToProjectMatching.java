@@ -38,14 +38,14 @@ public interface GroupToProjectMatching<G extends Group> extends Matching<G, Pro
 	 * @param groups The groups to filter by (subsets)
 	 * @return A matching holding holding only groups that are (super)sets of the given groups
 	 */
-	default GroupToProjectMatching<G> filteredBySubsets(Groups<?> groups)
+	default GroupToProjectMatching<G> filteredBySubsets(Groups<? extends Group> groups)
 	{
 		var filteredMatches = this.asList().stream()
 			    // Filter out any groups that are not a superset of one of the given groups
 				.filter(match -> groups.asCollection().stream().anyMatch(givenGroup -> match.from().members().containsAll(givenGroup.members())))
 				.collect(Collectors.toList());
 		
-		return new GroupToProjectMatching<G>()
+		return new GroupToProjectMatching<>()
 		{
 			@Override
 			public List<Match<G, Project>> asList()

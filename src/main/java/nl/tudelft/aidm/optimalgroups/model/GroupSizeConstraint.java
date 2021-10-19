@@ -11,30 +11,9 @@ public interface GroupSizeConstraint
 	{
 		return new Manual(min, max);
 	}
-
-	class Manual implements GroupSizeConstraint
+	
+	record Manual(int minSize, int maxSize) implements GroupSizeConstraint
 	{
-		private final int min;
-		private final int max;
-
-		public Manual(int min, int max)
-		{
-			this.min = min;
-			this.max = max;
-		}
-
-		@Override
-		public int minSize()
-		{
-			return min;
-		}
-
-		@Override
-		public int maxSize()
-		{
-			return max;
-		}
-
 		@Override
 		public String toString()
 		{

@@ -11,7 +11,7 @@ public interface Project
 	String name();
 	int sequenceNum();
 	
-	List<ProjectSlot> slots();
+	List<? extends ProjectSlot> slots();
 	
 	class ProjectWithStaticSlotAmount implements Project
 	{

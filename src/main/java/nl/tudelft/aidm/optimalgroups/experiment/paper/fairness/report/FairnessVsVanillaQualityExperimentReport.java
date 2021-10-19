@@ -65,7 +65,7 @@ public class FairnessVsVanillaQualityExperimentReport
 	private final Agents agentsSingle;
 	
 	private StringBuffer doc;
-	public FairnessVsVanillaQualityExperimentReport(DatasetContext datasetContext, Pregrouping pregrouping, ArrayList<GroupProjectAlgorithm.Result> results)
+	public FairnessVsVanillaQualityExperimentReport(DatasetContext datasetContext, Pregrouping pregrouping, List<GroupProjectAlgorithm.Result> results)
 	{
 		this.datasetContext = datasetContext;
 		this.pregrouping = pregrouping;

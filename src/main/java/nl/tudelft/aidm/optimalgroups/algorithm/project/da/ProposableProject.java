@@ -90,7 +90,7 @@ public class ProposableProject implements Project
 	}
 
 	@Override
-	public List<ProjectSlot> slots()
+	public List<? extends ProjectSlot> slots()
 	{
 		return project.slots();
 	}
