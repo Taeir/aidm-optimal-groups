@@ -4,15 +4,16 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.FilteredAgentsCourseEdition;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFixes;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 import plouchtch.assertion.Assert;
 
-public class ResearchProject2021Q4Dataset extends FilteredAgentsCourseEdition
+public class ResearchProject2122Q2Dataset extends FilteredAgentsCourseEdition
 {
-	private static final int courseEditionId = 39;
+	private static final int courseEditionId = 42;
 	
 	private final String stringIdentifier;
 	
@@ -20,19 +21,18 @@ public class ResearchProject2021Q4Dataset extends FilteredAgentsCourseEdition
 	 * Creates a processed instance of the RP 2021 Q4 dataset
 	 * @return The filtered dataset
 	 */
-	public static ResearchProject2021Q4Dataset getInstance()
+	public static ResearchProject2122Q2Dataset getInstance()
 	{
 		var ce = CourseEditionFromDb.fromLocalBepSysDbSnapshot(courseEditionId);
-		
-		return new ResearchProject2021Q4Dataset(ce);
+		return new ResearchProject2122Q2Dataset(ce);
 	}
 	
 	/**
 	 * Private constructor, simply passes the params to the ManualDatasetContext constructor which then simply sets the fields
 	 */
-	private ResearchProject2021Q4Dataset(CourseEdition courseEdition)
+	private ResearchProject2122Q2Dataset(CourseEdition courseEdition)
 	{
-		super(courseEdition, RP2021Q4Aux::agentsFilter);
+		super(courseEdition, RP2122Q2Aux::agentsFilter);
 		
 		this.stringIdentifier = courseEdition.identifier() + "_processed";
 	}
@@ -54,7 +54,7 @@ public class ResearchProject2021Q4Dataset extends FilteredAgentsCourseEdition
 	 */
 	public MatchFixes matchesToFix()
 	{
-		return RP2021Q4Aux.matchesToFix(this);
+		return RP2122Q2Aux.matchesToFix(this);
 	}
 	
 	/**

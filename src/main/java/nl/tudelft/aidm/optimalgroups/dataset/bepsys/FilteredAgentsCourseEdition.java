@@ -3,33 +3,38 @@ package nl.tudelft.aidm.optimalgroups.dataset.bepsys;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
-public class LocallyModifiedCourseEdition extends CourseEdition
+import java.util.function.Predicate;
+
+/**
+ * A CourseEdition whose set of agents has been modified
+ */
+public class FilteredAgentsCourseEdition extends CourseEdition
 {
 	private final CourseEdition originalCourseEdition;
 	
 	private final Agents agents;
-	private final Projects projects;
 	
-	public LocallyModifiedCourseEdition(CourseEdition courseEdition, Agents agents, Projects projects)
+	public FilteredAgentsCourseEdition(CourseEdition original, Predicate<Agent.AgentInBepSysSchemaDb> filter)
 	{
-		super(courseEdition.courseEditionId);
+		super(original.courseEditionId);
 		
-		this.agents = agents.asCollection().stream()
-				.map(agent -> (Agent.AgentInBepSysSchemaDb) agent)
-				.map(agent -> new Agent.AgentInBepSysSchemaDb(agent, this))
+		this.agents = original.allAgents().asCollection().stream()
+				.map(agent -> (SimpleAgent.AgentInBepSysSchemaDb) agent)
+				.filter(filter)
+				.map(agent -> new SimpleAgent.AgentInBepSysSchemaDb(agent, this))
 				.collect(Agents.collector);
 		
-		this.projects = projects;
-		
-		originalCourseEdition = courseEdition;
+		originalCourseEdition = original;
 	}
+	
 	
 	@Override
 	public Projects allProjects()
 	{
-		return projects;
+		return originalCourseEdition.allProjects();
 	}
 	
 	@Override

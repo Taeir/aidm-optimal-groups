@@ -32,7 +32,7 @@ import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("DuplicatedCode")
-public class ResearchProject2021Q1
+public class ResearchProject2021Q4
 {
 	public static void main(String[] args)
 	{
@@ -52,7 +52,7 @@ public class ResearchProject2021Q1
 		// dgb info
 		var values = maxsizeCliques.asCollection().stream().map(group -> {
 			return group.members().asCollection().stream()
-				       .map(agent -> agent.sequenceNumber.toString())
+				       .map(agent -> agent.sequenceNumber().toString())
 				       .collect(Collectors.joining(", ", "[", "]"));
 		}).collect(Collectors.joining("\n"));
 		

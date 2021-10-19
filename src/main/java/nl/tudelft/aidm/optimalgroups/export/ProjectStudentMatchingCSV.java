@@ -1,7 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.export;
 
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
+import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 
@@ -14,9 +16,9 @@ import java.io.IOException;
  */
 public class ProjectStudentMatchingCSV
 {
-	private final FormedGroupToProjectMatching matching;
+	private final GroupToProjectMatching<Group.FormedGroup> matching;
 	
-	public ProjectStudentMatchingCSV(FormedGroupToProjectMatching matching)
+	public ProjectStudentMatchingCSV(GroupToProjectMatching<Group.FormedGroup> matching)
 	{
 		this.matching = matching;
 	}
@@ -36,11 +38,11 @@ public class ProjectStudentMatchingCSV
 				
 				for (var member : match.from().members())
 				{
-					Assert.that(member instanceof Agent.AgentInBepSysSchemaDb).orThrowMessage("Agent is not a bepsys agent, can't extract id for export");
-					var bepsysUserId = ((Agent.AgentInBepSysSchemaDb) member).bepSysUserId;
+					Assert.that(member instanceof SimpleAgent.AgentInBepSysSchemaDb).orThrowMessage("Agent is not a bepsys agent, can't extract id for export");
+					var bepsysUserId = ((SimpleAgent.AgentInBepSysSchemaDb) member).bepSysUserId;
 					
 					writer.write(',');
-					writer.write(bepsysUserId);
+					writer.write(bepsysUserId.toString());
 				}
 				writer.write("\n");
 			}
