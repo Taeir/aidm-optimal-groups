@@ -5,6 +5,7 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
+import plouchtch.assertion.Assert;
 import plouchtch.functional.actions.Rethrow;
 import plouchtch.util.Try;
 
@@ -21,9 +22,14 @@ public record DistributiveWeightsObjective(AssignmentConstraints assignmentVars,
 	
 	public void apply(GRBModel model)
 	{
-		Try.doing(
-			() -> applyDirty(model)
-		).or(Rethrow.asRuntime());
+		try
+		{
+			applyDirty(model);
+		}
+		catch (Exception ex)
+		{
+			throw new RuntimeException(ex);
+		}
 	}
 	
 	private void applyDirty(GRBModel model) throws GRBException
@@ -56,6 +62,8 @@ public record DistributiveWeightsObjective(AssignmentConstraints assignmentVars,
 			var weight = weightScheme.weight(h);
 			objFnExpr.multAdd(weight, numStudentsWithRankH);
 		}
+		
+		Assert.that(objFnExpr.size() > 0).orThrowMessage("Resulting objective function is empty, bug? Or are all agents completely indifferent??");
 		
 		model.setObjective(objFnExpr, GRB.MINIMIZE);
 	}
