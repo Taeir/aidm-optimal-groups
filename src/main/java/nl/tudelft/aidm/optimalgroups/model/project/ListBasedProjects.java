@@ -74,7 +74,7 @@ public abstract class ListBasedProjects implements Projects
 	}
 
 	@Override
-	public Optional<Project> findWithId(int projectId)
+	public Optional<Project> findWithSeqNum(int sequenceNum)
 	{
 		if (projectsById == null) {
 			// Lazy eval: only fill the map if method is used
@@ -84,7 +84,7 @@ public abstract class ListBasedProjects implements Projects
 			);
 		}
 
-		Project value = projectsById.get(projectId);
+		Project value = projectsById.get(sequenceNum);
 		return Optional.ofNullable(value);
 	}
 

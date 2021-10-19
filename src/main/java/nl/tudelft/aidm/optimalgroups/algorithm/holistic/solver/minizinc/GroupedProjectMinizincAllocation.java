@@ -89,7 +89,7 @@ public class GroupedProjectMinizincAllocation
 
 			this.studentTopicCorrespondance = matchingResult.map(matchResult -> matchResult.group(0))
 				.map(Integer::parseInt)
-				.map(id -> datasetContext.allProjects().findWithId(id))
+				.map(id -> datasetContext.allProjects().findWithSeqNum(id))
 				.flatMap(Optional::stream)
 				.map(proj -> (SequentualProjects.SequentualProject) proj)
 				.collect(Collectors.toList());
