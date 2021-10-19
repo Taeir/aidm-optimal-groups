@@ -219,13 +219,14 @@ public class FairnessVsVanillaQualityExperimentReport
 		
 		var matchingIndividualsToProjects = AgentToProjectMatching.from(matching);
 		
-		var matchingSingles = matchingIndividualsToProjects.filteredBy(agentsSingle);
-		var matchingPregrouped = matchingIndividualsToProjects.filteredBy(agentsPregrouping);
-		var matchingPregroupedSatisfied = AgentToProjectMatching.from( matching.filteredBySubsets(preformedGroups) );
+		var matchingPregroupedSatisfied = AgentToProjectMatching.from( matching.filteredBySubsets(preformedGroups) ).filteredBy(agentsPregrouping);
 		
 		var pregroupingStudentsSatisfied = matchingPregroupedSatisfied.agents();
 		var pregroupingStudentsUnsatisfied = agentsPregrouping.without(pregroupingStudentsSatisfied);
-		var matchingPregroupedUnsatified = matchingIndividualsToProjects.filteredBy(pregroupingStudentsUnsatisfied);
+		var matchingPregroupedUnsatisfied = matchingIndividualsToProjects.filteredBy(pregroupingStudentsUnsatisfied);
+		
+		var matchingSingles = matchingIndividualsToProjects.filteredBy(agentsSingle);
+		var matchingPregrouped = matchingIndividualsToProjects.filteredBy(agentsPregrouping);
 		
 		
 		var studentPerspectiveMetrics = new MatchingMetrics.StudentProject(AgentToProjectMatching.from(matching));
@@ -239,7 +240,7 @@ public class FairnessVsVanillaQualityExperimentReport
 				int numStudentsInDataset = datasetContext.allAgents().count();
 				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
 		
-				var rankDistribution = new RankProfile_SinglePregroupingSatisfiedUnsatisfied(matchingSingles, matchingPregroupedSatisfied, matchingPregroupedUnsatified);
+				var rankDistribution = new RankProfile_SinglePregroupingSatisfiedUnsatisfied(matchingSingles, matchingPregroupedSatisfied, matchingPregroupedUnsatisfied);
 				image( rankDistribution.asChart(algoResult.algo().name()) );
 				table( rankDistribution.asTable() );
 		
