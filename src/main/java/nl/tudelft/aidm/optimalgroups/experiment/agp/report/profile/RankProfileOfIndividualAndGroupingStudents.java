@@ -96,8 +96,10 @@ public class RankProfileOfIndividualAndGroupingStudents
 			            .map(assignedRank -> assignedRank.asInt().getAsInt())
 			            .collect(Collectors.groupingBy(i -> i, Collectors.counting()));
 		
-		var maxRank = ranks.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
-		// Range is categorical, so make sure all ranks are present for readability and easy comparability between charts
+		var maxRank = ranks.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
+		
+		// The chart range (x-axis) is set to be categorical, ensure all ranks are present even if empty
+		// Note, don't have to do maxRank as it is guaranteed to be present
 		for (int i = 1; i < maxRank; i++)
 		{
 			ranks.putIfAbsent(i, 0L);
