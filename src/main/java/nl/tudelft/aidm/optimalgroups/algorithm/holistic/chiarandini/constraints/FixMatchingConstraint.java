@@ -5,17 +5,18 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
+import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFix;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-public class FixMatchingConstraint implements Constraint
+import java.util.Collection;
+
+public record FixMatchingConstraint(Agent agent, Project project) implements Constraint
 {
-	private final Agent agent;
-	private final Project project;
-	
-	public FixMatchingConstraint(Agent agent, Project project)
+	public static Collection<FixMatchingConstraint> from(MatchFix matchFix)
 	{
-		this.agent = agent;
-		this.project = project;
+		return matchFix.group().members().asCollection().stream()
+				.map(agent -> new FixMatchingConstraint(agent, matchFix.project()))
+				.toList();
 	}
 	
 	@Override

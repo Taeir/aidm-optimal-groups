@@ -1,5 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini;
 
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.Constraint;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.FixMatchingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
@@ -18,19 +20,27 @@ import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MILP_Mechanism_FairPregrouping
 {
 	private final DatasetContext datasetContext;
 	private final ObjectiveFunction objectiveFunction;
+	
 	private final Pregrouping pregrouping;
 	
-	public MILP_Mechanism_FairPregrouping(DatasetContext datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType)
+	private final FixMatchingConstraint[] matchFixes;
+	
+	public MILP_Mechanism_FairPregrouping(DatasetContext datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType, FixMatchingConstraint... matchFixes)
 	{
 		this.datasetContext = datasetContext;
 		this.objectiveFunction = objectiveFunction;
+	
 		this.pregrouping = pregroupingType.instantiateFor(datasetContext);
+	
+		this.matchFixes = matchFixes;
 	}
 	
 	public Matching doIt()
@@ -45,7 +55,7 @@ public class MILP_Mechanism_FairPregrouping
 
 		// Initial matching to determine baseline outcome quality for the "single" students
 		var baselineMatching = AgentToProjectMatching.from(
-				new ChiarandiniBaseModel(datasetContext, objectiveFunction).doIt()
+				new ChiarandiniBaseModel(datasetContext, objectiveFunction, matchFixes).doIt()
 		);
 		
 		var profile = Profile.of(baselineMatching, singleStudents);
@@ -53,7 +63,10 @@ public class MILP_Mechanism_FairPregrouping
 		
 		var groupingConstraint = pregrouping.constraint();
 		
-		var finalMatching = new ChiarandiniBaseModel(datasetContext, objectiveFunction, paretoConstraint, groupingConstraint)
+		var allConstraints = new ArrayList<>(Arrays.asList(paretoConstraint, groupingConstraint));
+		allConstraints.addAll(Arrays.asList(matchFixes));
+		
+		var finalMatching = new ChiarandiniBaseModel(datasetContext, objectiveFunction, allConstraints.toArray(Constraint[]::new))
 				.doIt();
 		
 		var matchingResults = new Matching(finalMatching, baselineMatching);

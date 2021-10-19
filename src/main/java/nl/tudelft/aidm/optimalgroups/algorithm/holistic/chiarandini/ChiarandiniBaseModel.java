@@ -33,6 +33,7 @@ public record ChiarandiniBaseModel(DatasetContext datasetContext, ObjectiveFunct
 		var model = new GRBModel(env);
 
 		AssignmentConstraints assignmentConstraints = AssignmentConstraints.createInModel(model, datasetContext);
+		
 		objectiveFunction.apply(model, assignmentConstraints);
 
 		// Apply all constraints
