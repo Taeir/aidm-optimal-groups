@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.experiment.variantvakken.report;
 
 import net.steppschuh.markdowngenerator.Markdown;
-import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
+import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferencesOverview;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.variantvakken.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
@@ -79,7 +79,7 @@ public class ExperimentReportInMarkdown
 		JFreeChart distribOfProjectsInPreferencesChart = experiment.projectRankingDistribution.asChart();
 		doc.append(Markdown.image(embed(distribOfProjectsInPreferencesChart))).append("\n\n");
 
-		String binnendPrefProfilesTable = BinnedProjectPreferences.exactBins(dataContext, 3, 30).asMarkdownTable();
+		String binnendPrefProfilesTable = BinnedProjectPreferencesOverview.exactBins(dataContext, 3, 30).asMarkdownTable();
 		doc.append(binnendPrefProfilesTable).append("\n");
 
 

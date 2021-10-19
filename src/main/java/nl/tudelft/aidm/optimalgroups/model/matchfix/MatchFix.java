@@ -13,6 +13,7 @@ public record MatchFix(Group group, Project project)
 	{
 		return new MatchFix(new FixedMatchGroup(agents, project), project);
 	}
+	
 	public static MatchFix fromIds(CourseEdition dataset, Integer projectId, Integer... agentIds)
 	{
 		var proj = dataset.findProjectByProjectId(projectId).orElseThrow();

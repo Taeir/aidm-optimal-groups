@@ -10,5 +10,6 @@ bin/
 lib
 outputtxt/*
 reports/
+data/
 
 !/gradle
