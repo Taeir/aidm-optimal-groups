@@ -1,7 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.experiment.agp.report;
 
 import net.steppschuh.markdowngenerator.Markdown;
-import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferences;
+import nl.tudelft.aidm.optimalgroups.experiment.BinnedProjectPreferencesOverview;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
@@ -82,7 +82,7 @@ public class ExperimentReportInMarkdown
 		JFreeChart distribProjectsInPreferencesChart = experiment.projectRankingDistribution.asChart();
 		doc.append(Markdown.image(embed(distribProjectsInPreferencesChart))).append("\n\n");
 
-		var binnedProjectPreferences = BinnedProjectPreferences.exactTopRanksBins(dataContext, 3, 30);
+		var binnedProjectPreferences = BinnedProjectPreferencesOverview.exactTopRanksBins(dataContext, 3, 30);
 		doc.append(binnedProjectPreferences.asMarkdownTable()).append("\n");
 	}
 

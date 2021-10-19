@@ -8,24 +8,24 @@ import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.function.Function;
 
-public class BinnedProjectPreferences
+public class BinnedProjectPreferencesOverview
 {
 	private final ProjectPreferenceProfileFrequencies projectProfFreqs;
 	private final int topProjects;
 	private final int topProfilesLimit;
 
-	public static BinnedProjectPreferences exactBins(DatasetContext datasetContext, int maxRankForPrint, int topProfilesLimit)
+	public static BinnedProjectPreferencesOverview exactBins(DatasetContext datasetContext, int maxRankForPrint, int topProfilesLimit)
 	{
-		return new BinnedProjectPreferences(datasetContext, maxRankForPrint, topProfilesLimit, BinnableProjPref.Exact::new);
+		return new BinnedProjectPreferencesOverview(datasetContext, maxRankForPrint, topProfilesLimit, BinnableProjPref.Exact::new);
 	}
 
-	public static BinnedProjectPreferences exactTopRanksBins(DatasetContext datasetContext, int maxRank, int topProfilesLimit)
+	public static BinnedProjectPreferencesOverview exactTopRanksBins(DatasetContext datasetContext, int maxRank, int topProfilesLimit)
 	{
 		Function<ProjectPreference, BinnableProjPref> binType = (pp) -> new BinnableProjPref.ExactTopXOnly(pp, maxRank);
-		return new BinnedProjectPreferences(datasetContext, maxRank, topProfilesLimit, binType);
+		return new BinnedProjectPreferencesOverview(datasetContext, maxRank, topProfilesLimit, binType);
 	}
 
-	public BinnedProjectPreferences(DatasetContext datasetContext, int topProjectLimit, int topProfilesLimit, Function<ProjectPreference,BinnableProjPref> bin)
+	public BinnedProjectPreferencesOverview(DatasetContext datasetContext, int topProjectLimit, int topProfilesLimit, Function<ProjectPreference,BinnableProjPref> bin)
 	{
 		this.projectProfFreqs = new ProjectPreferenceProfileFrequencies(datasetContext.allAgents(), bin);
 		this.topProjects = topProjectLimit;
