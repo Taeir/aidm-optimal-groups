@@ -3,57 +3,40 @@ package nl.tudelft.aidm.optimalgroups.experiment.paper.fairness.report;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.pdf.converter.PdfConverterExtension;
 import com.vladsch.flexmark.util.ast.Document;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 import net.steppschuh.markdowngenerator.Markdown;
 import net.steppschuh.markdowngenerator.table.Table;
 import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.chiarandini.SDUDatasetContext;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.Experiment;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentAlgorithmSubresult;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileOfIndividualAndGroupingStudents;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfile_SinglePregroupingSatisfiedUnsatisfied;
-import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileGraph;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix2;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
-import nl.tudelft.aidm.optimalgroups.metric.group.LeastWorstIndividualRankInGroupDistribution;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
 import nl.tudelft.aidm.optimalgroups.metric.matching.NumberAgentsMatched;
 import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
 import nl.tudelft.aidm.optimalgroups.metric.matching.gini.GiniCoefficientStudentRank;
 import nl.tudelft.aidm.optimalgroups.metric.matching.group.NumberProposedGroupsTogether;
+import nl.tudelft.aidm.optimalgroups.model.Profile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.Match;
 import org.apache.commons.codec.binary.Base64;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import plouchtch.assertion.Assert;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("DuplicatedCode")
 public class FairnessVsVanillaQualityExperimentReport
@@ -244,9 +227,13 @@ public class FairnessVsVanillaQualityExperimentReport
 				int numStudentsInDataset = datasetContext.allAgents().count();
 				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
 		
-				var rankDistribution = new RankProfile_SinglePregroupingSatisfiedUnsatisfied(matchingSingles, matchingPregroupedSatisfied, matchingPregroupedUnsatisfied);
+				var rankDistribution = new RankProfileGraph(
+						new RankProfileGraph.NamedRankProfile(Profile.of(matchingSingles), "'Single' student"),
+						new RankProfileGraph.NamedRankProfile(Profile.of(matchingPregroupedSatisfied), "Satisfied 'pregrouping' student"),
+						new RankProfileGraph.NamedRankProfile(Profile.of(matchingPregroupedUnsatisfied), "Unsatisfied 'pregrouping' student"));
+				
 				image( rankDistribution.asChart(algoResult.algo().name()) );
-				table( rankDistribution.asTable() );
+				table( rankDistribution.asTable().asMarkdownTable() );
 		
 //				var groups = algoResult.producedMatching().asList().stream().map(Match::from).collect(Collectors.toList());
 //				var bestWorstIndividualRankInGroupDistribution = new LeastWorstIndividualRankInGroupDistribution(groups).asChart();

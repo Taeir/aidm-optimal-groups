@@ -6,7 +6,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.PregroupingType;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
+import nl.tudelft.aidm.optimalgroups.model.Profile;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;

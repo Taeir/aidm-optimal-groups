@@ -1,10 +1,13 @@
-package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model;
+package nl.tudelft.aidm.optimalgroups.model;
 
+import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
+import nl.tudelft.aidm.optimalgroups.model.matching.Match;
+import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
+import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import plouchtch.assertion.Assert;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +26,7 @@ public interface Profile
 	 */
 	void forEach(ProfileConsumer consumer);
 
-	int numInRank(int rank);
+	int numAgentsWithRank(int rank);
 
 	/**
 	 * The number of agents of whom the profile is made
@@ -35,21 +38,30 @@ public interface Profile
 	 */
 	int maxRank();
 	
-	static Profile of(AgentToProjectMatching matching, Agents agentsToProfile)
+	
+	/* Factory methods  */
+	static Profile of(Matching<Agent, Project> matching)
+	{
+		return Profile.of(matching, matching.asList().stream().map(Match::from).collect(Agents.collector));
+	}
+	
+	static Profile of(Matching<Agent, Project> matching, Agents agentsToProfile)
 	{
 		return matching.asList().stream()
 				// Only agents that are to be included
 				.filter(match -> agentsToProfile.contains(match.from()))
+				.filter(match -> !match.from().projectPreference().isCompletelyIndifferent())
 				// A profile is a sorted list of ranks
 				.map(match -> {
 				   var rank = match.from().projectPreference().rankOf(match.to());
-				   Assert.that(rank.isPresent()).orThrowMessage("Rank not present, handle this case");
+				   Assert.that(rank.isPresent()).orThrowMessage("Rank not present, handle this case"); // should use RankInPref over integers in that case
 				   return rank.asInt();
 				})
 				.sorted()
 				.collect(collectingAndThen(toList(), Profile.listBased::new));
 	}
 
+	
 	/* Supporting types */
 	interface ProfileConsumer
 	{
@@ -72,10 +84,10 @@ public interface Profile
 				.collect(Collectors.groupingBy(i -> i, Collectors.counting()));
 
 			maxRank = numPerRank.keySet().stream().mapToInt(value -> value).max()
-				.orElseThrow(); // Should practically not occur, and if it does, handle the case
+				.orElse(0); // Profile is empty
 			
 			numStudentsWithRank = new int[maxRank + 1]; // must be up to including maxRank
-			numStudentsWithRank[0] = 0; // nobody
+			numStudentsWithRank[0] = 0; // nobody - rank 0 doesn't exist
 
 			for (int i = 1; i <= maxRank; i++)
 			{
@@ -85,19 +97,24 @@ public interface Profile
 		}
 
 		@Override
-		public int numInRank(int rank)
+		public int numAgentsWithRank(int rank)
 		{
-			Assert.that(0 < rank && rank <= maxRank()).orThrowMessage("Rank out of bounds");
-
-			return numStudentsWithRank[rank];
+			Assert.that(0 <= rank).orThrowMessage("Rank out of bounds");
+			
+			if (rank >= numStudentsWithRank.length) {
+				return 0;
+			}
+			else {
+				return numStudentsWithRank[rank];
+			}
 		}
 
 		@Override
 		public void forEach(ProfileConsumer consumer)
 		{
-			for (int rank = 1; rank < maxRank(); rank++)
+			for (int rank = 1; rank <= maxRank(); rank++)
 			{
-				int numWithRank = numStudentsWithRank[rank];
+				int numWithRank = numAgentsWithRank(rank);
 				consumer.apply(rank, numWithRank);
 			}
 		}

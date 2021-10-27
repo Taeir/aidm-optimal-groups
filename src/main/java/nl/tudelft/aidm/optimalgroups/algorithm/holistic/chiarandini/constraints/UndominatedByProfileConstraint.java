@@ -4,7 +4,7 @@ import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
+import nl.tudelft.aidm.optimalgroups.model.Profile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import plouchtch.assertion.Assert;
 import plouchtch.functional.actions.Rethrow;
@@ -58,7 +58,7 @@ public class UndominatedByProfileConstraint implements Constraint
 			});
 			
 			// cumsumInProfileUpToRankH += profile.numInRank(h)
-			var with_h_in_profile = profile.numInRank(h);
+			var with_h_in_profile = profile.numAgentsWithRank(h);
 			cumsumInProfileUpToRankH.addAndGet(with_h_in_profile);
 			
 			// Gurobi manual: Once you add a constraint to your model, subsequent changes to the expression object you used to build the constraint will not change the constraint

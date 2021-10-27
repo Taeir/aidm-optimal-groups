@@ -8,7 +8,8 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 import net.steppschuh.markdowngenerator.Markdown;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.ExperimentResult;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileOfIndividualAndGroupingStudents;
+import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileGraph;
+import nl.tudelft.aidm.optimalgroups.model.Profile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
@@ -108,7 +109,10 @@ public class TwoRoundExperimentReport
 			
 				var matchingRoundOneIndividualOnly = filterMatching(matchingRoundOne, individualAgents);
 				var matchingRoundOneGroupedOnly = filterMatching(matchingRoundOne, groupingAgents);
-				var chart = new RankProfileOfIndividualAndGroupingStudents(matchingRoundOneIndividualOnly, matchingRoundOneGroupedOnly).asChart("Round one");
+				var chart = new RankProfileGraph(
+						new RankProfileGraph.NamedRankProfile(Profile.of(matchingRoundOneIndividualOnly), "'Single' student"),
+						new RankProfileGraph.NamedRankProfile(Profile.of(matchingRoundOneGroupedOnly), "'Pregrouping' student")
+					).asChart("Round one");
 				
 
 				// stacked matching profile bar chart - individual, pre-grouping students
@@ -124,7 +128,11 @@ public class TwoRoundExperimentReport
 		
 				var matchingRoundTwoIndividualOnly = filterMatching(matchingRoundTwo, individualAgents);
 				var matchingRoundTwoGroupedOnly = filterMatching(matchingRoundTwo, groupingAgents);
-				var chart2 = new RankProfileOfIndividualAndGroupingStudents(matchingRoundTwoIndividualOnly, matchingRoundTwoGroupedOnly).asChart("Round two");
+				
+				var chart2 = new RankProfileGraph(
+						new RankProfileGraph.NamedRankProfile(Profile.of(matchingRoundTwoIndividualOnly), "'Single' student"),
+						new RankProfileGraph.NamedRankProfile(Profile.of(matchingRoundTwoGroupedOnly), "'Pregrouping' student")
+					).asChart("Round one");
 				
 				embed(chart2);
 				

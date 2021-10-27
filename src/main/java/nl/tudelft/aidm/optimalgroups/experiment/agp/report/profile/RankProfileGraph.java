@@ -1,6 +1,7 @@
 package nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile;
 
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
+import nl.tudelft.aidm.optimalgroups.model.Profile;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
@@ -16,18 +17,25 @@ import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 @SuppressWarnings("DuplicatedCode")
-public class RankProfileOfIndividualAndGroupingStudents
+public class RankProfileGraph
 {
-	private final Matching<Agent, Project> single;
-	private final Matching<Agent, Project> pregrouping;
+	public record NamedRankProfile(Profile profile, String name) {}
 	
-	public RankProfileOfIndividualAndGroupingStudents(Matching<Agent, Project> single, Matching<Agent, Project> pregrouping)
+	private final NamedRankProfile[] namedRankProfiles;
+//
+//	private final Matching<Agent, Project> single;
+//	private final Matching<Agent, Project> pregrouping;
+	
+	public RankProfileGraph(NamedRankProfile... namedRankProfiles)
 	{
-		this.single = single;
-		this.pregrouping = pregrouping;
+		this.namedRankProfiles = namedRankProfiles;
+//		this.single = single;
+//		this.pregrouping = pregrouping;
 	}
 	
 	public JFreeChart asChart(String titleHint)
@@ -74,19 +82,23 @@ public class RankProfileOfIndividualAndGroupingStudents
 	{
 		var dataset = new DefaultCategoryDataset();
 		
-		matchingToDataset(single, "'Single' student", dataset);
-		matchingToDataset(pregrouping, "'Pregrouping' student", dataset);
+		for (NamedRankProfile namedRankProfile : namedRankProfiles)
+		{
+			namedRankProfile.profile().forEach((rank, count) -> {
+				dataset.addValue((Number) count, namedRankProfile.name(), rank);
+			});
+		}
 		
 		return dataset;
 	}
 	
-	private void matchingToDataset(Matching<Agent, Project> matching, String seriesName, DefaultCategoryDataset dataset)
+	public RankProfileTable asTable()
 	{
-		var ranks = ranks(matching);
-		ranks.keySet().stream().sorted().forEach(key -> {
-			var value = ranks.get(key);
-			dataset.addValue(value, seriesName, key);
-		});
+		return new RankProfileTable(
+				Arrays.stream(this.namedRankProfiles)
+						.map(namedRankProfile -> new RankProfileTable.SeriesData(namedRankProfile.profile(), namedRankProfile.name()))
+						.toArray(RankProfileTable.SeriesData[]::new)
+		);
 	}
 	
 	private Map<Integer, Long> ranks(Matching<Agent, Project> matching)

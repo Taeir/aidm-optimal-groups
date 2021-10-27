@@ -1,41 +1,23 @@
 package nl.tudelft.aidm.optimalgroups.experiment.researchproj;
 
-import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
-import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
-import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.partial.CliqueGroups;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.MILP_Mechanism_FairPregrouping;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.AssignmentConstraints;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.FixMatchingConstraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.grouping.HardGroupingConstraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ChiarandiniAgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.PregroupingType;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Profile;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
-import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
-import nl.tudelft.aidm.optimalgroups.experiment.dataset.ResearchProject2021Q4Dataset;
 import nl.tudelft.aidm.optimalgroups.experiment.dataset.ResearchProject2122Q2Dataset;
 import nl.tudelft.aidm.optimalgroups.experiment.paper.fairness.report.FairnessVsVanillaQualityExperimentReport;
 import nl.tudelft.aidm.optimalgroups.export.ProjectStudentMatchingCSV;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
-import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.dataset.ManualDatasetContext;
-import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
 import nl.tudelft.aidm.optimalgroups.model.matchfix.MatchFixes;
-import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import plouchtch.assertion.Assert;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
