@@ -156,7 +156,7 @@ public class RP21_testground
 		}
 	}
 	
-	private static Profile.listBased profileOfIndividualAgentsInMatching(Agents individualAgents, AgentToProjectMatching matching)
+	private static Profile profileOfIndividualAgentsInMatching(Agents individualAgents, AgentToProjectMatching matching)
 	{
 		return matching.asList().stream()
 			       // Only agents that are 'individual'
@@ -168,7 +168,7 @@ public class RP21_testground
 				       return rank.asInt();
 			       })
 			       .sorted()
-			       .collect(collectingAndThen(toList(), Profile.listBased::new));
+			       .collect(collectingAndThen(toList(), Profile::fromRanks));
 	}
 
 	private static DatasetContext datasetCE10()

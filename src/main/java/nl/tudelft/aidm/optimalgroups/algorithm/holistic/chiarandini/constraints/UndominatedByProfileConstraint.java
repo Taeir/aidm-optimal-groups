@@ -19,6 +19,7 @@ public class UndominatedByProfileConstraint implements Constraint
 {
 	private final Profile profile;
 	private final Agents undominatedAgents;
+	
 	public UndominatedByProfileConstraint(Profile profile, Agents undominatedAgents)
 	{
 		Assert.that(profile.numAgents() == undominatedAgents.count())

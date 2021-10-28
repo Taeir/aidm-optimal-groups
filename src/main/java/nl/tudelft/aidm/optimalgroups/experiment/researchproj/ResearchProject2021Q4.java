@@ -153,7 +153,7 @@ public class ResearchProject2021Q4
 	}
 	
 	
-	private static Profile.listBased profileOfIndividualAgentsInMatching(DatasetContext datasetContext, Agents individualAgents, AgentToProjectMatching matching)
+	private static Profile profileOfIndividualAgentsInMatching(DatasetContext datasetContext, Agents individualAgents, AgentToProjectMatching matching)
 	{
 		return matching.asList().stream()
 			       // Only agents that are 'individual'
@@ -165,7 +165,7 @@ public class ResearchProject2021Q4
 				       return rank.asInt();
 			       })
 			       .sorted()
-			       .collect(collectingAndThen(toList(), Profile.listBased::new));
+			       .collect(collectingAndThen(toList(), Profile::fromRanks));
 	}
 
 	private static DatasetContext datasetCE10()

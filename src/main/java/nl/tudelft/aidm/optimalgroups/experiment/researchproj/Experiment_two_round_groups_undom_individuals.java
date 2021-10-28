@@ -92,7 +92,7 @@ public class Experiment_two_round_groups_undom_individuals
 	}
 	
 	
-	private static Profile.listBased profileOfIndividualAgentsInMatching(Agents individualAgents, AgentToProjectMatching matching)
+	private static Profile profileOfIndividualAgentsInMatching(Agents individualAgents, AgentToProjectMatching matching)
 	{
 		return matching.asList().stream()
 			       // Only agents that are 'individual'
@@ -104,7 +104,7 @@ public class Experiment_two_round_groups_undom_individuals
 				       return rank.asInt();
 			       })
 			       .sorted()
-			       .collect(collectingAndThen(toList(), Profile.listBased::new));
+			       .collect(collectingAndThen(toList(), Profile::fromRanks));
 	}
 
 	private static DatasetContext datasetCE10()
