@@ -11,7 +11,7 @@ import nl.tudelft.aidm.optimalgroups.Algorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
 import nl.tudelft.aidm.optimalgroups.dataset.chiarandini.SDUDatasetContext;
-import nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile.RankProfileGraph;
+import nl.tudelft.aidm.optimalgroups.experiment.viz.RankProfilePlot;
 import nl.tudelft.aidm.optimalgroups.metric.PopularityMatrix2;
 import nl.tudelft.aidm.optimalgroups.metric.dataset.AvgPreferenceRankOfProjects;
 import nl.tudelft.aidm.optimalgroups.metric.matching.MatchingMetrics;
@@ -227,10 +227,10 @@ public class FairnessVsVanillaQualityExperimentReport
 				int numStudentsInDataset = datasetContext.allAgents().count();
 				text("Number of students matched: %s (out of: %s)\n\n", numStudentsMatched, numStudentsInDataset);
 		
-				var rankDistribution = new RankProfileGraph(
-						new RankProfileGraph.NamedRankProfile(Profile.of(matchingSingles), "'Single' student"),
-						new RankProfileGraph.NamedRankProfile(Profile.of(matchingPregroupedSatisfied), "Satisfied 'pregrouping' student"),
-						new RankProfileGraph.NamedRankProfile(Profile.of(matchingPregroupedUnsatisfied), "Unsatisfied 'pregrouping' student"));
+				var rankDistribution = new RankProfilePlot(
+						new RankProfilePlot.NamedRankProfile(Profile.of(matchingSingles), "'Single' student"),
+						new RankProfilePlot.NamedRankProfile(Profile.of(matchingPregroupedSatisfied), "Satisfied 'pregrouping' student"),
+						new RankProfilePlot.NamedRankProfile(Profile.of(matchingPregroupedUnsatisfied), "Unsatisfied 'pregrouping' student"));
 				
 				image( rankDistribution.asChart(algoResult.algo().name()) );
 				table( rankDistribution.asTable().asMarkdownTable() );

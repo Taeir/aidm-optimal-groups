@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile;
+package nl.tudelft.aidm.optimalgroups.experiment.viz;
 
 
 import net.steppschuh.markdowngenerator.table.Table;

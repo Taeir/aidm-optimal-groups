@@ -1,4 +1,4 @@
-package nl.tudelft.aidm.optimalgroups.experiment.agp.report.profile;
+package nl.tudelft.aidm.optimalgroups.experiment.viz;
 
 import nl.tudelft.aidm.optimalgroups.metric.rank.AssignedRank;
 import nl.tudelft.aidm.optimalgroups.model.Profile;
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("DuplicatedCode")
-public class RankProfileGraph
+public class RankProfilePlot
 {
 	public record NamedRankProfile(Profile profile, String name) {}
 	
@@ -31,7 +31,7 @@ public class RankProfileGraph
 //	private final Matching<Agent, Project> single;
 //	private final Matching<Agent, Project> pregrouping;
 	
-	public RankProfileGraph(NamedRankProfile... namedRankProfiles)
+	public RankProfilePlot(NamedRankProfile... namedRankProfiles)
 	{
 		this.namedRankProfiles = namedRankProfiles;
 //		this.single = single;
