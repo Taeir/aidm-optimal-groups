@@ -58,6 +58,10 @@ public interface WorstAssignedRank extends Comparable<WorstAssignedRank>
 		{
 			this.matching = matching;
 		}
+		public static WorstAssignedRank in(Matching<Agent, Project> matching)
+		{
+			return new ProjectToStudents(matching);
+		}
 
 		public Integer asInt()
 		{
