@@ -43,7 +43,7 @@ class ParetoComperatorTest
 		var profile = Profile.fromProfileArray(1,5,7,11);
 		var other = Profile.fromProfileArray(1,4,9,10);
 		
-		var betterOrSame = new ParetoComperator().isParetoBetter(profile, other);
+		var betterOrSame = new ParetoComperator().isParetoBetterOrEqual(profile, other);
 		
 		assertFalse(betterOrSame);
 	}

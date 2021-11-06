@@ -1,16 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.model.comparison;
 
-import gurobi.GRB;
-import gurobi.GRBLinExpr;
 import nl.tudelft.aidm.optimalgroups.model.Profile;
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
-import plouchtch.functional.actions.Rethrow;
-import plouchtch.util.Try;
-
-import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParetoComperator
 {
@@ -24,10 +14,10 @@ public class ParetoComperator
 			return ParetoOutcome.SAME;
 		}
 		
-		if (isParetoBetter(profile, other)) {
+		if (isParetoBetterOrEqual(profile, other)) {
 			return ParetoOutcome.BETTER;
 		}
-		else if (isParetoBetter(other, profile)) {
+		else if (isParetoBetterOrEqual(other, profile)) {
 			return ParetoOutcome.WORSE;
 		}
 		else {
@@ -36,7 +26,7 @@ public class ParetoComperator
 		}
 	}
 	
-	public boolean isParetoBetter(Profile profile, Profile other)
+	public boolean isParetoBetterOrEqual(Profile profile, Profile other)
 	{
 		var maxRank = Math.max(profile.maxRank(), other.maxRank());
 		
