@@ -54,7 +54,7 @@ public class FairnessVsVanillaQualitySummaryTableReport
 		heading("Fairness vs Vanilla comparison", 1);
 		
 			heading("Info",2);
-				text("Pregrouping type: '%s'".formatted(pregroupingType.simpleName()));
+				text("Pregrouping type: '%s'\n".formatted(pregroupingType.simpleName()));
 		
 			heading("All students", 2);
 				table(new FairnessComparisonsTable(resultsAll).asMarkdownTable());
@@ -104,7 +104,7 @@ public class FairnessVsVanillaQualitySummaryTableReport
 	
 	private void heading(String value, int level)
 	{
-		doc.append(Markdown.heading(value, level)).append("\n");
+		doc.append(Markdown.heading(value, level)).append("\n\n");
 	}
 	
 	private void unorderedList(String... items)

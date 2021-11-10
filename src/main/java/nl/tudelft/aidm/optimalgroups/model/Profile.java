@@ -9,6 +9,7 @@ import plouchtch.assertion.Assert;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,15 +45,13 @@ public interface Profile
 		var maxRank = Math.max(this.maxRank(), other.maxRank());
 		var profileDelta = new int[maxRank+1];
 		
-		for (int i = 1; i < maxRank; i++)
+		for (int i = 1; i <= maxRank; i++)
 		{
 			profileDelta[i] = this.numAgentsWithRank(i) - other.numAgentsWithRank(i);
 		}
 		
 		return new Simple(profileDelta);
 	}
-	
-	
 	
 	/* Factory methods  */
 	static Profile of(Matching<Agent, Project> matching)
@@ -158,6 +157,20 @@ public interface Profile
 		public int maxRank()
 		{
 			return maxRank;
+		}
+		
+		@Override
+		public String toString()
+		{
+			Function<Integer, String> int2string = value -> {
+				if (value == 0) return " " + value;
+				else if (value < 0) return Integer.toString(value);
+				else return "+" + value;
+			};
+			
+			return Arrays.stream(numStudentsByRank)
+					.mapToObj(int2string::apply)
+					.collect(Collectors.joining(" ", "[", "]"));
 		}
 		
 		@Override
