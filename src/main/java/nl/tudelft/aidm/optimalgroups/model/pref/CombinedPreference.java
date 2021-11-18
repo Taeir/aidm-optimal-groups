@@ -35,12 +35,6 @@ public class CombinedPreference implements ProjectPreference {
         this.projectPreference = pp;
         this.agents = a;
     }
-
-    @Override
-    public Object owner()
-    {
-        return projectPreference.owner();
-    }
     
     @Override
     public boolean isCompletelyIndifferent()
@@ -74,7 +68,7 @@ public class CombinedPreference implements ProjectPreference {
     public RankInPref rankOf(Project project)
     {
         return asMap()
-                .computeIfAbsent(project, p -> new UnacceptableAlternativeRank(owner(), p));
+                .computeIfAbsent(project, p -> new UnacceptableAlternativeRank());
     }
     
     @Override
@@ -170,7 +164,7 @@ public class CombinedPreference implements ProjectPreference {
                         RankInPref rank;
                         
                         if (score == 0) {
-                            rank = new UnacceptableAlternativeRank(owner(), project);
+                            rank = new UnacceptableAlternativeRank();
                         }
                         else {
                             var rankAsInt = orderedScores.indexOf(score);

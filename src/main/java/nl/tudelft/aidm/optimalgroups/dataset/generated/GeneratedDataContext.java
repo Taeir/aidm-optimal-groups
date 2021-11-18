@@ -1,7 +1,8 @@
 package nl.tudelft.aidm.optimalgroups.dataset.generated;
 
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributedProjectPreferencesGenerator;
-import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PreferenceGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PregroupingGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.ProjectPreferenceGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
@@ -9,14 +10,19 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.pref.GroupPreference;
+import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Projects;
+import plouchtch.assertion.Assert;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PregroupingGenerator.ChancePerTypeBased.*;
 
 public class GeneratedDataContext implements DatasetContext
 {
@@ -25,36 +31,54 @@ public class GeneratedDataContext implements DatasetContext
 	private final Projects projects;
 	private final GroupSizeConstraint groupSizeConstraint;
 
-	public GeneratedDataContext(int numAgents, Projects projects, GroupSizeConstraint groupSizeConstraint, PreferenceGenerator projPrefGenerator)
+	public GeneratedDataContext(int numAgents, Projects projects, GroupSizeConstraint groupSizeConstraint, ProjectPreferenceGenerator projPrefGenerator, PregroupingGenerator pregroupingGenerator)
 	{
-		this.groupSizeConstraint = groupSizeConstraint;
-
-		var hexEpochSeconds = Long.toHexString(Instant.now().getEpochSecond());
-		id = String.format("DC[RND_a%s_p%s_%s]_%s", numAgents, projects.count(), hexEpochSeconds, groupSizeConstraint);
-
-		Function<Integer, Supplier<Agent>> findAgentBySeqNum = (Integer seqNum) -> (() -> this.allAgents().findBySequenceNumber(seqNum).get());
-
-		agents = new Agents(this,
-			IntStream.rangeClosed(1, numAgents)
-				.mapToObj(seqNum -> new SimpleAgent.AgentInDatacontext(seqNum, projPrefGenerator.generateNew(findAgentBySeqNum.apply(seqNum)), GroupPreference.none(), this))
-				.collect(Collectors.toCollection(LinkedHashSet::new))
-		);
-
 		this.projects = projects;
+		this.groupSizeConstraint = groupSizeConstraint;
+		
+		Supplier<Integer> cliqueSizeSupplier = null;
+		
+		var agentsAsList = new ArrayList<Agent>();
+		for (int i = 1; i < numAgents; i = agentsAsList.size())
+		{
+			var numAgentsToMake = Math.min(pregroupingGenerator.draw(), numAgents - i);
+			
+			final var projectPreference = projPrefGenerator.generateNew();
+			
+			var agentIdsToCreate = IntStream.range(i, i + numAgentsToMake).boxed().toArray(Integer[]::new);
+			
+			var groupPref = numAgentsToMake > 1
+					? new GroupPreference.LazyGroupPreference(this, agentIdsToCreate)
+					: GroupPreference.none();
+			
+			for (Integer newAgentSeqId : agentIdsToCreate)
+			{
+				var agent = new SimpleAgent.AgentInDatacontext(newAgentSeqId, projectPreference, groupPref, this);
+				agentsAsList.add(agent);
+			}
+		}
+		
+		this.agents = Agents.from(agentsAsList);
+		Assert.that(this.agents.count() == numAgents).orThrowMessage("Bugcheck: not enough agents generated");
+		
+		var hexEpochSeconds = Long.toHexString(Instant.now().getEpochSecond());
+		this.id = "DC[RND_a%s_p%s_%s]_%s".formatted(numAgents, projects.count(), hexEpochSeconds, groupSizeConstraint);
 	}
 
-	public static GeneratedDataContext withNormallyDistributedProjectPreferences(int numAgents, int numProjects, GroupSizeConstraint groupSizeConstraint, double curveSteepness)
+	public static GeneratedDataContext withNormallyDistributedProjectPreferences(int numAgents, int numProjects, GroupSizeConstraint groupSizeConstraint, double curveSteepness, PregroupingGenerator pregroupingGenerator)
 	{
 		var projects = Projects.generated(numProjects, 5);
 		var generator = new NormallyDistributedProjectPreferencesGenerator(projects, curveSteepness);
-		return new GeneratedDataContext(numAgents, projects, groupSizeConstraint, generator);
+		
+		return new GeneratedDataContext(numAgents, projects, groupSizeConstraint, generator, pregroupingGenerator);
 	}
 
-	public static GeneratedDataContext withUniformlyDistributedProjectPreferences(int numAgents, int numProjects, GroupSizeConstraint groupSizeConstraint, double slopeSteepness)
+	public static GeneratedDataContext withUniformlyDistributedProjectPreferences(int numAgents, int numProjects, GroupSizeConstraint groupSizeConstraint, PregroupingGenerator pregroupingGenerator)
 	{
 		var projects = Projects.generated(numProjects, 5);
 		var generator = new UniformProjectPreferencesGenerator(projects);
-		return new GeneratedDataContext(numAgents, projects, groupSizeConstraint, generator);
+				
+		return new GeneratedDataContext(numAgents, projects, groupSizeConstraint, generator, pregroupingGenerator);
 	}
 
 	@Override

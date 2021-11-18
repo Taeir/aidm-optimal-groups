@@ -1,19 +1,9 @@
 package nl.tudelft.aidm.optimalgroups.model.pref.rank;
 
-import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
-
-import java.util.OptionalInt;
-
 public class RankOfCompletelyIndifferentAgent implements RankInPref
 {
-	private Object owner;
-	private Project project;
-
-	public RankOfCompletelyIndifferentAgent(Object owner, Project project)
+	public RankOfCompletelyIndifferentAgent()
 	{
-		this.owner = owner;
-		this.project = project;
 	}
 
 	@Override
@@ -31,7 +21,7 @@ public class RankOfCompletelyIndifferentAgent implements RankInPref
 	@Override
 	public Integer asInt()
 	{
-		throw new RuntimeException(String.format("The agent (%s) is indifferent, and has no rank for the given project (%s)", owner, project));
+		throw new RuntimeException("The agent is indifferent, it does not rank the project as anything (handle this case properly");
 	}
 	
 	@Override

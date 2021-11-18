@@ -48,12 +48,6 @@ public class MapBasedProjectPreferences implements ProjectPreference
 	}
 	
 	@Override
-	public Object owner()
-	{
-		return owner;
-	}
-	
-	@Override
 	public Map<Project, RankInPref> asMap()
 	{
 		return Collections.unmodifiableMap(asMap);

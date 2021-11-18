@@ -6,6 +6,7 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEdition;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributedProjectPreferencesGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PregroupingGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -113,7 +114,7 @@ public class Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020
 
 		var projects = Projects.generated(40, numSlots);
 		var prefGenerator = new UniformProjectPreferencesGenerator(projects);
-		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator, PregroupingGenerator.none());
 
 		var experiment = new Experiment(dataContext, algorithms);
 		return experiment;
@@ -127,7 +128,7 @@ public class Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020
 
 		var projects = Projects.generated(40, numSlots);
 		var prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator, PregroupingGenerator.none());
 
 		var experiment = new Experiment(dataContext, algorithms);
 		return experiment;
@@ -141,7 +142,7 @@ public class Experiment_BepSys_Pessimism_SDPC_GREEDY_SDPCOrdered_171020
 
 		var projects = Projects.generated(40, numSlots);
 		var prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+		var dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator, PregroupingGenerator.none());
 
 		var experiment = new Experiment(dataContext, algorithms);
 		return experiment;

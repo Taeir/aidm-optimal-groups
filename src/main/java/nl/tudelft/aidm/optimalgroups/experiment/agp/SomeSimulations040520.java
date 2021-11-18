@@ -4,7 +4,8 @@ import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.GeneratedDataContext;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.NormallyDistributedProjectPreferencesGenerator;
-import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PreferenceGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PregroupingGenerator;
+import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.ProjectPreferenceGenerator;
 import nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.UniformProjectPreferencesGenerator;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
@@ -53,8 +54,8 @@ public class SomeSimulations040520
 		numAgents = numProjects * groupSize.maxSize();
 
 		projects = Projects.generated(40, numSlots);
-		PreferenceGenerator prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+		ProjectPreferenceGenerator prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
+		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator, PregroupingGenerator.none());
 
 		experiment = new Experiment(dataContext, algorithms);
 		experimentsForInReport.add(experiment);
@@ -66,7 +67,7 @@ public class SomeSimulations040520
 
 		projects = Projects.generated(40, numSlots);
 		prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 4);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator, PregroupingGenerator.none());
 
 		experiment = new Experiment(dataContext, algorithms);
 		experimentsForInReport.add(experiment);
@@ -78,7 +79,7 @@ public class SomeSimulations040520
 
 		projects = Projects.generated(40, numSlots);
 		prefGenerator = new NormallyDistributedProjectPreferencesGenerator(projects, 16);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator, PregroupingGenerator.none());
 
 		experiment = new Experiment(dataContext, algorithms);
 		experimentsForInReport.add(experiment);
@@ -90,7 +91,7 @@ public class SomeSimulations040520
 
 		projects = Projects.generated(40, numSlots);
 		prefGenerator = new UniformProjectPreferencesGenerator(projects);
-		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator);
+		dataContext = new GeneratedDataContext(numAgents, projects, groupSize, prefGenerator, PregroupingGenerator.none());
 
 		experiment = new Experiment(dataContext, algorithms);
 		experimentsForInReport.add(experiment);

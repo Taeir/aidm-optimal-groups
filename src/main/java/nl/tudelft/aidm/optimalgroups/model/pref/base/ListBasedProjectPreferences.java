@@ -9,19 +9,11 @@ import java.util.List;
 
 public class ListBasedProjectPreferences extends AbstractListBasedProjectPreferences
 {
-	private final Object owner;
 	private final List<Project> preferencesAsList;
 
-	public ListBasedProjectPreferences(Object owner, List<Project> preferencesAsList)
+	public ListBasedProjectPreferences(List<Project> preferencesAsList)
 	{
-		this.owner = owner;
 		this.preferencesAsList = preferencesAsList;
-	}
-
-	@Override
-	public Object owner()
-	{
-		return owner;
 	}
 
 	@Override

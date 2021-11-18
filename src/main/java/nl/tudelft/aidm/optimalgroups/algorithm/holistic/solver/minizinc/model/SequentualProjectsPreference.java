@@ -7,11 +7,10 @@ import java.util.*;
 
 public class SequentualProjectsPreference implements ProjectPreference
 {
-	private final Object owner;
 	private final Project[] asArray;
 	private List<Project> asList;
 
-	public static SequentualProjectsPreference fromOriginal(Object owner, ProjectPreference projectPreference, SequentualProjects sequentualProjects)
+	public static SequentualProjectsPreference fromOriginal(ProjectPreference projectPreference, SequentualProjects sequentualProjects)
 	{
 		var originalProfile = projectPreference.asArray();
 		var remappedProfile = new Project[originalProfile.length];
@@ -31,20 +30,13 @@ public class SequentualProjectsPreference implements ProjectPreference
 			asList.set(i, remapped);
 		}
 
-		return new SequentualProjectsPreference(owner, remappedProfile, asList);
+		return new SequentualProjectsPreference(remappedProfile, asList);
 	}
 
-	private SequentualProjectsPreference(Object owner, Project[] asArray, List<Project> profileAsList)
+	private SequentualProjectsPreference(Project[] asArray, List<Project> profileAsList)
 	{
-		this.owner = owner;
 		this.asArray = asArray;
 		this.asList = Collections.unmodifiableList(profileAsList);
-	}
-
-	@Override
-	public Object owner()
-	{
-		return owner;
 	}
 
 	@Override

@@ -227,7 +227,7 @@ public class SDUDatasetContext implements DatasetContext
 							projectPriority -> (RankInPref) new PresentRankInPref(projectPriority.rank())));
 			
 			// all projects that are not present are considered unacceptible to agent
-			projects.forEach(project -> prefsAsMap.computeIfAbsent(project, p -> new UnacceptableAlternativeRank(owner, p)));
+			projects.forEach(project -> prefsAsMap.computeIfAbsent(project, p -> new UnacceptableAlternativeRank()));
 			
 			return new SDUProjectPreference(owner, prefsAsMap);
 		}

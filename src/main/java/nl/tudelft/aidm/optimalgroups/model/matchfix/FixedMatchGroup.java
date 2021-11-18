@@ -26,7 +26,7 @@ public class FixedMatchGroup implements Group
 		// This group does not need to have preferences, it is going to be matched to a single project
 		// but nonetheless, a Group has preferences so simply create a preference containing only the project
 		// that need to be fixed.
-		this.singleProjectPref = new ListBasedProjectPreferences(this, List.of(fixedToProject));
+		this.singleProjectPref = new ListBasedProjectPreferences(List.of(fixedToProject));
 	}
 	
 	@Override

@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * 	The probability is determined by the given distribution. More precisely, the projects correspond to [0,mean]
  * 	line of the PDF of the distribution. Mean = #number of projects.
  */
-public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
+public class ProjectPreferencesFromPmfGenerator implements ProjectPreferenceGenerator
 {
 	protected final Projects projects;
 	protected final List<Pair<Project, Double>> pmf;
@@ -34,26 +34,23 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 	}
 
 	@Override
-	public ProjectPreference generateNew(Supplier<Agent> ownerSupplier)
+	public ProjectPreference generateNew()
 	{
 		// Would be nicer to have NormallyDistributedProjectPreference type...
 		/// TODO: move PMF into own class
-		return new PmfGeneratedProjectPreference(ownerSupplier, pmf);
+		return new PmfGeneratedProjectPreference(pmf);
 	}
 
 	class PmfGeneratedProjectPreference extends AbstractListBasedProjectPreferences
 	{
-		private Supplier<Agent> ownerSupplier;
 		// The PMF used to generate this preference profile
 		private final List<Pair<Project, Double>> completePmf;
 
 		private final List<Project> prefProfile;
 		private Integer[] asArray = null;
 
-		public PmfGeneratedProjectPreference(Supplier<Agent> ownerSupplier, List<Pair<Project, Double>> completePmf)
+		public PmfGeneratedProjectPreference(List<Pair<Project, Double>> completePmf)
 		{
-			this.ownerSupplier = ownerSupplier;
-
 			this.completePmf = completePmf;
 			// We're building this list by drawing projects with probabilities defined in the PMF
 			var pref = new ArrayList<Project>(pmf.size());
@@ -73,13 +70,7 @@ public class ProjectPreferencesFromPmfGenerator implements PreferenceGenerator
 
 			prefProfile = pref;
 		}
-
-		@Override
-		public Object owner()
-		{
-			return ownerSupplier.get();
-		}
-
+		
 		@Override
 		public List<Project> asList()
 		{

@@ -18,7 +18,6 @@ public class ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd extends L
 	public ProjectPreferenceAugmentedWithMissingAlternativesIndvdRnd(ProjectPreference projectPreference, Projects projects, long seed)
 	{
 		super(
-			projectPreference.owner(),
 			augmentWithMissing(projectPreference.asList(), projects, seed)
 		);
 	}

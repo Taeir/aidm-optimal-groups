@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.model.pref;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.SimpleAgent;
+import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 
 import java.util.*;
 import java.util.function.Function;
@@ -83,6 +84,49 @@ public interface GroupPreference
 		public Integer count()
 		{
 			return 0;
+		}
+	}
+	
+	/**
+	 * Group Preference implementation for when Agent objects are not
+	 * yet available. Lazily resolves a given set of Agent id's to actual
+	 * agent objects by looking them up in the given DatasetContext when needed
+	 */
+	class LazyGroupPreference implements GroupPreference
+	{
+		private final DatasetContext datasetContext;
+		private final Integer[] agentSeqIds;
+		
+		private Agent[] asArray;
+		
+		public LazyGroupPreference(DatasetContext datasetContext, Integer... agentSeqIds)
+		{
+			this.datasetContext = datasetContext;
+			this.agentSeqIds = agentSeqIds;
+		}
+		
+		@Override
+		public Agent[] asArray()
+		{
+			if (asArray == null) {
+				this.asArray = Arrays.stream(agentSeqIds)
+						.map(agentId -> datasetContext.allAgents().findBySequenceNumber(agentId).orElseThrow())
+						.toArray(Agent[]::new);
+			}
+			
+			return this.asArray;
+		}
+		
+		@Override
+		public List<Agent> asListOfAgents()
+		{
+			return Arrays.asList(this.asArray());
+		}
+		
+		@Override
+		public Integer count()
+		{
+			return asArray().length;
 		}
 	}
 }

@@ -5,7 +5,7 @@ import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
 
 import java.util.function.Supplier;
 
-public interface PreferenceGenerator
+public interface ProjectPreferenceGenerator
 {
-	ProjectPreference generateNew(Supplier<Agent> ownerSupplier);
+	ProjectPreference generateNew();
 }

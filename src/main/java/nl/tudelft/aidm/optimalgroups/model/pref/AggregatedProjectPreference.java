@@ -112,19 +112,13 @@ public abstract class AggregatedProjectPreference extends AbstractListBasedProje
 		}
 
 		@Override
-		public Object owner()
-		{
-			return agents;
-		}
-
-		@Override
 		protected Map<Project, RankInPref> calculateAverageOfGroup()
 		{
 			// exception: handle fully indifferent groups
 			if (agents.asCollection().stream().allMatch(agent -> agent.projectPreference().isCompletelyIndifferent())) {
 				var map = new HashMap<Project, RankInPref>();
 				var allProjects = agents.datasetContext.allProjects();
-				allProjects.forEach(project -> map.put(project, new RankOfCompletelyIndifferentAgent(agents, project)));
+				allProjects.forEach(project -> map.put(project, new RankOfCompletelyIndifferentAgent()));
 				return map;
 			}
 			
@@ -158,7 +152,7 @@ public abstract class AggregatedProjectPreference extends AbstractListBasedProje
 				Assert.that(projects != null).orThrowMessage("BUGCHECK: no projects present at a certain score, but were expected");
 				
 				if (score == unacceptableScore * agents.count()) // unacceptible to all
-					projects.forEach(project -> preferencesAsMap.put(project, new UnacceptableAlternativeRank(agents, project)));
+					projects.forEach(project -> preferencesAsMap.put(project, new UnacceptableAlternativeRank()));
 				else
 					projects.forEach(project -> preferencesAsMap.put(project, new PresentRankInPref(rank)));
 			}
@@ -175,19 +169,13 @@ public abstract class AggregatedProjectPreference extends AbstractListBasedProje
 		}
 
 		@Override
-		public Object owner()
-		{
-			return agents;
-		}
-
-		@Override
 		protected Map<Project, RankInPref> calculateAverageOfGroup()
 		{
 			// exception: handle fully indifferent groups
 			if (agents.asCollection().stream().allMatch(agent -> agent.projectPreference().isCompletelyIndifferent())) {
 				var map = new HashMap<Project, RankInPref>();
 				var allProjects = agents.datasetContext.allProjects();
-				allProjects.forEach(project -> map.put(project, new RankOfCompletelyIndifferentAgent(agents, project)));
+				allProjects.forEach(project -> map.put(project, new RankOfCompletelyIndifferentAgent()));
 				return map;
 			}
 			
@@ -281,7 +269,7 @@ public abstract class AggregatedProjectPreference extends AbstractListBasedProje
 			
 			// While we don't handle the unacceptible case, we do know that everything that's missing in the projectScores is unacceptible to all agents
 			var unacceptibleToAllInvolved = datasetContext.allProjects().without(Projects.from(projects));
-			unacceptibleToAllInvolved.forEach(unacceptibleProj -> preferencesAsMap.put(unacceptibleProj, new UnacceptableAlternativeRank(agents, unacceptibleProj)));
+			unacceptibleToAllInvolved.forEach(unacceptibleProj -> preferencesAsMap.put(unacceptibleProj, new UnacceptableAlternativeRank()));
 			
 			return preferencesAsMap;
 		}

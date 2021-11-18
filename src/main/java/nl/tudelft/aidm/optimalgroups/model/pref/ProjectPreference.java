@@ -18,13 +18,7 @@ public interface ProjectPreference
 	List<Project> asList();
 
 	/**
-	 * Whose preferences are these?
-	 * @return the owner
-	 */
-	Object owner();
-	
-	/**
-	 * Iterate over this project preference in order from most to least desired
+	 * Iterate over this project preference in order from most to least desired. May or may not include unacceptible projects
 	 * @param iter The function/consumer taking in a project and rank - returning false to break iteration
 	 */
 	default void forEach(ProjecPrefIterFn iter)
@@ -63,12 +57,12 @@ public interface ProjectPreference
 	default RankInPref rankOf(Project project)
 	{
 		if (isCompletelyIndifferent()) {
-			return new RankOfCompletelyIndifferentAgent(owner(), project);
+			return new RankOfCompletelyIndifferentAgent();
 		}
 
 		var inArray = new RankInArray().determineRank(project, this.asArray());
 		if (inArray.isEmpty()) {
-			return new UnacceptableAlternativeRank(owner(), project);
+			return new UnacceptableAlternativeRank();
 		}
 
 		return new PresentRankInPref(inArray.getAsInt());

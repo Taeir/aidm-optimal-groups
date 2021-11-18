@@ -21,7 +21,6 @@ public class ProjectPreferenceAugmentedWithMissingTiedLast extends ListBasedProj
 	public ProjectPreferenceAugmentedWithMissingTiedLast(ProjectPreference projectPreference, Projects allProjects)
 	{
 		super(
-			projectPreference.owner(),
 			projectPreference.asList()
 		);
 

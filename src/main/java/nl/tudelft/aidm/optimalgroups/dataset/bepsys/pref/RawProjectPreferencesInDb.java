@@ -23,21 +23,11 @@ public class RawProjectPreferencesInDb extends AbstractListBasedProjectPreferenc
 	private Project[] asArray = null;
 	private List<Project> asList = null;
 	
-	private Lazy<Agent> owner;
-
 	public RawProjectPreferencesInDb(DataSource dataSource, Integer bepSysUserId, CourseEdition courseEdition)
 	{
 		this.dataSource = dataSource;
 		this.bepSysUserId = bepSysUserId;
 		this.courseEdition = courseEdition;
-		
-		this.owner = new Lazy<>(() -> courseEdition.findAgentByUserId(bepSysUserId).orElseThrow());
-	}
-
-	@Override
-	public Object owner()
-	{
-		return owner.get();
 	}
 
 	@Override

@@ -2,16 +2,13 @@ package nl.tudelft.aidm.optimalgroups.dataset.generated.prefs;
 
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.pref.ProjectPreference;
-import nl.tudelft.aidm.optimalgroups.model.pref.rank.RankInPref;
-import nl.tudelft.aidm.optimalgroups.model.project.Project;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 /**
  * Identical preference shared by everybody!
  */
-public class UnanimousProjectPreferencesGenerator implements PreferenceGenerator
+public class UnanimousProjectPreferencesGenerator implements ProjectPreferenceGenerator
 {
 	private final ProjectPreference theOne;
 
@@ -24,7 +21,7 @@ public class UnanimousProjectPreferencesGenerator implements PreferenceGenerator
 		this.theOne = theOne;
 	}
 	@Override
-	public ProjectPreference generateNew(Supplier<Agent> ownerSupplier)
+	public ProjectPreference generateNew()
 	{
 		return theOne;
 	}

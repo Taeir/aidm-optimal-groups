@@ -162,11 +162,9 @@ public class VariantvakkenData2020 implements DatasetContext
 	private static class VariantvakPreference implements ProjectPreference
 	{
 		private final Project[] asArray;
-		private final Object owner;
 
 		public VariantvakPreference(Object owner)
 		{
-			this.owner = owner;
 			asArray = new Project[3];
 		}
 
@@ -175,12 +173,6 @@ public class VariantvakkenData2020 implements DatasetContext
 			Assert.that(1 <= rank && rank <= 3).orThrowMessage("Rank < 1 or 3 < Rank, was: " + rank);
 
 			asArray[rank - 1] = project;
-		}
-
-		@Override
-		public Object owner()
-		{
-			return owner;
 		}
 
 		@Override
