@@ -18,12 +18,14 @@ import nl.tudelft.aidm.optimalgroups.metric.matching.aupcr.AUPCRStudent;
 import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankGroupHistogram;
 import nl.tudelft.aidm.optimalgroups.metric.rank.histrogram.AssignedProjectRankStudentHistogram;
 import nl.tudelft.aidm.optimalgroups.model.GroupSizeConstraint;
+import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.dataset.DatasetContext;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.matching.AgentToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.matching.Matching;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
+import nl.tudelft.aidm.optimalgroups.model.project.Projects;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -38,9 +40,10 @@ public class Application
 
 	public static void main(String[] args)
 	{
+
 		// "Fetch" agents and from DB before loop; they don't change for another iteration
 //		DatasetContext datasetContext = CourseEdition.fromLocalBepSysDbSnapshot(courseEditionId);
-		DatasetContext datasetContext = GeneratedDataContext.withNormallyDistributedProjectPreferences(150, 40, GroupSizeConstraint.manual(4,5), 4, PregroupingGenerator.none());
+		DatasetContext<Projects, Agents> datasetContext = GeneratedDataContext.withNormallyDistributedProjectPreferences(150, 40, GroupSizeConstraint.manual(4,5), 4, PregroupingGenerator.none());
 		printDatasetInfo(datasetContext);
 
 		var avgPreferenceRankOfProjects = AvgPreferenceRankOfProjects.fromAgents(datasetContext.allAgents(), datasetContext.allProjects());
@@ -134,13 +137,13 @@ public class Application
 		writeToFile("outputtxt/groupAUPCR.txt", String.valueOf(groupAUPCRAverage));
 	}
 
-	private static void printDatasetInfo(DatasetContext courseEdition)
+	private static void printDatasetInfo(DatasetContext<?, ?> courseEdition)
 	{
 		System.out.println("Amount of projects: " + courseEdition.allProjects().count());
 		System.out.println("Amount of students: " + courseEdition.allAgents().count());
 	}
 
-	private static GroupToProjectMatching<Group.FormedGroup> assignGroupsToProjects(DatasetContext datasetContext, GroupFormingAlgorithm formedGroups)
+	private static GroupToProjectMatching<Group.FormedGroup> assignGroupsToProjects(DatasetContext<Projects, Agents> datasetContext, GroupFormingAlgorithm formedGroups)
 	{
 		if (projectAssignmentAlgorithm.equals("RSD")) {
 			return new RandomizedSerialDictatorship(datasetContext, formedGroups.asFormedGroups(), datasetContext.allProjects());
@@ -149,7 +152,7 @@ public class Application
 		}
 	}
 
-	private static GroupFormingAlgorithm formGroups(DatasetContext courseEdition)
+	private static GroupFormingAlgorithm formGroups(DatasetContext<Projects, Agents> courseEdition)
 	{
 		if (groupMatchingAlgorithm.equals("CombinedPreferencesGreedy")) {
 			return new CombinedPreferencesGreedy(courseEdition);

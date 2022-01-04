@@ -24,7 +24,7 @@ import java.util.stream.IntStream;
 
 import static nl.tudelft.aidm.optimalgroups.dataset.generated.prefs.PregroupingGenerator.ChancePerTypeBased.*;
 
-public class GeneratedDataContext implements DatasetContext
+public class GeneratedDataContext implements DatasetContext<Projects, Agents>
 {
 	private final String id;
 	private final Agents agents;

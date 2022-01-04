@@ -8,7 +8,6 @@ import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.experiment.agp.report.ExperimentReportInHtml;
 import nl.tudelft.aidm.optimalgroups.experiment.dataset.ResearchProject2021Q4Dataset;
 import nl.tudelft.aidm.optimalgroups.experiment.paper.fairness.report.FairnessVsVanillaQualityExperimentReport;
-import nl.tudelft.aidm.optimalgroups.experiment.paper.fairness.report.ThesisPaperExperimentReport;
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 
 import java.io.File;

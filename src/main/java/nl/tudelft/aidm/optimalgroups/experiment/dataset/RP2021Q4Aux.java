@@ -18,14 +18,18 @@ public class RP2021Q4Aux
 	
 	public static MatchFixes matchesToFix(ResearchProject2021Q4Dataset dataset)
 	{
+		// No fixes
+//		return new MatchFixes(dataset);
 //		throw new RuntimeException("Fill me in");
 		
-		return new MatchFixes(dataset,
+		return new MatchFixes(dataset
 		);
 	}
 	
 	public static List<Integer> agentsToFilterOut()
 	{
+		// No filters
+		return List.of();
 //		throw new RuntimeException("Fill me in");
 	}
 }

@@ -74,17 +74,29 @@ public abstract class AggregatedProjectPreference extends AbstractListBasedProje
 
 	public static AggregatedProjectPreference usingGloballyConfiguredMethod(Agents agents)
 	{
-		if (Application.preferenceAggregatingMethod.equals("Copeland"))
-		{
+		return fromMethod(Application.preferenceAggregatingMethod, agents);
+	}
+
+	/**
+	 * Aggregates preferences of the given agents using the given method.
+	 *
+	 * @param method the aggregation method
+	 * @param agents the agents to aggregate the preferences of
+	 * @return aggregated preferences using the given method
+	 * @throws RuntimeException if the method specified is not recognized
+	 */
+	public static AggregatedProjectPreference fromMethod(String method, Agents agents)
+	{
+		if (method.equalsIgnoreCase("copeland")) {
 			return new AggregatedProjectPreference.Copeland(agents);
 		}
-		else if (Application.preferenceAggregatingMethod.equals("Borda"))
+		else if (method.equalsIgnoreCase("borda"))
 		{
 			return new AggregatedProjectPreference.Borda(agents);
 		}
 		else
 		{
-			throw new RuntimeException("Unrecognized aggregation method, was: " + Application.preferenceAggregatingMethod);
+			throw new RuntimeException("\"Unrecognized aggregation method, was: " + method);
 		}
 	}
 

@@ -31,9 +31,9 @@ public class MILP_Mechanism_FairPregrouping
 	
 	private final Pregrouping pregrouping;
 	
-	private final FixMatchingConstraint[] matchFixes;
+	private final Constraint[] matchFixes;
 	
-	public MILP_Mechanism_FairPregrouping(DatasetContext datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType, FixMatchingConstraint... matchFixes)
+	public MILP_Mechanism_FairPregrouping(DatasetContext datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType, Constraint... matchFixes)
 	{
 		this.datasetContext = datasetContext;
 		this.objectiveFunction = objectiveFunction;

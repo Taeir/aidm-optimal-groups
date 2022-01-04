@@ -15,6 +15,9 @@ import plouchtch.lang.Lazy;
 import plouchtch.util.ComputerName;
 
 import javax.sql.DataSource;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -46,6 +49,11 @@ public class CourseEditionFromDb extends CourseEdition
 	public static CourseEditionFromDb fromLocalBepSysDbSnapshot(int courseEditionId)
 	{
 		return CourseEditionFromDb.fromBepSysDatabase(dataSourceToLocalDb(), courseEditionId);
+	}
+
+	public static CourseEditionFromDb fromSettingsDb(int courseEditionId)
+	{
+		return CourseEditionFromDb.fromBepSysDatabase(dataSourceToSettingsDb(), courseEditionId);
 	}
 
 	public static CourseEditionFromDb fromBepSysDatabase(DataSource dataSource, int courseEditionId)
@@ -182,8 +190,24 @@ public class CourseEditionFromDb extends CourseEdition
 				return new GenericDatasource("jdbc:mysql://localhost:3306/aidm", "henk", "henk");
 			case "PHILIPE-LAPTOP":
 				return new GenericDatasource("jdbc:mysql://localhost:3306/test", "henk", "henk");
+			case "DESKTOP-CP9HJA8":
+				return new GenericDatasource("jdbc:sqlite:C:/Programming/bepsys2/db/development.sqlite3", "henk", "henk");
 			default:
 				throw new RuntimeException("Unknown machine, don't know connection string to DB");
+		}
+	}
+
+	private static DataSource dataSourceToSettingsDb() {
+		try (InputStream input = new FileInputStream("config/java_grouping.properties")) {
+			Properties prop = new Properties();
+			prop.load(input);
+
+			String url = prop.getProperty("db.url");
+			String user = prop.getProperty("db.user");
+			String password = prop.getProperty("db.password");
+			return new GenericDatasource(url, user, password);
+		} catch (IOException ex) {
+			throw new RuntimeException("Unable to load settings. Please check if config.properties exists.", ex);
 		}
 	}
 }
