@@ -1,19 +1,25 @@
 plugins {
     id 'java'
     id 'application'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
 repositories {
     mavenCentral()
-    maven { url "https://dl.bintray.com/algs4/maven" }
-    maven { url "https://dl.bintray.com/steppschuh/Markdown-Generator" }
+//    maven { url "https://dl.bintray.com/algs4/maven" }
     maven { url "https://jitpack.io" }
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
+application {
+    mainClass = 'nl.tudelft.aidm.optimalgroups.integration.PFIntegration'
+    applicationDefaultJvmArgs = ["-Djava.library.path=lib"]
+}
 applicationDefaultJvmArgs = ["-Djava.library.path=lib"]
+
+
 
 dependencies {
 
@@ -26,33 +32,37 @@ dependencies {
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
 
-    implementation 'org.jfree:jfreechart:1.5.0'
+    implementation 'org.jfree:jfreechart:1.5.3'
+
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation group: 'org.json', name: 'json', version: '20211205'
 
     /* GOOGLE-OR TOOLS Stuff */
-    implementation 'com.google.protobuf:protobuf-java:3.0.0'
+    implementation 'com.google.protobuf:protobuf-java:3.19.1'
     implementation files('lib/jniortools.dll')
     implementation files('lib/ortools.lib')
     implementation files('lib/com.google.ortools.jar')
-    implementation files('lib/protobuf.jar')
+//    implementation files('lib/protobuf.jar')
 
     /* GUROBI LIB*/
     implementation gurobi()
 
 
     implementation 'net.steppschuh.markdowngenerator:markdowngenerator:1.3.1.1'
-    implementation 'com.vladsch.flexmark:flexmark-all:0.61.24'
+    implementation 'com.vladsch.flexmark:flexmark-all:0.62.2'
 
 //    implementation 'edu.princeton.cs:algs4:1.0.4'
 
     implementation 'org.sql2o:sql2o:1.6.0'
-    implementation 'mysql:mysql-connector-java:8.0.16'
+    implementation 'mysql:mysql-connector-java:8.0.25'
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
 
 wrapper {
-    gradleVersion = '7.1.1'
+    gradleVersion = '7.3.3'
 }
 
 compileJava {
