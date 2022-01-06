@@ -10,7 +10,6 @@ import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregro
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.objectives.OWAObjective;
 import nl.tudelft.aidm.optimalgroups.dataset.bepsys.CourseEditionFromDb;
 import nl.tudelft.aidm.optimalgroups.experiment.paper.fairness.report.FairnessVsVanillaQualityExperimentReport;
-import nl.tudelft.aidm.optimalgroups.export.ProjectStudentMatchingCSV;
 import nl.tudelft.aidm.optimalgroups.export.ProjectStudentMatchingJSON;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
@@ -21,16 +20,9 @@ import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class PFIntegration {
@@ -39,11 +31,11 @@ public class PFIntegration {
      * Creates a grouping and outputs the results.
      *
      * @see #createGrouping(String[])
-     * @see #outputResults(JSONObject, String[])
      */
     public static void main(String[] args) {
-        silenceExecution(() -> createGrouping(args), PFIntegration::outputResults);
-
+        ensureSqliteLoaded();
+        JSONObject json = createGrouping(args);
+        System.out.println(json);
     }
 
     /**
@@ -92,11 +84,6 @@ public class PFIntegration {
 
         // Load from the database (config.properties)
         int courseEditionId = json.getInt("course_edition_id");
-        try {
-            Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         var datasetContext = CourseEditionFromDb.fromSettingsDb(courseEditionId);
 
         // Set the pregrouping type
@@ -123,44 +110,17 @@ public class PFIntegration {
                 constraints.toArray(new Constraint[0])
         ).doIt();
 
-        // Write results
-        var fileName = "matching_" + ZonedDateTime
-                .now(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ofPattern("uuuu-MM-dd_HH.mm.ss"));
-
-        var csvOutput = new ProjectStudentMatchingCSV(matchingFair.finalMatching());
-        csvOutput.writeToFile(fileName);
-
+        // Report results
         var jsonOutput = new ProjectStudentMatchingJSON(matchingFair.finalMatching());
-        jsonOutput.writeToFile(fileName);
-
         var report = new FairnessVsVanillaQualityExperimentReport(datasetContext, pregrouping, List.of(
                 new GroupProjectAlgorithm.Result(new GroupProjectAlgorithm.Chiarandini_Fairgroups(objective, pregroupingType), matchingFair)
         ));
-        report.writeAsHtmlToFile(new File("reports/" + fileName + ".html"));
 
-        // Output the json
+        // Put it in JSON
         JSONObject jsonOut = new JSONObject();
         jsonOut.put("matching", jsonOutput.toJSON());
-        jsonOut.put("suitability_md", report.asMarkdownSource());
-        jsonOut.put("suitability_html", report.asHtmlSource());
+        jsonOut.put("statistics_html", report.asHtmlSource());
         return jsonOut;
-    }
-
-    /**
-     * Outputs the results by putting the captured outputs into the json and printing it to standard out.
-     *
-     * @param json the json output of the matching
-     * @param outputs the captured outputs
-     */
-    public static void outputResults(JSONObject json, String[] outputs) {
-        if (json == null) {
-            System.err.println("Unable to get output json!");
-            return;
-        }
-        json.put("output", outputs[0]);
-        json.put("errors", outputs[1]);
-        System.out.println(json);
     }
 
     /**
@@ -279,41 +239,13 @@ public class PFIntegration {
     }
 
     /**
-     * Executes the given runnable r without outputs going to standard out or standard error.
-     * All outputs made during the execution are instead stored and sent to the given biconsumer at the end.
-     *
-     * @param callable the action to execute
-     * @param consumer consumer for the output value and the messages sent
-     * @throws RuntimeException in case the execution throws an exception
+     * Ensures that SQLite is loaded if it is available.
      */
-    public static <T> void silenceExecution(Callable<T> callable, BiConsumer<T, String[]> consumer) {
-        var oldOut = System.out;
-        var oldErr = System.err;
-
-        var outBaos = new ByteArrayOutputStream();
-        var errBaos = new ByteArrayOutputStream();
-        var out = new PrintStream(new BufferedOutputStream(outBaos));
-        var err = new PrintStream(new BufferedOutputStream(errBaos));
-        System.setOut(out);
-        System.setErr(err);
-
-        T output = null;
-        try (out; err) {
-            output = callable.call();
-        } catch (Exception ex) {
-            System.setOut(oldOut);
-            System.setErr(oldErr);
-            throw new RuntimeException(ex);
-        } finally {
-            System.setOut(oldOut);
-            System.setErr(oldErr);
-
-            if (consumer != null) {
-                consumer.accept(output, new String[]{
-                        outBaos.toString(StandardCharsets.UTF_8),
-                        errBaos.toString(StandardCharsets.UTF_8)
-                });
-            }
+    private static void ensureSqliteLoaded() {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            // Silently ignore in case sqlite is not found
         }
     }
 }
