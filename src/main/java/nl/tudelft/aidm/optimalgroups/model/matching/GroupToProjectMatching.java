@@ -54,7 +54,7 @@ public interface GroupToProjectMatching<G extends Group> extends Matching<G, Pro
 			}
 			
 			@Override
-			public DatasetContext datasetContext()
+			public DatasetContext<?, ?> datasetContext()
 			{
 				return GroupToProjectMatching.this.datasetContext();
 			}

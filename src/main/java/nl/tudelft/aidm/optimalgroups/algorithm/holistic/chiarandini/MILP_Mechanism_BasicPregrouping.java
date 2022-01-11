@@ -15,14 +15,14 @@ import java.util.List;
 
 public class MILP_Mechanism_BasicPregrouping
 {
-	private final DatasetContext datasetContext;
+	private final DatasetContext<?, ?> datasetContext;
 	private final ObjectiveFunction objectiveFunction;
 	
 	private final Pregrouping pregrouping;
 	
-	private final FixMatchingConstraint[] matchFixes;
+	private final Constraint[] matchFixes;
 	
-	public MILP_Mechanism_BasicPregrouping(DatasetContext datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType, FixMatchingConstraint... matchFixes)
+	public MILP_Mechanism_BasicPregrouping(DatasetContext<?, ?> datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType, Constraint... matchFixes)
 	{
 		this.datasetContext = datasetContext;
 		this.objectiveFunction = objectiveFunction;

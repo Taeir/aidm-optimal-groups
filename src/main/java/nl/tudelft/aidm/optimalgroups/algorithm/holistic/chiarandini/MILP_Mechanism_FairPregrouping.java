@@ -1,7 +1,6 @@
 package nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini;
 
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.Constraint;
-import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.FixMatchingConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.UndominatedByProfileConstraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.Pregrouping;
@@ -26,14 +25,14 @@ import java.util.List;
 
 public class MILP_Mechanism_FairPregrouping
 {
-	private final DatasetContext datasetContext;
+	private final DatasetContext<?, ?> datasetContext;
 	private final ObjectiveFunction objectiveFunction;
 	
 	private final Pregrouping pregrouping;
 	
 	private final Constraint[] matchFixes;
 	
-	public MILP_Mechanism_FairPregrouping(DatasetContext datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType, Constraint... matchFixes)
+	public MILP_Mechanism_FairPregrouping(DatasetContext<?, ?> datasetContext, ObjectiveFunction objectiveFunction, PregroupingType pregroupingType, Constraint... matchFixes)
 	{
 		this.datasetContext = datasetContext;
 		this.objectiveFunction = objectiveFunction;
@@ -88,7 +87,7 @@ public class MILP_Mechanism_FairPregrouping
 		}
 		
 		@Override
-		public DatasetContext datasetContext()
+		public DatasetContext<?, ?> datasetContext()
 		{
 			return finalMatching.datasetContext();
 		}

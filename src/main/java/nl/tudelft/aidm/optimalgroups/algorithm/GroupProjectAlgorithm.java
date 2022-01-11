@@ -7,6 +7,7 @@ import nl.tudelft.aidm.optimalgroups.algorithm.group.bepsys.BepSysReworked;
 import nl.tudelft.aidm.optimalgroups.algorithm.group.CombinedPreferencesGreedy;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.branchnbound.HumbleMiniMaxWithClosuresSearch;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.*;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.Constraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.ObjectiveFunction;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.model.PregroupingType;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.ilppp.ILPPPDeterminedMatching;
@@ -24,11 +25,84 @@ import nl.tudelft.aidm.optimalgroups.model.matching.FormedGroupToProjectMatching
 import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 
-import java.util.Objects;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 public interface GroupProjectAlgorithm extends Algorithm
 {
-	GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext);
+	GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext);
+
+	/**
+	 * Determines the given matching, optionally applying the given additional constraints if possible.
+	 *
+	 * @param datasetContext the dataset
+	 * @param constraints the constraints to apply
+	 * @return the matching
+	 * @see #determineMatching(DatasetContext)
+	 */
+	default GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints) {
+		return determineMatching(datasetContext);
+	}
+
+	/**
+	 * Instantiates the GroupProjectAlgorithm with the given (internal) name.
+	 *
+	 * @param name the name of the algorithm
+	 * @param objective the objective to pass to the algorithm, if applicable
+	 * @param pregrouping the pregrouping type to pass to the algorithm, if applicable
+	 * @return the GroupProjectAlgorithm with the given name
+	 * @throws IllegalArgumentException if no algorithm with the given name is found.
+	 */
+	static GroupProjectAlgorithm forName(String name, ObjectiveFunction objective, PregroupingType pregrouping) {
+		for (Class<?> clazz : GroupProjectAlgorithm.class.getDeclaredClasses()) {
+			// Ignore if not a GroupProjectAlgorithm
+			if (Arrays.stream(clazz.getInterfaces()).noneMatch(c -> c == GroupProjectAlgorithm.class)) continue;
+
+			if (!name.equalsIgnoreCase(clazz.getSimpleName())) continue;
+
+			// Process constructors in order of most parameters to least parameters
+			var constructors = Arrays.stream(clazz.getConstructors())
+					.filter(c -> c.getParameterCount() <= 2)
+					.sorted(Comparator.<Constructor<?>>comparingInt(Constructor::getParameterCount).reversed())
+					.iterator();
+
+			while (constructors.hasNext()) {
+				Constructor<?> cons = constructors.next();
+
+				// Put the arguments in the correct order
+				List<Object> arguments = new ArrayList<>();
+				int count = cons.getParameterCount();
+				if (count > 0) {
+					if (cons.getParameterTypes()[0] == PregroupingType.class) {
+						arguments.add(pregrouping);
+					} else if (cons.getParameterTypes()[0] == ObjectiveFunction.class) {
+						arguments.add(objective);
+					} else {
+						continue;
+					}
+				}
+				if (count > 1) {
+					if (cons.getParameterTypes()[1] == PregroupingType.class) {
+						arguments.add(pregrouping);
+					} else if (cons.getParameterTypes()[1] == ObjectiveFunction.class) {
+						arguments.add(objective);
+					} else {
+						continue;
+					}
+				}
+
+				try {
+					return (GroupProjectAlgorithm) cons.newInstance(arguments.toArray());
+				} catch (Exception ex) {
+					throw new RuntimeException("Unable to instantiate algorithm " + name, ex);
+				}
+			}
+
+			throw new IllegalArgumentException("The algorithm " + name + " requires inputs that are not available");
+		}
+
+		throw new IllegalArgumentException("No GroupProjectAlgorithm with the name " + name + " found.");
+	}
 
 	class Result implements Algorithm.Result<GroupProjectAlgorithm, GroupToProjectMatching<Group.FormedGroup>>
 	{
@@ -80,7 +154,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var groups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
 			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects());
@@ -104,7 +178,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var groups = new BepSysReworked(datasetContext.allAgents(), datasetContext.groupSizeConstraint());
 			var groupsToProjects = new GroupProjectMaxFlow(datasetContext, groups.asFormedGroups(), datasetContext.allProjects());
@@ -129,7 +203,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var groups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true);
 
@@ -169,7 +243,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var groups = new BepSysReworked(datasetContext.allAgents(), datasetContext.groupSizeConstraint());
 
@@ -212,7 +286,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var formedGroups = new CombinedPreferencesGreedy(datasetContext).asFormedGroups();
 			var matching = new GroupProjectMaxFlow(datasetContext, formedGroups, datasetContext.allProjects());
@@ -236,7 +310,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			return new ILPPPDeterminedMatching(datasetContext);
 		}
@@ -257,7 +331,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var formedGroups = new BepSysImprovedGroups(datasetContext.allAgents(), datasetContext.groupSizeConstraint(), true).asFormedGroups();
 			var matching = new RandomizedSerialDictatorship(datasetContext, formedGroups, datasetContext.allProjects());
@@ -275,7 +349,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 	class Pessimism implements GroupProjectAlgorithm
 	{
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			WorstAmongBestHumblePairingsSearch p = new WorstAmongBestHumblePairingsSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var agentsToProjects = p.matching();
@@ -294,7 +368,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 	{
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var sdpc = new SDPC(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.doIt();
@@ -313,7 +387,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 	{
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var sdpc = new SDPCOrderedByPotentialGroupmates(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.doIt();
@@ -331,7 +405,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 	class Greedy_SDPC_Pessimism_inspired implements GroupProjectAlgorithm
 	{
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var sdpc = new SDPCPessimism(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = sdpc.matching();
@@ -349,7 +423,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 	class BB_SDPC implements GroupProjectAlgorithm
 	{
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new HumbleMiniMaxWithClosuresSearch(datasetContext.allAgents(), datasetContext.allProjects(), datasetContext.groupSizeConstraint());
 			var matchingStudentsToProjects = algo.matching();
@@ -373,7 +447,7 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 		
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var matching = new GroupedProjectMinizincAllocation(datasetContext).matching();
 
@@ -397,9 +471,18 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new Chiarandini_MinSumRank(datasetContext, pregroupingType);
+			var matching = algo.doIt();
+
+			return matching;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints)
+		{
+			var algo = new Chiarandini_MinSumRank(datasetContext, pregroupingType, constraints);
 			var matching = algo.doIt();
 
 			return matching;
@@ -422,9 +505,18 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new Chiarandini_MinSumExpRank(datasetContext, pregroupingType);
+			var matching = algo.doIt();
+
+			return matching;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints)
+		{
+			var algo = new Chiarandini_MinSumExpRank(datasetContext, pregroupingType, constraints);
 			var matching = algo.doIt();
 
 			return matching;
@@ -447,9 +539,18 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new Chiarandini_Stable_MinSumRank(datasetContext, pregroupingType);
+			var matching = algo.doIt();
+
+			return matching;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints)
+		{
+			var algo = new Chiarandini_Stable_MinSumRank(datasetContext, pregroupingType, constraints);
 			var matching = algo.doIt();
 
 			return matching;
@@ -472,9 +573,18 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new Chiarandini_Stable_MinSumExpRank(datasetContext, pregroupingType);
+			var matching = algo.doIt();
+
+			return matching;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints)
+		{
+			var algo = new Chiarandini_Stable_MinSumExpRank(datasetContext, pregroupingType, constraints);
 			var matching = algo.doIt();
 
 			return matching;
@@ -497,9 +607,18 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new Chiarandini_MinimaxOWA(datasetContext, pregroupingType);
+			var matching = algo.doIt();
+
+			return matching;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints)
+		{
+			var algo = new Chiarandini_MinimaxOWA(datasetContext, pregroupingType, constraints);
 			var matching = algo.doIt();
 
 			return matching;
@@ -522,9 +641,18 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext, pregroupingType);
+			var matching = algo.doIt();
+
+			return matching;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints)
+		{
+			var algo = new Chiarandini_Stable_MinimaxDistribOWA(datasetContext, pregroupingType, constraints);
 			var matching = algo.doIt();
 
 			return matching;
@@ -549,11 +677,19 @@ public interface GroupProjectAlgorithm extends Algorithm
 		}
 
 		@Override
-		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext datasetContext)
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext)
 		{
 			var algo = new MILP_Mechanism_FairPregrouping(datasetContext, objectiveFunction, pregroupingType);
 			var matching = algo.doIt();
-			
+
+			return matching;
+		}
+
+		@Override
+		public GroupToProjectMatching<Group.FormedGroup> determineMatching(DatasetContext<?, ?> datasetContext, Constraint... constraints) {
+			var algo = new MILP_Mechanism_FairPregrouping(datasetContext, objectiveFunction, pregroupingType, constraints);
+			var matching = algo.doIt();
+
 			return matching;
 		}
 	}

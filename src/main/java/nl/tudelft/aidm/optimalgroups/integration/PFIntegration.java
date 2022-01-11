@@ -2,6 +2,7 @@ package nl.tudelft.aidm.optimalgroups.integration;
 
 import nl.tudelft.aidm.optimalgroups.Application;
 import nl.tudelft.aidm.optimalgroups.algorithm.GroupProjectAlgorithm;
+import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.MILP_Mechanism_BasicPregrouping;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.MILP_Mechanism_FairPregrouping;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.Constraint;
 import nl.tudelft.aidm.optimalgroups.algorithm.holistic.chiarandini.constraints.FixMatchingConstraint;
@@ -15,6 +16,7 @@ import nl.tudelft.aidm.optimalgroups.model.agent.Agent;
 import nl.tudelft.aidm.optimalgroups.model.agent.Agents;
 import nl.tudelft.aidm.optimalgroups.model.group.Group;
 import nl.tudelft.aidm.optimalgroups.model.group.Groups;
+import nl.tudelft.aidm.optimalgroups.model.matching.GroupToProjectMatching;
 import nl.tudelft.aidm.optimalgroups.model.pref.AggregatedProjectPreference;
 import nl.tudelft.aidm.optimalgroups.model.project.Project;
 import org.json.JSONArray;
@@ -44,6 +46,7 @@ public class PFIntegration {
      * <pre>
      *     {
      *         course_edition_id: 1,
+     *         algorithm: name,
      *         pregrouping: {
      *             type: conditional                        -> [soft/hard/conditional]
      *             size_bound: true                         -> true/false, whether to use the maximum size
@@ -97,24 +100,50 @@ public class PFIntegration {
         var groupFixes = parseUserGroupFixes(json, datasetContext);
 
         // Combine the constraints together
-        var constraints = new ArrayList<Constraint>(matchFixes.size() + groupFixes.size());
-        constraints.addAll(matchFixes);
-        constraints.addAll(groupFixes);
+        var constraintList = new ArrayList<Constraint>(matchFixes.size() + groupFixes.size());
+        constraintList.addAll(matchFixes);
+        constraintList.addAll(groupFixes);
+        var constraints = constraintList.toArray(new Constraint[0]);
+
+        // Create the objective
         var objective = new OWAObjective();
 
-        // Perform the matching
-        var matchingFair = new MILP_Mechanism_FairPregrouping(
-                datasetContext,
-                objective,
-                pregroupingType,
-                constraints.toArray(new Constraint[0])
-        ).doIt();
+        // Run the correct algorithm
+        var algorithm = json.getString("algorithm");
+        GroupToProjectMatching<Group.FormedGroup> matching;
+        GroupProjectAlgorithm gpa;
+        switch (algorithm) {
+            case "chiarandini_fair" -> {
+                gpa = new GroupProjectAlgorithm.Chiarandini_Fairgroups(objective, pregroupingType);
+                matching = new MILP_Mechanism_FairPregrouping(
+                        datasetContext,
+                        objective,
+                        pregroupingType,
+                        constraints
+                ).doIt();
+            }
+            case "chiarandini" -> {
+                gpa = new GroupProjectAlgorithm.Chiarandini_MiniMax_OWA(pregroupingType);
+                matching = new MILP_Mechanism_BasicPregrouping(
+                        datasetContext,
+                        objective,
+                        pregroupingType,
+                        constraints
+                ).doIt();
+            }
+            default -> {
+                gpa = GroupProjectAlgorithm.forName(algorithm, objective, pregroupingType);
+                matching = gpa.determineMatching(datasetContext, constraints);
+            }
+        }
 
         // Report results
-        var jsonOutput = new ProjectStudentMatchingJSON(matchingFair.finalMatching());
+        var jsonOutput = new ProjectStudentMatchingJSON(matching);
         var report = new FairnessVsVanillaQualityExperimentReport(datasetContext, pregrouping, List.of(
-                new GroupProjectAlgorithm.Result(new GroupProjectAlgorithm.Chiarandini_Fairgroups(objective, pregroupingType), matchingFair)
+                new GroupProjectAlgorithm.Result(gpa, matching)
         ));
+
+        new GroupProjectAlgorithm.Result(new GroupProjectAlgorithm.Chiarandini_MiniMax_OWA(pregroupingType), matching);
 
         // Put it in JSON
         JSONObject jsonOut = new JSONObject();
